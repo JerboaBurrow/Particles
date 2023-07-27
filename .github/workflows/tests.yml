@@ -1,0 +1,72 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main" ]
+    tags:     'v*'
+    paths-ignore:
+      - 'doc/**'
+      - '.github/**'
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+
+  without-proguard:
+      runs-on: ubuntu-20.04
+
+      steps:
+      - uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update && sudo apt-get install -y build-essential mesa-common-dev libx11-dev libxrandr-dev libgl1-mesa-dev libglu1-mesa-dev libfreetype6-dev libopenal-dev libsndfile1-dev libudev-dev
+          wget https://dl.google.com/android/repository/android-ndk-r25c-linux.zip
+          unzip android-ndk-r25c-linux.zip
+          wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip   
+          unzip commandlinetools-linux-9477386_latest.zip
+          export ANDROID_SDK_ROOT=~/
+          mv cmdline-tools latest
+          mkdir cmdline-tools
+          mv latest cmdline-tools
+          yes | ./cmdline-tools/latest/bin/sdkmanager --licenses
+          ./cmdline-tools/latest/bin/sdkmanager --install "system-images;android-33;google_apis;x86_64"
+          ./cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-33"
+          echo no | ./cmdline-tools/latest/bin/avdmanager create avd --name android33 --package "system-images;android-33;google_apis;x86_64"
+
+      - name: linux-build
+        run: |
+          ./gradlew assembleDebugUnsigned
+
+      - name: test
+        run: ./gradlew testDebugUnsignedUnitTest
+
+  with-proguard:
+      runs-on: ubuntu-20.04
+
+      steps:
+      - uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update && sudo apt-get install -y build-essential mesa-common-dev libx11-dev libxrandr-dev libgl1-mesa-dev libglu1-mesa-dev libfreetype6-dev libopenal-dev libsndfile1-dev libudev-dev
+          wget https://dl.google.com/android/repository/android-ndk-r25c-linux.zip
+          unzip android-ndk-r25c-linux.zip
+          wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip   
+          unzip commandlinetools-linux-9477386_latest.zip
+          export ANDROID_SDK_ROOT=~/
+          mv cmdline-tools latest
+          mkdir cmdline-tools
+          mv latest cmdline-tools
+          yes | ./cmdline-tools/latest/bin/sdkmanager --licenses
+          ./cmdline-tools/latest/bin/sdkmanager --install "system-images;android-33;google_apis;x86_64"
+          ./cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-33"
+          echo no | ./cmdline-tools/latest/bin/avdmanager create avd --name android33 --package "system-images;android-33;google_apis;x86_64"
+
+      - name: linux-build
+        run: |
+          ./gradlew assembleUnsignedProguard
+
+      - name: test
+        run: ./gradlew testUnsignedProguardUnitTest
+

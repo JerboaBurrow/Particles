@@ -1,0 +1,63 @@
+name: Release
+
+on:
+  push:
+    branches: [ "main" ]
+    tags:     'v*'
+    paths-ignore:
+      - 'doc/**'
+      - '.github/**'
+
+jobs:
+
+  build:
+      runs-on: ubuntu-20.04
+
+      steps:
+      - uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update && sudo apt-get install -y build-essential mesa-common-dev libx11-dev libxrandr-dev libgl1-mesa-dev libglu1-mesa-dev libfreetype6-dev libopenal-dev libsndfile1-dev libudev-dev
+          wget https://dl.google.com/android/repository/android-ndk-r25c-linux.zip
+          unzip android-ndk-r25c-linux.zip
+          wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip   
+          unzip commandlinetools-linux-9477386_latest.zip
+          export ANDROID_SDK_ROOT=~/
+          mv cmdline-tools latest
+          mkdir cmdline-tools
+          mv latest cmdline-tools
+          yes | ./cmdline-tools/latest/bin/sdkmanager --licenses
+          ./cmdline-tools/latest/bin/sdkmanager --install "system-images;android-33;google_apis;x86_64"
+          ./cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-33"
+          echo no | ./cmdline-tools/latest/bin/avdmanager create avd --name android33 --package "system-images;android-33;google_apis;x86_64"
+
+      - name: linux-build
+        run: |
+          ./gradlew assembleDebugUnsigned
+
+      - name: test
+        run: ./gradlew testDebugUnsignedUnitTest
+
+      - name: create release
+        id: createRelease
+        uses: actions/create-release@v1
+        env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+            draft: true
+            prerelease: false
+            release_name: "release-${{ github.ref_name }}"
+            tag_name: ${{ github.ref }}
+
+      - name: upload release artifact
+        uses: actions/upload-release-asset@v1
+        env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+            upload_url: ${{ steps.createRelease.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+            asset_path: app/release/app-release.aab
+            asset_name: Digiduce
+            asset_content_type: application/zip
+            retention-days: 30
+

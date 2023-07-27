@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   id="svg3745"
+   viewBox="0 0 128 128"
+   version="1.0"
+   sodipodi:docname="music.svg"
+   inkscape:version="0.92.3 (2405546, 2018-03-11)"
+   width="128"
+   height="128">
+  <defs
+     id="defs9" />
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1853"
+     inkscape:window-height="1025"
+     id="namedview7"
+     showgrid="false"
+     inkscape:zoom="4"
+     inkscape:cx="121.9929"
+     inkscape:cy="21.394183"
+     inkscape:window-x="67"
+     inkscape:window-y="27"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg3745"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0">
+    <inkscape:grid
+       type="xygrid"
+       id="grid820"
+       originx="-0.00037051409"
+       originy="-0.0035178194" />
+  </sodipodi:namedview>
+  <path
+     style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1.00618696;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="M 58.924077,92.25058 65.521642,15.8878 63.608673,95.00981 60.603166,93.59748 Z"
+     id="path822-3"
+     inkscape:connector-curvature="0" />
+  <path
+     style="fill-rule:evenodd"
+     inkscape:connector-curvature="0"
+     d="m 65.279629,15.452512 c 5.88,14.34 12.3,22.76 16.39,27.42 3.23,3.68 20.940001,20.04 0.53,45.609998 12.12,-25.039998 7.76,-39.879998 -13.92,-49.029998 V 92.45251 c 0.68,21.83 -21.75,23.16 -27.21,17.35 -5.65,-5.99 7.67,-25.889998 24.21,-19.35 z"
+     id="path3743" />
+  <metadata
+     id="metadata4">
+    <rdf:RDF>
+      <cc:Work>
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <cc:license
+           rdf:resource="http://creativecommons.org/publicdomain/zero/1.0/" />
+        <dc:publisher>
+          <cc:Agent
+             rdf:about="http://openclipart.org/">
+            <dc:title>Openclipart</dc:title>
+          </cc:Agent>
+        </dc:publisher>
+        <dc:title>Eighth note</dc:title>
+        <dc:date>2007-04-10T14:26:55</dc:date>
+        <dc:description>Une croche.</dc:description>
+        <dc:source>http://openclipart.org/detail/3864/eighth-note-by-corbeau</dc:source>
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>corbeau</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:subject>
+          <rdf:Bag>
+            <rdf:li>clip art</rdf:li>
+            <rdf:li>clipart</rdf:li>
+            <rdf:li>croche</rdf:li>
+            <rdf:li>eighth note</rdf:li>
+            <rdf:li>image</rdf:li>
+            <rdf:li>media</rdf:li>
+            <rdf:li>music</rdf:li>
+            <rdf:li>music notation</rdf:li>
+            <rdf:li>musique</rdf:li>
+            <rdf:li>notation musicale</rdf:li>
+            <rdf:li>note</rdf:li>
+            <rdf:li>public domain</rdf:li>
+            <rdf:li>svg</rdf:li>
+          </rdf:Bag>
+        </dc:subject>
+      </cc:Work>
+      <cc:License
+         rdf:about="http://creativecommons.org/publicdomain/zero/1.0/">
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Reproduction" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Distribution" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#DerivativeWorks" />
+      </cc:License>
+    </rdf:RDF>
+  </metadata>
+  <path
+     style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:0.95236802px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     d="M 60.367122,92.5624 66.662303,20.812117 64.837011,95.15497 61.969254,93.82795 Z"
+     id="path822"
+     inkscape:connector-curvature="0" />
+  <path
+     style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:round;stroke-linejoin:miter;stroke-opacity:1"
+     d="m 65.521642,15.8878 c 0,0 14.027108,18.538474 19.4957,27.565124 0,0 3.172311,4.473504 6.43947,14.367233 3.226253,9.769857 0.754293,22.168673 -9.257183,30.662353 0,0 5.898426,-9.935286 6.119397,-11.526276 0.220971,-1.59099 1.767767,-15.600544 1.767767,-15.600544 L 87.744502,54.107846 76.828541,39.700545 67.150017,23.923225 Z"
+     id="path975"
+     inkscape:connector-curvature="0"
+     sodipodi:nodetypes="ccscsccccc" />
+  <path
+     style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     d="m 85.374629,47.191015 -11.75,-9.625"
+     id="path977"
+     inkscape:connector-curvature="0" />
+  <ellipse
+     style="opacity:1;fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:1.06834316;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+     id="path979"
+     cx="50.464767"
+     cy="99.208412"
+     rx="15.330853"
+     ry="12.896112" />
+</svg>

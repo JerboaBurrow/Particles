@@ -1,0 +1,1 @@
+ffmpeg -ss 36 -t 5 -i particles-promo-vert.mp4 -vf "fps=60,scale=320:-1:flags=lanczos,split[s0][s1];[s0]palettegen=max_colors=64[p];[s1][p]paletteuse=dither=bayer" -loop 0 output.gif
