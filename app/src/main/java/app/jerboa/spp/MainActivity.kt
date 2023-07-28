@@ -105,7 +105,8 @@ class MainActivity : AppCompatActivity() {
         "yt" to R.drawable.ic_yt,
         "web" to R.drawable.weblink_icon_,
         "github" to R.drawable.github_mark_white,
-        "tutorial" to R.drawable.tutorial
+        "tutorial" to R.drawable.tutorial,
+        "news" to R.drawable.news
     )
 
     private val rcAchievementUI = 9003
@@ -233,7 +234,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun github(){
 
-        val uri = Uri.parse("https://github.com/Jerboa-app")
+        val uri = Uri.parse("https://github.com/JerboaBurrow/Particles")
         val intent = Intent(Intent.ACTION_VIEW, uri)
         startActivity(intent)
 
@@ -355,6 +356,16 @@ class MainActivity : AppCompatActivity() {
 
         val versionString = BuildConfig.VERSION_NAME + ": " + Date(BuildConfig.TIMESTAMP)
 
+        var showNews = false
+        if (!firstLaunch) {
+            if (!prefs.contains("news-28-07-23")){
+                val prefsEdit = prefs.edit()
+                prefsEdit.putBoolean("news-28-07-23",true)
+                prefsEdit.apply()
+                showNews = true
+            }
+        }
+
         // play game services
 
         if (isGooglePlayGamesServicesInstalled(this)) {
@@ -402,7 +413,8 @@ class MainActivity : AppCompatActivity() {
                     renderViewModel,
                     Pair(width,height),
                     imageResources,
-                    appInfo
+                    appInfo,
+                    showNews
                 )
             }
         }

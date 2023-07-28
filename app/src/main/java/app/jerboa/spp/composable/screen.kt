@@ -51,7 +51,8 @@ fun screen(
     onMusicSelected: (MUSIC) -> Unit,
     onRequestingSocial: (SOCIAL) -> Unit,
     onResetTutorial: () -> Unit,
-    onPromptPGS: (Boolean) -> Unit
+    onPromptPGS: (Boolean) -> Unit,
+    onToyChanged: (TOY) -> Unit
 ) {
 
     val scaffoldState = rememberScaffoldState()
@@ -101,7 +102,7 @@ fun screen(
                         duration = SnackbarDuration.Short
                     )
                     when (snackbarResult) {
-                        SnackbarResult.Dismissed -> Log.d("screen", "Dismissed")
+                        //SnackbarResult.Dismissed -> Log.d("screen", "Dismissed")
                         SnackbarResult.ActionPerformed -> {
                             onAllowAdaptChanged()
                         }
@@ -116,7 +117,7 @@ fun screen(
                         duration = SnackbarDuration.Short
                     )
                     when (snackbarResult) {
-                        SnackbarResult.Dismissed -> Log.d("screen", "Dismissed")
+                        //SnackbarResult.Dismissed -> Log.d("screen", "Dismissed")
                         SnackbarResult.ActionPerformed -> {
                             onPromptPGS(true)
                         }
@@ -131,6 +132,7 @@ fun screen(
                         resolution,
                         onDisplayingMenuChanged,
                         onAchievementStateChanged,
+                        onToyChanged,
                         onAdapt,
                         toy,
                         particleNumber,

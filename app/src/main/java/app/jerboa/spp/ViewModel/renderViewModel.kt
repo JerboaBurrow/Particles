@@ -2,9 +2,7 @@ package app.jerboa.spp.ViewModel
 
 import android.media.MediaPlayer
 import android.util.Log
-import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.*
-import app.jerboa.spp.R
 import app.jerboa.spp.incrementable
 import java.util.*
 
@@ -61,6 +59,10 @@ class RenderViewModel : ViewModel() {
         onDisplayingMenuChanged(false)
     }
     fun onDismissTutorial(){_dismissedTutorial.value = true; _resetTutorial.value = false}
+
+    private val _dismissedNews = MutableLiveData(false)
+    val dismissedNews: MutableLiveData<Boolean> = _dismissedNews
+    fun onDismissNews(){_dismissedNews.value = true}
 
     // SOCIAL
     private val _requestingSocial = MutableLiveData(SOCIAL.NOTHING)
@@ -150,7 +152,7 @@ class RenderViewModel : ViewModel() {
 
     private val _toy = MutableLiveData(TOY.ATTRACTOR) // true attractor, false repeller
     val toy: MutableLiveData<TOY> = _toy
-    fun onAttractorChanged(newVal: TOY){
+    fun onToyChanged(newVal: TOY){
         //Log.d("on attractor changed", newVal.toString())
         _toy.value = newVal
     }

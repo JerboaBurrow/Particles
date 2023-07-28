@@ -7,20 +7,19 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import app.jerboa.spp.AppInfo
 import app.jerboa.spp.ViewModel.*
-import app.jerboa.spp.data.ColourMap
 
 @Composable
 fun renderScreen(
     renderViewModel: RenderViewModel,
     resolution: Pair<Int,Int>,
     images: Map<String,Int>,
-    info: AppInfo
+    info: AppInfo,
+    showNews: Boolean = false
 ){
     val displayingMenu: Boolean by renderViewModel.displayingMenu.observeAsState(initial = false)
     val displayingSound: Boolean by renderViewModel.displayingSound.observeAsState(initial = false)
@@ -34,6 +33,7 @@ fun renderScreen(
     val resetTutorial: Boolean by renderViewModel.resetTutorial.observeAsState(initial = false)
     val dismissedTutorial: Boolean by renderViewModel.dismissedTutorial.observeAsState(initial = false)
     val promptPGS: Boolean by renderViewModel.promptInstallPGS.observeAsState(initial = false)
+    val dismissedNews: Boolean by renderViewModel.dismissedNews.observeAsState(initial = false)
 
     screen(
         displayingMenu,
@@ -52,7 +52,7 @@ fun renderScreen(
         onDisplayingMenuChanged = {renderViewModel.onDisplayingMenuChanged(it)},
         onDisplayingMusicChanged = {renderViewModel.onDisplayingMusicChanged()},
         onDisplayingAboutChanged = {renderViewModel.onDisplayingAboutChanged(it)},
-        onAttractorChanged = {renderViewModel.onAttractorChanged(it)},
+        onAttractorChanged = {renderViewModel.onToyChanged(it)},
         onRequestPlayServices = {renderViewModel.onRequestPlayServices()},
         onAchievementStateChanged = {renderViewModel.onAchievementStateChanged(it)},
         onAdapt = {renderViewModel.onAdapt(it)},
@@ -66,11 +66,10 @@ fun renderScreen(
         onRequestingSocial = {renderViewModel.onRequestingSocial(it)},
         onResetTutorial = {renderViewModel.onResetTutorial()},
         onPromptPGS = {renderViewModel.onPromptInstallPGS(it)},
+        onToyChanged = {renderViewModel.onToyChanged(it)}
     )
 
-    Log.d("tutorial","$dismissedTutorial, ${info.firstLaunch}, $resetTutorial")
     if (!dismissedTutorial && (info.firstLaunch || resetTutorial) ){
-        Log.d("tutorial","displayed")
         Image(
             painter = painterResource(id = images["tutorial"]!!),
             contentDescription = "",
@@ -79,6 +78,17 @@ fun renderScreen(
                 .fillMaxWidth()
                 .clickable {
                     renderViewModel.onDismissTutorial()
+                }
+        )
+    }else if (showNews && !dismissedNews){
+        Image(
+            painter = painterResource(id = images["news"]!!),
+            contentDescription = "",
+            contentScale = ContentScale.Fit,
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable {
+                    renderViewModel.onDismissNews()
                 }
         )
     }

@@ -67,12 +67,12 @@ fun about(
                         painter = painterResource(id = images["logo"]!!),
                         contentDescription = "Logo"
                     )
-                    Text(
+                    adaptiveTextBox(
                         stringResource(id = R.string.tagline) + stringResource(id = R.string.description),
                         textAlign = TextAlign.Center,
-                        modifier = Modifier.weight(2f),
+                        maxLines = 4,
                         fontSize = MaterialTheme.typography.body1.fontSize * info.density,
-                        color = Color.Black
+                        colour = Color.Black
                     )
                     TextButton(onClick = { onRequestingLicenses() }) {
                         Text(
