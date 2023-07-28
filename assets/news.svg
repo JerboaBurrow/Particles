@@ -359,9 +359,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.44426918"
-     inkscape:cx="175.5901"
-     inkscape:cy="445.77925"
+     inkscape:zoom="0.6282915"
+     inkscape:cx="273.81518"
+     inkscape:cy="500.46832"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -591,18 +591,23 @@
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.58333302px;line-height:125%;font-family:OpenDyslexicMono;-inkscape-font-specification:'OpenDyslexicMono, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       x="43.890999"
-       y="-165.1613"
+       x="38.724541"
+       y="-171.47803"
        id="text1504"><tspan
          sodipodi:role="line"
          id="tspan1502"
-         x="43.890999"
-         y="-165.1613"
+         x="38.724541"
+         y="-171.47803"
          style="stroke-width:0.26458332px">You can now drag the toys!</tspan><tspan
          sodipodi:role="line"
-         x="43.890999"
-         y="-151.93213"
+         x="38.724541"
+         y="-158.24886"
          style="stroke-width:0.26458332px"
-         id="tspan1506">    We are open source</tspan></text>
+         id="tspan1506"></tspan><tspan
+         sodipodi:role="line"
+         x="38.724541"
+         y="-145.0197"
+         style="stroke-width:0.26458332px"
+         id="tspan1508">The code is now open source</tspan></text>
   </g>
 </svg>
