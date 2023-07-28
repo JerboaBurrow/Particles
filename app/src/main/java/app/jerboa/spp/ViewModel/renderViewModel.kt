@@ -60,6 +60,10 @@ class RenderViewModel : ViewModel() {
     }
     fun onDismissTutorial(){_dismissedTutorial.value = true; _resetTutorial.value = false}
 
+    private val _dismissedNews = MutableLiveData(false)
+    val dismissedNews: MutableLiveData<Boolean> = _dismissedNews
+    fun onDismissNews(){_dismissedNews.value = true}
+
     // SOCIAL
     private val _requestingSocial = MutableLiveData(SOCIAL.NOTHING)
     val requestingSocial: MutableLiveData<SOCIAL> = _requestingSocial

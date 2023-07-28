@@ -18,7 +18,8 @@ fun renderScreen(
     renderViewModel: RenderViewModel,
     resolution: Pair<Int,Int>,
     images: Map<String,Int>,
-    info: AppInfo
+    info: AppInfo,
+    showNews: Boolean = false
 ){
     val displayingMenu: Boolean by renderViewModel.displayingMenu.observeAsState(initial = false)
     val displayingSound: Boolean by renderViewModel.displayingSound.observeAsState(initial = false)
@@ -32,6 +33,7 @@ fun renderScreen(
     val resetTutorial: Boolean by renderViewModel.resetTutorial.observeAsState(initial = false)
     val dismissedTutorial: Boolean by renderViewModel.dismissedTutorial.observeAsState(initial = false)
     val promptPGS: Boolean by renderViewModel.promptInstallPGS.observeAsState(initial = false)
+    val dismissedNews: Boolean by renderViewModel.dismissedNews.observeAsState(initial = false)
 
     screen(
         displayingMenu,
@@ -76,6 +78,17 @@ fun renderScreen(
                 .fillMaxWidth()
                 .clickable {
                     renderViewModel.onDismissTutorial()
+                }
+        )
+    }else if (showNews && !dismissedNews){
+        Image(
+            painter = painterResource(id = images["news"]!!),
+            contentDescription = "",
+            contentScale = ContentScale.Fit,
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable {
+                    renderViewModel.onDismissNews()
                 }
         )
     }
