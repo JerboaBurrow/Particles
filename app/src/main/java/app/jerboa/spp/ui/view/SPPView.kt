@@ -4,12 +4,15 @@ import android.content.Context
 import android.opengl.GLSurfaceView
 import android.util.AttributeSet
 import android.util.Log
+import android.view.DragEvent
 import android.view.GestureDetector
 import android.view.MotionEvent
 import androidx.core.view.GestureDetectorCompat
+import androidx.core.view.MotionEventCompat
 import app.jerboa.spp.ViewModel.COLOUR_MAP
 import app.jerboa.spp.ViewModel.PARTICLES_SLIDER_DEFAULT
 import app.jerboa.spp.ViewModel.TOY
+import app.jerboa.spp.ui.view.DRAG_ACTION
 import app.jerboa.spp.ui.view.SPPRenderer
 
 class SPPView (
@@ -18,6 +21,7 @@ class SPPView (
     private val resolution: Pair<Int,Int>,
     private val onDisplayingMenuChanged: (Boolean) -> Unit,
     private val onAchievementStateChanged: (Pair<String,Int>) -> Unit,
+    private val onToyChanged: (TOY) -> Unit,
     private val onAdapt: (Float) -> Unit,
     var placingToy: TOY = TOY.ATTRACTOR,
     var particleNumber: Float = PARTICLES_SLIDER_DEFAULT,
@@ -25,9 +29,15 @@ class SPPView (
     var colourMap: COLOUR_MAP = COLOUR_MAP.R1
     ) : GLSurfaceView(context,attr), GestureDetector.OnGestureListener {
 
-    private val renderer = SPPRenderer(resolution,onAchievementStateChanged,onAdapt,particleNumber,allowAdapt,colourMap)
+    private val renderer = SPPRenderer(resolution,onAchievementStateChanged,onToyChanged,onAdapt,particleNumber,allowAdapt,colourMap)
     private val gestures: GestureDetectorCompat = GestureDetectorCompat(context,this)
     var isDisplayingMenuChanged: Boolean = false
+
+    private var lastTouchX: Float = 0f
+    private var lastTouchY: Float = 0f
+    private var posX: Float = 0f
+    private var posY: Float = 0f
+    private var pointerId: Int = 0
 
     init {
         setEGLContextClientVersion(3)
@@ -63,11 +73,51 @@ class SPPView (
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
-        return if (gestures.onTouchEvent(event)) {
-            true
-        } else {
-            super.onTouchEvent(event)
+        when (event.action) {
+            MotionEvent.ACTION_DOWN -> {
+                event.actionIndex.also { pointer ->
+                    lastTouchX = event.getX(pointer)
+                    lastTouchY = event.getY(pointer)
+                }
+                renderer.drag(lastTouchX,lastTouchY,DRAG_ACTION.START)
+                pointerId = event.getPointerId(0)
+            }
+            MotionEvent.ACTION_MOVE -> {
+                val pointer = event.findPointerIndex(pointerId)
+                if (pointer in 0..event.pointerCount) {
+
+                    val (x: Float, y: Float) = pointer.let {
+                        event.getX(pointer) to event.getY(pointer)
+                    }
+
+                    posX += x - lastTouchX
+                    posY += y - lastTouchY
+
+                    invalidate()
+
+                    lastTouchX = x
+                    lastTouchY = y
+
+                    renderer.drag(x, y, DRAG_ACTION.CONTINUE)
+                }
+            }
+            MotionEvent.ACTION_UP -> {
+                pointerId = MotionEvent.INVALID_POINTER_ID
+                renderer.drag(lastTouchX,lastTouchY,DRAG_ACTION.STOP)
+            }
+            MotionEvent.ACTION_POINTER_UP -> {
+                event.actionIndex.also { pointer ->
+                    event.getPointerId(pointer).takeIf { it == pointerId }
+                        ?.run {
+                            val newPointerIndex = if (pointer == 0) 1 else 0
+                            lastTouchX = event.getX(newPointerIndex)
+                            lastTouchY = event.getY(newPointerIndex)
+                            renderer.drag(lastTouchX,lastTouchY,DRAG_ACTION.STOP)
+                        }
+                }
+            }
         }
+        return gestures.onTouchEvent(event)
     }
 
     override fun onDown(p0: MotionEvent): Boolean {
@@ -82,18 +132,17 @@ class SPPView (
         val x: Float = p0!!.x
         val y: Float = p0!!.y
 
+        renderer.drag(x,y,DRAG_ACTION.STOP)
+
         when (placingToy) {
             TOY.ATTRACTOR -> {
-                //Log.d("tap", "attractor")
                 renderer.tap(x, y, SPPRenderer.TapType.ATTRACTOR)
             }
             TOY.REPELLOR -> {
                 renderer.tap(x, y, SPPRenderer.TapType.REPELLOR)
-                //Log.d("tap", "repeller")
             }
             TOY.SPINNER -> {
                 renderer.tap(x, y, SPPRenderer.TapType.SPINNER)
-                //Log.d("tap", "spinner")
             }
         }
 
@@ -109,13 +158,12 @@ class SPPView (
     }
 
     override fun onFling(p0: MotionEvent, p1: MotionEvent, p2: Float, p3: Float): Boolean {
-        if (p0 != null) {
-            if (resolution.second-p0.y < resolution.second*0.25f){
-                Log.d("fling", p0.y.toString())
-                isDisplayingMenuChanged = !isDisplayingMenuChanged
-                onDisplayingMenuChanged(true)
-            }
-        }
+//        if (p0 != null) {
+//            if (resolution.second-p0.y < resolution.second*0.25f){
+//                isDisplayingMenuChanged = !isDisplayingMenuChanged
+//                onDisplayingMenuChanged(true)
+//            }
+//        }
         return true
     }
 

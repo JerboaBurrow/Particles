@@ -7,13 +7,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import app.jerboa.spp.AppInfo
 import app.jerboa.spp.ViewModel.*
-import app.jerboa.spp.data.ColourMap
 
 @Composable
 fun renderScreen(
@@ -52,7 +50,7 @@ fun renderScreen(
         onDisplayingMenuChanged = {renderViewModel.onDisplayingMenuChanged(it)},
         onDisplayingMusicChanged = {renderViewModel.onDisplayingMusicChanged()},
         onDisplayingAboutChanged = {renderViewModel.onDisplayingAboutChanged(it)},
-        onAttractorChanged = {renderViewModel.onAttractorChanged(it)},
+        onAttractorChanged = {renderViewModel.onToyChanged(it)},
         onRequestPlayServices = {renderViewModel.onRequestPlayServices()},
         onAchievementStateChanged = {renderViewModel.onAchievementStateChanged(it)},
         onAdapt = {renderViewModel.onAdapt(it)},
@@ -66,11 +64,10 @@ fun renderScreen(
         onRequestingSocial = {renderViewModel.onRequestingSocial(it)},
         onResetTutorial = {renderViewModel.onResetTutorial()},
         onPromptPGS = {renderViewModel.onPromptInstallPGS(it)},
+        onToyChanged = {renderViewModel.onToyChanged(it)}
     )
 
-    Log.d("tutorial","$dismissedTutorial, ${info.firstLaunch}, $resetTutorial")
     if (!dismissedTutorial && (info.firstLaunch || resetTutorial) ){
-        Log.d("tutorial","displayed")
         Image(
             painter = painterResource(id = images["tutorial"]!!),
             contentDescription = "",

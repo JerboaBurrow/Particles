@@ -8,6 +8,7 @@ import app.jerboa.glskeleton.utils.*
 import app.jerboa.spp.ViewModel.COLOUR_MAP
 import app.jerboa.spp.ViewModel.MAX_PARTICLES
 import app.jerboa.spp.ViewModel.PARTICLES_SLIDER_DEFAULT
+import app.jerboa.spp.ViewModel.TOY
 import app.jerboa.spp.data.*
 import app.jerboa.spp.utils.*
 import java.nio.ByteBuffer
@@ -22,9 +23,12 @@ import android.opengl.GLES31 as gl3
 
 const val DEBUG: Boolean = false
 
+enum class DRAG_ACTION {START, STOP, CONTINUE}
+
 class SPPRenderer(
     private val resolution: Pair<Int,Int>,
     private val onAchievementStateChanged: (Pair<String,Int>) -> Unit,
+    private val onToyChanged: (TOY) -> Unit,
     private val onAdapt: (Float) -> Unit,
     private var particleNumber: Float = PARTICLES_SLIDER_DEFAULT,
     private var allowAdapt: Boolean = true,
@@ -159,6 +163,9 @@ class SPPRenderer(
     private val atrPeriod = 60*3
     private var arTime = 0
     private var contTime = 0
+
+    private var drag: Vec2 = Vec2(0f,0f)
+    private var draggedToy: Pair<TOY, Int>? = null
 
     // shader for particle drawing (and vertices)
 
@@ -349,6 +356,70 @@ class SPPRenderer(
         r[0] = (r[0]+1f) * resolution.first.toFloat()/2f
         r[1] = (r[1]+1f) * resolution.second.toFloat()/2f
         return r
+    }
+
+    private fun toySelected(x: Float, y: Float, eps: Float = 2.0f*arScale): Pair<TOY, Int>? {
+
+        for (i in 0 until attractors.size){
+            val a = attractors[i]
+            if (norm2(x,y,a.first,a.second) < eps*eps){
+
+                return Pair(TOY.ATTRACTOR, i)
+            }
+        }
+
+        for (i in 0 until repellors.size){
+            val a = repellors[i]
+            if (norm2(x,y,a.first,a.second) < eps*eps){
+                return Pair(TOY.REPELLOR, i)
+            }
+        }
+
+        for (i in 0 until spinners.size){
+            val a = spinners[i]
+            if (norm2(x,y,a.first,a.second) < eps*eps){
+                return Pair(TOY.SPINNER, i)
+            }
+        }
+
+        return null
+    }
+
+    // drag event
+    fun drag(x: Float, y: Float, state: DRAG_ACTION){
+
+        val w = screenToWorld(x,resolution.second-y)
+        val wx = w[0]
+        val wy = w[1]
+
+        when (state){
+            DRAG_ACTION.START -> {
+                val toy = toySelected(wx, wy)
+                if (toy != null){
+                    draggedToy = toy
+                    onToyChanged(toy.first)
+                }
+            }
+            DRAG_ACTION.STOP -> {
+                draggedToy = null
+            }
+            DRAG_ACTION.CONTINUE -> {
+                val toy = draggedToy
+                if (toy != null) {
+                    when (toy.first) {
+                        TOY.ATTRACTOR -> {
+                            if (toy.second in attractors.indices) {attractors[toy.second] = Pair(wx,wy)}
+                        }
+                        TOY.REPELLOR -> {
+                            if (toy.second in repellors.indices) {repellors[toy.second] = Pair(wx,wy)}
+                        }
+                        TOY.SPINNER -> {
+                            if (toy.second in spinners.indices) {spinners[toy.second] = Pair(wx,wy)}
+                        }
+                    }
+                }
+            }
+        }
     }
 
     // propagate a tap event
