@@ -336,10 +336,6 @@ class MainActivity : AppCompatActivity() {
 
         val prefs = getSharedPreferences("jerboa.app.spp.prefs", MODE_PRIVATE)
 
-//        if (BuildConfig.DEBUG){
-//            prefs.edit().clear().apply()
-//        }
-
         if (!prefs.contains("firstLaunch")){
             val prefsEdit = prefs.edit()
             prefsEdit.putBoolean("firstLaunch",true)
@@ -352,9 +348,7 @@ class MainActivity : AppCompatActivity() {
         prefsEdit.putBoolean("firstLaunch",false)
         prefsEdit.apply()
 
-        if (DEBUG) { Log.d("launch", firstLaunch.toString()) }
-
-        val versionString = BuildConfig.VERSION_NAME + ": " + Date(BuildConfig.TIMESTAMP)
+        val versionString = BuildConfig.VERSION_NAME + " (vc"+BuildConfig.VERSION_CODE+") : " + Date(BuildConfig.TIMESTAMP)
 
         var showNews = false
         if (!firstLaunch) {
@@ -365,6 +359,11 @@ class MainActivity : AppCompatActivity() {
                 showNews = true
             }
         }
+
+//        if (BuildConfig.DEBUG){
+//            prefs.edit().clear().apply()
+//        }
+
 
         // play game services
 
