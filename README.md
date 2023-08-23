@@ -1,6 +1,8 @@
 # Particles
 ### [jerboa.app/particles](https://jerboa.app/particles) Android app, source code
 
+#### A desktop version is [under development (JerboaBurrow/Particles-desktop)](https://github.com/JerboaBurrow/Particles-desktop)
+
 Welcome! This is source code to the Android app Particles, it is licensed under the GPL (v3). So you 
 are free to view, modify, use etc the code as long as you also release it under the GPL (v3).
 
