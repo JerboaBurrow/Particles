@@ -79,7 +79,7 @@ class SPPView (
                     lastTouchX = event.getX(pointer)
                     lastTouchY = event.getY(pointer)
                 }
-                renderer.drag(lastTouchX,lastTouchY,DRAG_ACTION.START)
+                renderer.drag(lastTouchX,lastTouchY,DRAG_ACTION.START, placingToy)
                 pointerId = event.getPointerId(0)
             }
             MotionEvent.ACTION_MOVE -> {
@@ -98,12 +98,12 @@ class SPPView (
                     lastTouchX = x
                     lastTouchY = y
 
-                    renderer.drag(x, y, DRAG_ACTION.CONTINUE)
+                    renderer.drag(x, y, DRAG_ACTION.CONTINUE, placingToy)
                 }
             }
             MotionEvent.ACTION_UP -> {
                 pointerId = MotionEvent.INVALID_POINTER_ID
-                renderer.drag(lastTouchX,lastTouchY,DRAG_ACTION.STOP)
+                renderer.drag(lastTouchX,lastTouchY,DRAG_ACTION.STOP, placingToy)
             }
             MotionEvent.ACTION_POINTER_UP -> {
                 event.actionIndex.also { pointer ->
@@ -112,7 +112,7 @@ class SPPView (
                             val newPointerIndex = if (pointer == 0) 1 else 0
                             lastTouchX = event.getX(newPointerIndex)
                             lastTouchY = event.getY(newPointerIndex)
-                            renderer.drag(lastTouchX,lastTouchY,DRAG_ACTION.STOP)
+                            renderer.drag(lastTouchX,lastTouchY,DRAG_ACTION.STOP, placingToy)
                         }
                 }
             }
@@ -129,23 +129,6 @@ class SPPView (
     }
 
     override fun onSingleTapUp(p0: MotionEvent): Boolean {
-        val x: Float = p0!!.x
-        val y: Float = p0!!.y
-
-        renderer.drag(x,y,DRAG_ACTION.STOP)
-
-        when (placingToy) {
-            TOY.ATTRACTOR -> {
-                renderer.tap(x, y, SPPRenderer.TapType.ATTRACTOR)
-            }
-            TOY.REPELLOR -> {
-                renderer.tap(x, y, SPPRenderer.TapType.REPELLOR)
-            }
-            TOY.SPINNER -> {
-                renderer.tap(x, y, SPPRenderer.TapType.SPINNER)
-            }
-        }
-
         return true
     }
 
@@ -158,12 +141,6 @@ class SPPView (
     }
 
     override fun onFling(p0: MotionEvent, p1: MotionEvent, p2: Float, p3: Float): Boolean {
-//        if (p0 != null) {
-//            if (resolution.second-p0.y < resolution.second*0.25f){
-//                isDisplayingMenuChanged = !isDisplayingMenuChanged
-//                onDisplayingMenuChanged(true)
-//            }
-//        }
         return true
     }
 
