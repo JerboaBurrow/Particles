@@ -164,8 +164,13 @@ class SPPRenderer(
     private var arTime = 0
     private var contTime = 0
 
-    private var drag: Vec2 = Vec2(0f,0f)
     private var draggedToy: Pair<TOY, Int>? = null
+    private var dragDelta: Vec2 = Vec2(0f,0f)
+    private var dragStartTime: Long = 0L
+    private var dragPlacedToy: Boolean = false
+
+    data class TapDelta (val distance: Float, val timeMillis: Long)
+    private val tapDelta = TapDelta(arScale*0.5f, 100L)
 
     // shader for particle drawing (and vertices)
 
@@ -386,7 +391,7 @@ class SPPRenderer(
     }
 
     // drag event
-    fun drag(x: Float, y: Float, state: DRAG_ACTION){
+    fun drag(x: Float, y: Float, state: DRAG_ACTION, toyType: TOY){
 
         val w = screenToWorld(x,resolution.second-y)
         val wx = w[0]
@@ -394,36 +399,97 @@ class SPPRenderer(
 
         when (state){
             DRAG_ACTION.START -> {
+                dragStartTime = System.currentTimeMillis()
                 val toy = toySelected(wx, wy)
                 if (toy != null){
                     draggedToy = toy
                     onToyChanged(toy.first)
+                    dragPlacedToy = false
                 }
+                else {
+                    when (toyType)
+                    {
+                        TOY.ATTRACTOR -> {
+                            if (attractors.size < maxAorR){
+                                attractors.add(Pair(wx, wy))
+                            }
+                            draggedToy = Pair(TOY.ATTRACTOR, attractors.size-1)
+                            onToyChanged(TOY.ATTRACTOR)
+                            dragPlacedToy = true
+                        }
+                        TOY.REPELLOR -> {
+                            if (repellors.size < maxAorR) {
+                                repellors.add(Pair(wx, wy))
+                            }
+                            draggedToy = Pair(TOY.REPELLOR, repellors.size-1)
+                            onToyChanged(TOY.REPELLOR)
+                            dragPlacedToy = true
+                        }
+                        TOY.SPINNER -> {
+                            if (spinners.size < maxAorR){
+                                spinners.add(Pair(wx, wy))
+                            }
+                            draggedToy = Pair(TOY.SPINNER, spinners.size-1)
+                            onToyChanged(TOY.SPINNER)
+                            dragPlacedToy = true
+                        }
+                        TOY.NOTHING -> {dragPlacedToy = false}
+                    }
+                }
+                dragDelta = Vec2(0f,0f)
             }
             DRAG_ACTION.STOP -> {
                 draggedToy = null
+
+                if (dragPlacedToy){dragPlacedToy = false; return}
+
+                val dragDistance2 = dragDelta.x*dragDelta.x + dragDelta.y*dragDelta.y
+                val dragTime = System.currentTimeMillis() - dragStartTime
+                dragStartTime = 0L
+                Log.d("drag stop", "$dragDistance2, ${tapDelta.distance*tapDelta.distance} | $dragTime, ${tapDelta.timeMillis}")
+                if (dragDistance2 < tapDelta.distance*tapDelta.distance || dragTime < tapDelta.timeMillis)
+                {
+                    tap(x, y, toyType)
+                }
+
             }
             DRAG_ACTION.CONTINUE -> {
+                var dx: Float = 0f
+                var dy: Float = 0f
                 val toy = draggedToy
                 if (toy != null) {
                     when (toy.first) {
                         TOY.ATTRACTOR -> {
-                            if (toy.second in attractors.indices) {attractors[toy.second] = Pair(wx,wy)}
+                            if (toy.second in attractors.indices) {
+                                dx = wx - attractors[toy.second].first
+                                dy = wy - attractors[toy.second].second
+                                attractors[toy.second] = Pair(wx, wy)
+                            }
                         }
                         TOY.REPELLOR -> {
-                            if (toy.second in repellors.indices) {repellors[toy.second] = Pair(wx,wy)}
+                            if (toy.second in repellors.indices) {
+                                dx = wx - repellors[toy.second].first
+                                dy = wy - repellors[toy.second].second
+                                repellors[toy.second] = Pair(wx, wy)
+                            }
                         }
                         TOY.SPINNER -> {
-                            if (toy.second in spinners.indices) {spinners[toy.second] = Pair(wx,wy)}
+                            if (toy.second in spinners.indices) {
+                                dx = wx - spinners[toy.second].first
+                                dy = wy - spinners[toy.second].second
+                                spinners[toy.second] = Pair(wx, wy)
+                            }
                         }
+                        TOY.NOTHING -> {}
                     }
                 }
+                dragDelta = Vec2(dragDelta.x + sqrt(dx*dx), dragDelta.y + sqrt(dy*dy))
             }
         }
     }
 
     // propagate a tap event
-    fun tap(x: Float,y: Float, type: TapType = TapType.ATTRACTOR){
+    fun tap(x: Float,y: Float, type: TOY = TOY.ATTRACTOR){
         if (DEMO_REAL){return}
         val w = screenToWorld(x,resolution.second-y)
         val wx = w[0]
@@ -434,13 +500,11 @@ class SPPRenderer(
         }
         timeSinceLastTap = 0f
     }
-
-    public enum class TapType {NOTHING, ATTRACTOR, REPELLOR, SPINNER}
-
+    
     // add an attractor or repeller toy
-    private fun force(x: Float, y: Float, mode: TapType = TapType.NOTHING, eps: Float = scale){
+    private fun force(x: Float, y: Float, mode: TOY = TOY.NOTHING, eps: Float = scale){
 
-        if (mode == TapType.ATTRACTOR){
+        if (mode == TOY.ATTRACTOR){
             var removed = false
             for (i in 0 until attractors.size){
                 val a = attractors[i]
@@ -454,7 +518,7 @@ class SPPRenderer(
                 attractors.add(Pair(x,y))
             }
         }
-        else if (mode == TapType.REPELLOR){
+        else if (mode == TOY.REPELLOR){
             var removed = false
             for (i in 0 until repellors.size){
                 val a = repellors[i]
@@ -468,7 +532,7 @@ class SPPRenderer(
                 repellors.add(Pair(x,y))
             }
         }
-        else if (mode == TapType.SPINNER){
+        else if (mode == TOY.SPINNER){
             var removed = false
             for (i in 0 until spinners.size){
                 val a = spinners[i]
