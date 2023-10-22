@@ -118,4 +118,5 @@ dependencies {
     debugImplementation "androidx.compose.ui:ui-test-manifest:$compose_version"
     implementation "androidx.compose.runtime:runtime-livedata:$compose_version"
     implementation 'com.google.android.gms:play-services-oss-licenses:17.0.0'
+    implementation("com.google.android.play:review:2.0.1")
 }

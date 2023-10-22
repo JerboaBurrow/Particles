@@ -22,6 +22,7 @@ class SPPView (
     private val onDisplayingMenuChanged: (Boolean) -> Unit,
     private val onAchievementStateChanged: (Pair<String,Int>) -> Unit,
     private val onToyChanged: (TOY) -> Unit,
+    private val onRequestReview: () -> Unit,
     private val onAdapt: (Float) -> Unit,
     var placingToy: TOY = TOY.ATTRACTOR,
     var particleNumber: Float = PARTICLES_SLIDER_DEFAULT,
@@ -29,7 +30,16 @@ class SPPView (
     var colourMap: COLOUR_MAP = COLOUR_MAP.R1
     ) : GLSurfaceView(context,attr), GestureDetector.OnGestureListener {
 
-    private val renderer = SPPRenderer(resolution,onAchievementStateChanged,onToyChanged,onAdapt,particleNumber,allowAdapt,colourMap)
+    private val renderer = SPPRenderer(
+        resolution,
+        onAchievementStateChanged,
+        onToyChanged,
+        onRequestReview,
+        onAdapt,
+        particleNumber,
+        allowAdapt,
+        colourMap
+    )
     private val gestures: GestureDetectorCompat = GestureDetectorCompat(context,this)
     var isDisplayingMenuChanged: Boolean = false
 

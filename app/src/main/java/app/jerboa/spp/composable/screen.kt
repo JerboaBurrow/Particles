@@ -52,7 +52,8 @@ fun screen(
     onRequestingSocial: (SOCIAL) -> Unit,
     onResetTutorial: () -> Unit,
     onPromptPGS: (Boolean) -> Unit,
-    onToyChanged: (TOY) -> Unit
+    onToyChanged: (TOY) -> Unit,
+    onRequestReview: () -> Unit
 ) {
 
     val scaffoldState = rememberScaffoldState()
@@ -133,6 +134,7 @@ fun screen(
                         onDisplayingMenuChanged,
                         onAchievementStateChanged,
                         onToyChanged,
+                        onRequestReview,
                         onAdapt,
                         toy,
                         particleNumber,

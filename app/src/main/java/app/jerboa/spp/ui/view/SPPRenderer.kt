@@ -5,10 +5,7 @@ import android.opengl.GLSurfaceView
 import android.opengl.Matrix
 import android.util.Log
 import app.jerboa.glskeleton.utils.*
-import app.jerboa.spp.ViewModel.COLOUR_MAP
-import app.jerboa.spp.ViewModel.MAX_PARTICLES
-import app.jerboa.spp.ViewModel.PARTICLES_SLIDER_DEFAULT
-import app.jerboa.spp.ViewModel.TOY
+import app.jerboa.spp.ViewModel.*
 import app.jerboa.spp.data.*
 import app.jerboa.spp.utils.*
 import kotlinx.coroutines.CoroutineScope
@@ -26,7 +23,7 @@ import kotlin.random.Random
 import android.opengl.GLES31 as gl3
 
 const val DEBUG: Boolean = false
-const val PERFORMANCE: Boolean = true
+const val PERFORMANCE: Boolean = false
 
 enum class DRAG_ACTION {START, STOP, CONTINUE}
 
@@ -34,6 +31,7 @@ class SPPRenderer(
     private val resolution: Pair<Int,Int>,
     private val onAchievementStateChanged: (Pair<String,Int>) -> Unit,
     private val onToyChanged: (TOY) -> Unit,
+    private val onRequestReview: () -> Unit,
     private val onAdapt: (Float) -> Unit,
     private var particleNumber: Float = PARTICLES_SLIDER_DEFAULT,
     private var allowAdapt: Boolean = true,
@@ -41,6 +39,8 @@ class SPPRenderer(
     ) : GLSurfaceView.Renderer {
 
     private val frameIndependent = true
+
+    private var lastReviewRequest: Long = System.currentTimeMillis()
 
     private val RNG = Random(System.nanoTime())
     private var debugString = ""
@@ -1139,6 +1139,8 @@ class SPPRenderer(
     }
 
     override fun onDrawFrame(p0: GL10?) {
+
+        if (System.currentTimeMillis() - lastReviewRequest > REVIEW_RATE_LIMIT_MILLIS){onRequestReview(); lastReviewRequest = System.currentTimeMillis()}
         debugString = ""
         if (reset){
             initGPUData()

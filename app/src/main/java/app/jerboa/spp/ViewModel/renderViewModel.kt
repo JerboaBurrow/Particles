@@ -26,7 +26,29 @@ enum class TOY {ATTRACTOR,REPELLOR,SPINNER, NOTHING}
 
 enum class SOCIAL {NOTHING, WEB, PLAY, YOUTUBE, GITHUB}
 
+const val REVIEW_RATE_LIMIT_MILLIS = 1000*60*15
+
 class RenderViewModel : ViewModel() {
+
+    // review api
+    private val _canReview = MutableLiveData(true)
+    private val _requestingInAppReview = MutableLiveData(false)
+    val requestingInAppReview: MutableLiveData<Boolean> = _requestingInAppReview
+    private val _lastReviewRequestTime = MutableLiveData<Long>(System.currentTimeMillis())
+
+    fun onRequestingInAppReview(){
+        Log.d("onRequestingInAppReview","called")
+        if (System.currentTimeMillis() - _lastReviewRequestTime.value!! > REVIEW_RATE_LIMIT_MILLIS && _canReview.value!!) {
+            Log.d("onRequestingInAppReview","calling API")
+            _requestingInAppReview.postValue(true)
+            _lastReviewRequestTime.postValue(System.currentTimeMillis())
+        }
+    }
+
+    fun onInAppReviewShown(){
+        _requestingInAppReview.value = false
+        _canReview.value = false
+    }
 
     private val musicPlayer: MediaPlayer = MediaPlayer()
 
