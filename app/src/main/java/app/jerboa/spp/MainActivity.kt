@@ -26,6 +26,10 @@ import com.google.android.gms.games.achievement.Achievement
 import com.google.android.gms.games.achievement.AchievementBuffer
 import com.google.android.gms.oss.licenses.OssLicensesMenuActivity
 import com.google.android.gms.tasks.Task
+import com.google.android.play.core.review.ReviewException
+import com.google.android.play.core.review.ReviewManager
+import com.google.android.play.core.review.ReviewManagerFactory
+import com.google.android.play.core.review.model.ReviewErrorCode
 import java.lang.Integer.min
 import java.util.*
 
@@ -79,6 +83,8 @@ class MainActivity : AppCompatActivity() {
     private var playSuccess = false
 
     private var mediaPlayer = MediaPlayer()
+
+    private lateinit var reviewManager: ReviewManager
 
     private val imageResources: Map<String,Int> = mapOf(
         "logo" to R.drawable.ic_logo,
@@ -264,8 +270,42 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun requestUserReviewPrompt(){
+
+        val request = reviewManager.requestReviewFlow()
+        request.addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                // We got the ReviewInfo object
+                val reviewInfo = task.result
+                val flow = reviewManager.launchReviewFlow(this,reviewInfo)
+                Log.d("reviewManager","flow")
+                flow.addOnCompleteListener {
+                    renderViewModel.onInAppReviewShown()
+                    Log.d("reviewManager","complete: $reviewInfo")
+
+                }
+            } else {
+                // There was some problem, log or handle the error code.
+                @ReviewErrorCode val reviewErrorCode = (task.exception as ReviewException).errorCode
+                Log.e("requestUserReviewPrompt","$reviewErrorCode")
+            }
+        }
+
+        renderViewModel.onInAppReviewShown()
+
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        reviewManager = ReviewManagerFactory.create(this)
+
+        renderViewModel.requestingInAppReview.observe(
+                this, androidx.lifecycle.Observer { if (it){
+                    requestUserReviewPrompt()
+                }
+            }
+        )
 
         val status = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(this)
         if (DEBUG) { Log.d("playServices","$status ${status==ConnectionResult.SUCCESS}") }

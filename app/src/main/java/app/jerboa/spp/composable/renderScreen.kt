@@ -66,7 +66,8 @@ fun renderScreen(
         onRequestingSocial = {renderViewModel.onRequestingSocial(it)},
         onResetTutorial = {renderViewModel.onResetTutorial()},
         onPromptPGS = {renderViewModel.onPromptInstallPGS(it)},
-        onToyChanged = {renderViewModel.onToyChanged(it)}
+        onToyChanged = {renderViewModel.onToyChanged(it)},
+        onRequestReview = {renderViewModel.onRequestingInAppReview()}
     )
 
     if (!dismissedTutorial && (info.firstLaunch || resetTutorial) ){
