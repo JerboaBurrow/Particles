@@ -11,6 +11,10 @@ import app.jerboa.spp.ViewModel.PARTICLES_SLIDER_DEFAULT
 import app.jerboa.spp.ViewModel.TOY
 import app.jerboa.spp.data.*
 import app.jerboa.spp.utils.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.newSingleThreadContext
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.FloatBuffer
@@ -22,6 +26,7 @@ import kotlin.random.Random
 import android.opengl.GLES31 as gl3
 
 const val DEBUG: Boolean = false
+const val PERFORMANCE: Boolean = true
 
 enum class DRAG_ACTION {START, STOP, CONTINUE}
 
@@ -62,10 +67,16 @@ class SPPRenderer(
 
     private var timeSinceLastAdapt = 0f
     private val MAXN = MAX_PARTICLES.toInt()
+    private val MAX_TEX_DIM = ceil(sqrt(MAXN.toDouble())).toInt()
 
-    // possibly will have varying p in future
+    private val particleBuffer = ByteBuffer.allocateDirect((4*MAX_TEX_DIM*MAX_TEX_DIM) * 4).order(ByteOrder.nativeOrder()).asFloatBuffer()
+    private val pBuffer = ByteBuffer.allocateDirect((4*MAX_TEX_DIM*MAX_TEX_DIM) * 4).order(ByteOrder.nativeOrder()).asFloatBuffer()
+    private val qBuffer = ByteBuffer.allocateDirect((4*MAX_TEX_DIM*MAX_TEX_DIM) * 4).order(ByteOrder.nativeOrder()).asFloatBuffer()
+
     private var p = MAXN
     private var newP = MAXN
+    private var generatedParticles = 0
+    private var generating: Boolean = false
     // particle scale, gl_PointSize
     private val scale = 3f
     private val projection: FloatArray = FloatArray(16){0f}
@@ -125,7 +136,7 @@ class SPPRenderer(
     private val rep = FloatArray(16){0f}
     private val spin = FloatArray(16){0f}
 
-    private lateinit var bounds: Pair<Pair<Float,Float>,Pair<Float,Float>>
+    private var bounds: Pair<Pair<Float,Float>,Pair<Float,Float>>
 
     private val fbos = ByteBuffer.allocateDirect(1 * 4).order(ByteOrder.nativeOrder()).asIntBuffer()
     private val drawBuffers = ByteBuffer.allocateDirect(2 * 4).order(ByteOrder.nativeOrder()).asIntBuffer()
@@ -139,7 +150,7 @@ class SPPRenderer(
     private val texBuffer = ByteBuffer.allocateDirect(4 * 4).order(ByteOrder.nativeOrder()).asIntBuffer()
     // texture book keeping
     enum class TextureId {
-        X,Y,PARAM,CMAP,STATS
+        X,Y,PARAM,CMAP
     }
 
     private val Textures: EnumMap<TextureId, Int> = EnumMap(
@@ -174,7 +185,7 @@ class SPPRenderer(
 
     // shader for particle drawing (and vertices)
 
-    private val particleDrawShader = Shaders(
+    private val particleDrawShader = Shader(
         ParticleDrawShaderData().vertexShader,
         ParticleDrawShaderData().fragmentShader,
         name = "ParticleDrawShader"
@@ -184,7 +195,7 @@ class SPPRenderer(
 
     // now for the toys
 
-    private val toyDrawShader = Shaders(
+    private val toyDrawShader = Shader(
         ToyDrawShaderData().vertexShader,
         ToyDrawShaderData().fragmentShader,
         name = "ToyDrawShader"
@@ -193,7 +204,7 @@ class SPPRenderer(
     // compute shader and vertices (note gl es 300 not 310 so not actually a "gl compute shader")
     //    we just "draw" to a quad that happens to also compute wat we need!
 
-    private val computeShader = Shaders(
+    private val computeShader = Shader(
         NielsOdedIntegratorShaderData().vertexShader,
         NielsOdedIntegratorShaderData().fragmentShader,
         name = "ComputeDrawShader"
@@ -446,7 +457,6 @@ class SPPRenderer(
                 val dragDistance2 = dragDelta.x*dragDelta.x + dragDelta.y*dragDelta.y
                 val dragTime = System.currentTimeMillis() - dragStartTime
                 dragStartTime = 0L
-                Log.d("drag stop", "$dragDistance2, ${tapDelta.distance*tapDelta.distance} | $dragTime, ${tapDelta.timeMillis}")
                 if (dragDistance2 < tapDelta.distance*tapDelta.distance || dragTime < tapDelta.timeMillis)
                 {
                     tap(x, y, toyType)
@@ -840,45 +850,144 @@ class SPPRenderer(
 
     }
 
-    fun initGPUData(){
+    /*
+        Generate the particle data once in a couroutine to avoid blocking the main thread so much
+            only occurs once per app launch
+    */
+    @OptIn(DelicateCoroutinesApi::class)
+    fun generate()
+    {
+        if (generating) {return}
+        if (generatedParticles < MAXN) {
+            CoroutineScope(newSingleThreadContext("generate")).launch {
+                val t0 = System.nanoTime()
+                generating = true
+                particleBuffer.flip()
+                particleBuffer.limit(4 * MAX_TEX_DIM * MAX_TEX_DIM)
+                particleBuffer.position(generatedParticles * 4)
+
+                qBuffer.flip()
+                qBuffer.limit(4 * MAX_TEX_DIM * MAX_TEX_DIM)
+                qBuffer.position(generatedParticles * 4)
+
+                pBuffer.flip()
+                pBuffer.limit(4 * MAX_TEX_DIM * MAX_TEX_DIM)
+                pBuffer.position(generatedParticles * 4)
+
+                for (i in generatedParticles + 1 until MAXN) {
+                    val x =
+                        Random.nextFloat() * (bounds.second.first - 2.0f * (bounds.first.first - scale)) + bounds.first.first + scale
+                    val y =
+                        Random.nextFloat() * (bounds.second.second - 2.0f * (bounds.first.second - scale)) + bounds.first.second + scale
+                    val theta = Random.nextFloat() * 2.0f * PI.toFloat()
+                    particleBuffer.put(x)
+                    particleBuffer.put(y)
+                    particleBuffer.put(theta)
+                    particleBuffer.put(nCells * floor(x / dcx) + floor(y / dcy))
+
+                    qBuffer.put(x)
+                    qBuffer.put(y)
+                    qBuffer.put(theta)
+                    qBuffer.put(Random.nextFloat() * DR.toFloat())
+
+                    pBuffer.put(i.toFloat())
+                    pBuffer.put(0f)
+                    pBuffer.put(0f)
+                    pBuffer.put(0f)
+                }
+
+                pBuffer.flip()
+                pBuffer.limit(4 * MAX_TEX_DIM * MAX_TEX_DIM)
+                pBuffer.position(0)
+
+                qBuffer.flip()
+                qBuffer.limit(4 * MAX_TEX_DIM * MAX_TEX_DIM)
+                qBuffer.position(0)
+
+                particleBuffer.flip()
+                particleBuffer.limit(4 * MAX_TEX_DIM * MAX_TEX_DIM)
+                particleBuffer.position(0)
+
+                generatedParticles = MAXN
+
+                generating = false
+
+                if (PERFORMANCE) {
+                    val t = System.nanoTime()-t0
+                    Log.i("Generated", "$generatedParticles in $t ns")
+                }
+
+            }
+        }
+    }
+
+    fun initGPUData() {
+
+        if (generating) {
+            // call blocked, keep reset set to true and return to drawing
+            return
+        }
+
+        if (reset) {
+            p = newP
+            transitionStep = transitionSteps
+            reset = false
+        }
 
         val m = ceil(sqrt(p.toDouble())).toInt()
 
-        val pBuffer = ByteBuffer.allocateDirect((4*m*m) * 4).order(ByteOrder.nativeOrder()).asFloatBuffer()
-        // MAXN randomly initialise particles (within bounds)
-        for (i in 0 until p){
-            val x = Random.nextFloat()*(bounds.second.first-2.0f*(bounds.first.first-scale))+bounds.first.first+scale
-            val y = Random.nextFloat()*(bounds.second.second-2.0f*(bounds.first.second-scale))+bounds.first.second+scale
-            pBuffer.put(x)
-            pBuffer.put(y)
-            pBuffer.put(Random.nextFloat()*2.0f* PI.toFloat())
-            pBuffer.put(nCells*floor(x/dcx)+floor(y/dcy))
-        }
+        // randomly initialise particles (within bounds)
 
-        pBuffer.flip()
-        pBuffer.limit(4 * m * m)
-        // Niels-oded use previous position in the velocity free equations
-        val qBuffer = ByteBuffer.allocateDirect((4*m*m) * 4).order(ByteOrder.nativeOrder()).asFloatBuffer()
-        for (i in 0 until p){
-            qBuffer.put(pBuffer[i*4])
-            qBuffer.put(pBuffer[i*4+1])
-            qBuffer.put(pBuffer[i*4+2])
-            qBuffer.put(Random.nextFloat()*DR.toFloat())
-        }
+        if (generatedParticles < p) {
 
-        qBuffer.flip()
-        qBuffer.limit(4 * m * m)
-        // at the moment just the particle number, but has three spare data points for future
-        val paramBuffer = ByteBuffer.allocateDirect((4*m*m) * 4).order(ByteOrder.nativeOrder()).asFloatBuffer()
-        for (i in 0 until p){
-            paramBuffer.put(i.toFloat())
-            paramBuffer.put(0f)
-            paramBuffer.put(0f)
-            paramBuffer.put(0f)
-        }
+            particleBuffer.flip()
+            particleBuffer.limit(4*MAX_TEX_DIM*MAX_TEX_DIM)
+            particleBuffer.position(generatedParticles*4)
 
-        paramBuffer.flip()
-        paramBuffer.limit(4 * m * m)
+            qBuffer.flip()
+            qBuffer.limit(4*MAX_TEX_DIM*MAX_TEX_DIM)
+            qBuffer.position(generatedParticles*4)
+
+            pBuffer.flip()
+            pBuffer.limit(4*MAX_TEX_DIM*MAX_TEX_DIM)
+            pBuffer.position(generatedParticles*4)
+
+            for (i in generatedParticles+1 until p) {
+                val x =
+                    Random.nextFloat() * (bounds.second.first - 2.0f * (bounds.first.first - scale)) + bounds.first.first + scale
+                val y =
+                    Random.nextFloat() * (bounds.second.second - 2.0f * (bounds.first.second - scale)) + bounds.first.second + scale
+                val theta = Random.nextFloat() * 2.0f * PI.toFloat()
+                particleBuffer.put(x)
+                particleBuffer.put(y)
+                particleBuffer.put(theta)
+                particleBuffer.put(nCells * floor(x / dcx) + floor(y / dcy))
+
+                qBuffer.put(x)
+                qBuffer.put(y)
+                qBuffer.put(theta)
+                qBuffer.put(Random.nextFloat() * DR.toFloat())
+
+                pBuffer.put(i.toFloat())
+                pBuffer.put(0f)
+                pBuffer.put(0f)
+                pBuffer.put(0f)
+            }
+
+            pBuffer.flip()
+            pBuffer.limit(4*MAX_TEX_DIM*MAX_TEX_DIM)
+            pBuffer.position(0)
+
+            qBuffer.flip()
+            qBuffer.limit(4*MAX_TEX_DIM*MAX_TEX_DIM)
+            qBuffer.position(0)
+
+            particleBuffer.flip()
+            particleBuffer.limit(4*MAX_TEX_DIM*MAX_TEX_DIM)
+            particleBuffer.position(0)
+
+            generatedParticles = p
+        }
 
         // delete and recreate texture
         texBuffer.flip()
@@ -896,9 +1005,11 @@ class SPPRenderer(
 
         // instance and pack each texture
 
+        val t1 = System.nanoTime()
+
         // create textures
         initTexture2DRGBA32F(pTex, m)
-        transferToTexture2DRGBA32F(pTex, pBuffer, m)
+        transferToTexture2DRGBA32F(pTex, particleBuffer, m)
 
         if (DEBUG_GL){glError()}
 
@@ -908,7 +1019,10 @@ class SPPRenderer(
         if (DEBUG_GL){glError()}
 
         initTexture2DRGBA32F(paramTex,m)
-        transferToTexture2DRGBA32F(paramTex,paramBuffer,m)
+        transferToTexture2DRGBA32F(paramTex,pBuffer,m)
+
+        // generate rest of particles on new thread
+        generate()
 
         glError("texture setup")
 
@@ -1027,10 +1141,7 @@ class SPPRenderer(
     override fun onDrawFrame(p0: GL10?) {
         debugString = ""
         if (reset){
-            p = newP
-            transitionStep = transitionSteps
             initGPUData()
-            reset=false
         }
         if (recompileDrawShader){compileDrawShader(); recompileDrawShader=false}
 
@@ -1217,7 +1328,9 @@ class SPPRenderer(
         if (frameNumber >= 60){
             frameNumber = 0
             val mu = deltas.sum()/deltas.size
-            println("FPS = $mu")
+            if (PERFORMANCE){
+                Log.i("FPS", "$mu")
+            }
             if (mu < 30.0f){
                 adapt()
             }
@@ -1225,6 +1338,7 @@ class SPPRenderer(
 
         val t4 = System.nanoTime()
         achievements()
+        if(DEBUG){debugString += "achievements time "+"${System.nanoTime()-t4}"}
         if(DEBUG){debugString += "achievements time "+"${System.nanoTime()-t4}"}
         if(DEBUG){debugString += "full time "+ "${System.nanoTime()-t1}"; Log.d("Times",debugString)}
 
