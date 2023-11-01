@@ -53,7 +53,8 @@ fun screen(
     onResetTutorial: () -> Unit,
     onPromptPGS: (Boolean) -> Unit,
     onToyChanged: (TOY) -> Unit,
-    onRequestReview: () -> Unit
+    onRequestReview: () -> Unit,
+    onUpdateClock: () -> Unit
 ) {
 
     val scaffoldState = rememberScaffoldState()
@@ -136,6 +137,7 @@ fun screen(
                         onToyChanged,
                         onRequestReview,
                         onAdapt,
+                        onUpdateClock,
                         toy,
                         particleNumber,
                         allowAdapt,

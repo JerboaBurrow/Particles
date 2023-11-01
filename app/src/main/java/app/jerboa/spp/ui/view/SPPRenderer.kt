@@ -33,6 +33,7 @@ class SPPRenderer(
     private val onToyChanged: (TOY) -> Unit,
     private val onRequestReview: () -> Unit,
     private val onAdapt: (Float) -> Unit,
+    private val onUpdateClock: () -> Unit,
     private var particleNumber: Float = PARTICLES_SLIDER_DEFAULT,
     private var allowAdapt: Boolean = true,
     private var colourMap: COLOUR_MAP = COLOUR_MAP.R1
@@ -41,6 +42,8 @@ class SPPRenderer(
     private val frameIndependent = true
 
     private var lastReviewRequest: Long = System.currentTimeMillis()
+
+    private var begun: Long = System.currentTimeMillis()
 
     private val RNG = Random(System.nanoTime())
     private var debugString = ""
@@ -1328,6 +1331,7 @@ class SPPRenderer(
         deltas[frameNumber] = 1.0f / (delta.toFloat()*1e-9f)
         frameNumber += 1
         if (frameNumber >= 60){
+            onUpdateClock()
             frameNumber = 0
             val mu = deltas.sum()/deltas.size
             if (PERFORMANCE){

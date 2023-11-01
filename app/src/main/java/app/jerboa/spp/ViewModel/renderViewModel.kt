@@ -30,6 +30,31 @@ const val REVIEW_RATE_LIMIT_MILLIS = 1000*60*15
 
 class RenderViewModel : ViewModel() {
 
+    // clock
+    private val _clockTicking = MutableLiveData(true)
+    private val _lastClock = MutableLiveData(System.currentTimeMillis())
+    private val _playTime = MutableLiveData(0L)
+    val playTime: MutableLiveData<Long> = _playTime
+
+    fun stopClock() {
+        _clockTicking.postValue(false)
+    }
+
+    fun startClock() {
+        if (!_clockTicking.value!!) {
+            _clockTicking.postValue(true)
+            _lastClock.postValue(System.currentTimeMillis())
+        }
+    }
+
+    fun onUpdateClock()
+    {
+        if (_clockTicking.value!!) {
+            _playTime.postValue(_playTime.value!! + (System.currentTimeMillis() - _lastClock.value!!))
+        }
+        _lastClock.postValue(System.currentTimeMillis())
+    }
+
     // review api
     private val _canReview = MutableLiveData(true)
     private val _requestingInAppReview = MutableLiveData(false)
