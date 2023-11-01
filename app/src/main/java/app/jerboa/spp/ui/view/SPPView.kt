@@ -24,6 +24,7 @@ class SPPView (
     private val onToyChanged: (TOY) -> Unit,
     private val onRequestReview: () -> Unit,
     private val onAdapt: (Float) -> Unit,
+    private val onUpdateClock: () -> Unit,
     var placingToy: TOY = TOY.ATTRACTOR,
     var particleNumber: Float = PARTICLES_SLIDER_DEFAULT,
     var allowAdapt: Boolean = true,
@@ -36,6 +37,7 @@ class SPPView (
         onToyChanged,
         onRequestReview,
         onAdapt,
+        onUpdateClock,
         particleNumber,
         allowAdapt,
         colourMap
@@ -142,7 +144,7 @@ class SPPView (
         return true
     }
 
-    override fun onScroll(p0: MotionEvent, p1: MotionEvent, p2: Float, p3: Float): Boolean {
+    override fun onScroll(e1: MotionEvent?, p0: MotionEvent, p2: Float, p3: Float): Boolean {
         return true
     }
 
@@ -150,7 +152,7 @@ class SPPView (
         return
     }
 
-    override fun onFling(p0: MotionEvent, p1: MotionEvent, p2: Float, p3: Float): Boolean {
+    override fun onFling(e1: MotionEvent?, p0: MotionEvent, p2: Float, p3: Float): Boolean {
         return true
     }
 
