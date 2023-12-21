@@ -34,6 +34,7 @@ fun renderScreen(
     val dismissedTutorial: Boolean by renderViewModel.dismissedTutorial.observeAsState(initial = false)
     val promptPGS: Boolean by renderViewModel.promptInstallPGS.observeAsState(initial = false)
     val dismissedNews: Boolean by renderViewModel.dismissedNews.observeAsState(initial = false)
+    val paused: Boolean by renderViewModel.paused.observeAsState(initial = false)
 
     screen(
         displayingMenu,
@@ -44,6 +45,7 @@ fun renderScreen(
         allowAdapt,
         colourMap,
         playingMusic,
+        paused,
         adaptMsg,
         promptPGS,
         resolution,
@@ -68,7 +70,8 @@ fun renderScreen(
         onPromptPGS = {renderViewModel.onPromptInstallPGS(it)},
         onToyChanged = {renderViewModel.onToyChanged(it)},
         onRequestReview = {renderViewModel.onRequestingInAppReview()},
-        onUpdateClock = {renderViewModel.onUpdateClock()}
+        onUpdateClock = {renderViewModel.onUpdateClock()},
+        onPause = {renderViewModel.onPause()}
     )
 
     if (!dismissedTutorial && (info.firstLaunch || resetTutorial) ){

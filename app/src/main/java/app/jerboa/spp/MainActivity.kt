@@ -121,7 +121,10 @@ class MainActivity : AppCompatActivity() {
         "web" to R.drawable.weblink_icon_,
         "github" to R.drawable.github_mark_white,
         "tutorial" to R.drawable.tutorial,
-        "news" to R.drawable.news
+        "news" to R.drawable.news,
+        "pause" to R.drawable.pause,
+        "play" to R.drawable.play_button,
+        "freezer" to R.drawable.freezer
     )
 
     private val rcAchievementUI = 9003
@@ -434,6 +437,7 @@ class MainActivity : AppCompatActivity() {
                     SOCIAL.PLAY -> playRate()
                     SOCIAL.YOUTUBE -> youtube()
                     SOCIAL.GITHUB -> github()
+                    else -> {}
                 }
             }
         )
@@ -514,9 +518,11 @@ class MainActivity : AppCompatActivity() {
 
         var showNews = false
         if (!firstLaunch) {
-            if (!prefs.contains("news-28-07-23")) {
+            Log.d("launch", "not first")
+            if (!prefs.contains("news-21-12-23")) {
+                Log.d("launch", "show news")
                 val prefsEdit = prefs.edit()
-                prefsEdit.putBoolean("news-28-07-23", true)
+                prefsEdit.putBoolean("news-21-12-23", true)
                 prefsEdit.apply()
                 showNews = true
             }

@@ -22,13 +22,23 @@ enum class COLOUR_MAP {
 
 enum class MUSIC {FORREST, RAIN, NOTHING}
 
-enum class TOY {ATTRACTOR,REPELLOR,SPINNER, NOTHING}
+enum class TOY {ATTRACTOR,REPELLOR,SPINNER,FREEZER, NOTHING}
 
 enum class SOCIAL {NOTHING, WEB, PLAY, YOUTUBE, GITHUB}
 
-const val REVIEW_RATE_LIMIT_MILLIS = 1000*60*15
+const val REVIEW_RATE_LIMIT_MILLIS = 1000*60*10
 
 class RenderViewModel : ViewModel() {
+
+    // pausing
+
+    private val _paused = MutableLiveData(false)
+    val paused: MutableLiveData<Boolean> = _paused
+
+    fun onPause()
+    {
+        _paused.postValue(!_paused.value!!)
+    }
 
     // clock
     private val _clockTicking = MutableLiveData(true)

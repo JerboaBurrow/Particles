@@ -103,18 +103,20 @@ data class ToyDrawShaderData(
             "in vec3 a_position;\n"+
             "out vec2 centre; out vec4 o_colour; flat out float time; flat out int spins;\n"+
             "uniform int na; uniform int nr; uniform mat4 attr; uniform mat4 rep;\n"+
-            "uniform int ns; uniform mat4 spin;\n"+
+            "uniform int ns; uniform mat4 spin; uniform int nf; uniform mat4 freeze;\n"+
             "uniform float scale; uniform vec2 res; uniform mat4 proj;\n"+
             "uniform float t; uniform float contTime; uniform float T; uniform float alpha;\n"+
             "void main(void){\n"+
             "   float a_offset = float(gl_InstanceID);\n"+
-            "   int a = int(floor(a_offset)); float x = 0.0; float y = 0.0; float drawa = 0.0; float drawr = 0.0; float draws = 0.0;\n"+
+            "   int a = int(floor(a_offset)); float x = 0.0; float y = 0.0; float drawa = 0.0; float drawr = 0.0; float draws = 0.0; float drawf = 0.0;\n"+
             "   if (a < na){ int col = int(floor(float(a)/2.0)); int o = int(2.0*mod(float(a),2.0));\n"+
             "        x = attr[col][0+o]; y = attr[col][1+o]; drawa = 0.33;}\n"+
             "   if (a >= 8 && a < 8+nr){ a = a-8; int col = int(floor(float(a)/2.0)); int o = int(2.0*mod(float(a),2.0));\n"+
             "        x = rep[col][0+o]; y = rep[col][1+o]; drawr = 0.33;}\n"+
             "   if (a >= 16 && a < 16+ns){ a = a-16; int col = int(floor(float(a)/2.0)); int o = int(2.0*mod(float(a),2.0));\n"+
             "        x = spin[col][0+o]; y = spin[col][1+o]; draws = 0.33;}\n"+
+            "   if (a >= 24 && a < 24+nf){ a = a-24; int col = int(floor(float(a)/2.0)); int o = int(2.0*mod(float(a),2.0));\n"+
+            "        x = freeze[col][0+o]; y = freeze[col][1+o]; drawf = 0.33;}\n"+
             "   centre = vec2(x,y);\n"+
             "   vec4 pos = proj*vec4(centre.xy,0.0,1.0);\n"+
             "   gl_Position = vec4(a_position.x+pos.x,a_position.y+pos.y,0.0,1.0);\n"+
@@ -123,6 +125,7 @@ data class ToyDrawShaderData(
             "   if (drawr > 0.0 ){ o_colour = vec4(1.0,0.0,0.0,alpha); time = t/T; gl_PointSize = time*scale;}"+
             "   else if (drawa > 0.0){ o_colour = vec4(0.0,1.0,0.0,alpha); time = 1.0-t/T; gl_PointSize = time*scale;}\n"+
             "   else if (draws > 0.0){ o_colour = vec4(199.0/255.0,203.0/255.0,1.0,alpha); spins=1; time = contTime/T; gl_PointSize = scale;}\n"+
+            "   else if (drawf > 0.0){ o_colour = vec4(204.0/255.0,224.0/255.0,1.0,1.0); time = contTime/T; gl_PointSize = scale;}\n"+
             "}",
     override val fragmentShader: String = "#version 300 es\n"+
             "precision lowp float;\n"+
@@ -191,7 +194,7 @@ data class NielsOdedIntegratorShaderData(
                 "in vec2 o_texCoords;\n"+
                 "layout(location = 0) out vec4 newP; layout(location = 1) out vec4 newQ;\n"+
                 "uniform int na; uniform int nr; uniform mat4 attr; uniform mat4 rep;\n"+
-                "uniform int ns; uniform mat4 spin;\n"+
+                "uniform int ns; uniform mat4 spin; uniform int nf; uniform mat4 freeze;\n"+
                 "uniform vec2 res; uniform float softMaxRadialDistance;\n"+
                 "uniform highp sampler2D pTex;\n"+ // x,y,theta,cell
                 "uniform highp sampler2D qTex;\n"+ // xp,yp,thetap,wp
@@ -208,6 +211,7 @@ data class NielsOdedIntegratorShaderData(
                 "    vec2 r = vec2(res.x/2.0-p.x,res.y/2.0-p.y); float d = r.x*r.x+r.y*r.y;\n"+
                 "    vec2 f = (100.0+clamp(d,0.0,100.0))*vec2(cos(p.z),sin(p.z));\n"+
                 "    bool allowRepulsion = d < softMaxRadialDistance*softMaxRadialDistance/3.0;\n"+
+                "    bool frozen = false;\n"+
                 "    float torque = 0.0;\n"+
                 "    for (int j = 0; j < 8; j++){\n"+
                 "       int col = int(floor(float(j)/2.0)); int o = int(2.0*mod(float(j),2.0));\n"+
@@ -227,6 +231,11 @@ data class NielsOdedIntegratorShaderData(
                 "       vec2 r = vec2(spin[col][0+o]-p.x,spin[col][1+o]-p.y);\n"+
                 "       float d = r.x*r.x+r.y*r.y;\n"+
                 "       if (d > 3.0){torque -= 2500.0*min(1.0/sqrt(d),10.0);}}\n"+
+                //      FREEZERS
+                "       if (j < nf){\n"+
+                "       vec2 r = vec2(freeze[col][0+o]-p.x,freeze[col][1+o]-p.y);\n"+
+                "       float d = r.x*r.x+r.y*r.y;\n"+
+                "       if (d < 30000.0){frozen = true;}}\n"+
                 "    \n}"+
                 "    float x = p.x; float y = p.y; float theta = p.z;\n"+
                 "    float xp = q.x; float yp = q.y; float thetap = q.z;\n"+
@@ -234,6 +243,7 @@ data class NielsOdedIntegratorShaderData(
                 "    float newY = 2.0*bt * y - at*yp + alpha*f.y;\n"+
                 "    float w = DR*wiener(param.x/fn+seed,seed);\n"+
                 "    float newTheta = 2.0*br * theta - ar*thetap + beta*torque + gamma*(w+q.w);\n"+
+                "    if (frozen){ newX = x; newY = y; newTheta = theta; }\n"+
                 //"    float vx = (newX-x)/dt; float vy = (newY-y)/dt; bool b = false;\n"+
                 //"    float s = log((vx*vx+vy*vy)+1.0)/1.0;\n"+
                 "    float cross = (cos(newTheta)*r.y-sin(newTheta)*r.x)/sqrt(d);\n"+
