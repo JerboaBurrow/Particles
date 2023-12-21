@@ -877,7 +877,14 @@ class SPPRenderer(
                 pBuffer.limit(4 * MAX_TEX_DIM * MAX_TEX_DIM)
                 pBuffer.position(generatedParticles * 4)
 
-                for (i in generatedParticles + 1 until MAXN) {
+                for (i in generatedParticles + 1 until min(MAXN,MAX_TEX_DIM*MAX_TEX_DIM)) {
+
+                    if (particleBuffer.remaining() < 4 || qBuffer.remaining() < 4 || pBuffer.remaining() < 4)
+                    {
+                        // this should not happen but it seems to on some devices...
+                        break
+                    }
+
                     val x =
                         Random.nextFloat() * (bounds.second.first - 2.0f * (bounds.first.first - scale)) + bounds.first.first + scale
                     val y =
