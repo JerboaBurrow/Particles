@@ -11,7 +11,7 @@ on:
 jobs:
 
   build:
-      runs-on: ubuntu-20.04
+      runs-on: ubuntu-latest
 
       steps:
       - uses: actions/checkout@v3
@@ -28,9 +28,9 @@ jobs:
           mkdir cmdline-tools
           mv latest cmdline-tools
           yes | ./cmdline-tools/latest/bin/sdkmanager --licenses
-          ./cmdline-tools/latest/bin/sdkmanager --install "system-images;android-33;google_apis;x86_64"
-          ./cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-33"
-          echo no | ./cmdline-tools/latest/bin/avdmanager create avd --name android33 --package "system-images;android-33;google_apis;x86_64"
+          ./cmdline-tools/latest/bin/sdkmanager --install "system-images;android-34;google_apis;x86_64"
+          ./cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-34"
+          echo no | ./cmdline-tools/latest/bin/avdmanager create avd --name android34 --package "system-images;android-34;google_apis;x86_64"
 
       - name: linux-build
         run: |
