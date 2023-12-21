@@ -464,7 +464,7 @@ class SPPRenderer(
                             dragPlacedToy = true
                         }
                         TOY.FREEZER -> {
-                            if (spinners.size < maxAorR){
+                            if (freezers.size < maxAorR){
                                 freezers.add(Pair(wx, wy))
                             }
                             draggedToy = Pair(TOY.FREEZER, freezers.size-1)

@@ -125,7 +125,7 @@ data class ToyDrawShaderData(
             "   if (drawr > 0.0 ){ o_colour = vec4(1.0,0.0,0.0,alpha); time = t/T; gl_PointSize = time*scale;}"+
             "   else if (drawa > 0.0){ o_colour = vec4(0.0,1.0,0.0,alpha); time = 1.0-t/T; gl_PointSize = time*scale;}\n"+
             "   else if (draws > 0.0){ o_colour = vec4(199.0/255.0,203.0/255.0,1.0,alpha); spins=1; time = contTime/T; gl_PointSize = scale;}\n"+
-            "   else if (drawf > 0.0){ o_colour = vec4(204.0/255.0,224.0/255.0,1.0,alpha); time = contTime/T; gl_PointSize = scale;}\n"+
+            "   else if (drawf > 0.0){ o_colour = vec4(204.0/255.0,224.0/255.0,1.0,1.0); time = contTime/T; gl_PointSize = scale;}\n"+
             "}",
     override val fragmentShader: String = "#version 300 es\n"+
             "precision lowp float;\n"+
@@ -235,7 +235,7 @@ data class NielsOdedIntegratorShaderData(
                 "       if (j < nf){\n"+
                 "       vec2 r = vec2(freeze[col][0+o]-p.x,freeze[col][1+o]-p.y);\n"+
                 "       float d = r.x*r.x+r.y*r.y;\n"+
-                "       if (d < 1000.0){frozen = true;}}\n"+
+                "       if (d < 30000.0){frozen = true;}}\n"+
                 "    \n}"+
                 "    float x = p.x; float y = p.y; float theta = p.z;\n"+
                 "    float xp = q.x; float yp = q.y; float thetap = q.z;\n"+

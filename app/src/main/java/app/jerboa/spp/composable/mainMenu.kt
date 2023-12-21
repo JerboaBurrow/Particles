@@ -4,6 +4,7 @@ import androidx.compose.animation.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
@@ -62,8 +63,37 @@ fun menu(
             modifier = Modifier.fillMaxWidth()
         ) {
             colourMapMenu(images,menuItemHeight,onSelectColourMap)
+
             Box(
-                androidx.compose.ui.Modifier
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height((menuItemHeight).dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().fillMaxHeight(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    IconButton(onClick = { onRequestPlayServices() }) {
+                        Image(
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .size(menuItemHeight.dp)
+                                .alpha(
+                                    if (!info.playGamesServices) {
+                                        0.66f
+                                    } else {
+                                        1f
+                                    }
+                                ),
+                            painter = painterResource(id = images["play-controller"]!!),
+                            contentDescription = "play"
+                        )
+                    }
+                }
+            }
+            Box(
+                Modifier
                     .width(width75Percent.dp)
                     .height(height10Percent.dp)
                     .background(
@@ -79,7 +109,7 @@ fun menu(
                 )
                 {
                     Row(
-                        modifier = androidx.compose.ui.Modifier.width(width75Percent.dp),
+                        modifier = Modifier.width(width75Percent.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
@@ -88,7 +118,7 @@ fun menu(
                                 modifier = Modifier
                                     .fillMaxHeight()
                                     .size(menuItemHeight.dp)
-                                    .padding(start = 10.dp),
+                                    .padding(2.dp),
                                 painter = painterResource(id = images["attractor"]!!),
                                 contentDescription = "Image"
                             )
@@ -98,7 +128,7 @@ fun menu(
                                 modifier = Modifier
                                     .fillMaxHeight()
                                     .size(menuItemHeight.dp)
-                                    .padding(end = 10.dp),
+                                    .padding(2.dp),
                                 painter = painterResource(id = images["repeller"]!!),
                                 contentDescription = "Image"
                             )
@@ -108,8 +138,18 @@ fun menu(
                                 modifier = Modifier
                                     .fillMaxHeight()
                                     .size(menuItemHeight.dp)
-                                    .padding(end = 10.dp),
+                                    .padding(2.dp),
                                 painter = painterResource(id = images["spinner"]!!),
+                                contentDescription = "Image"
+                            )
+                        }
+                        IconButton(onClick = { onAttractorChanged(TOY.FREEZER) }) {
+                            Image(
+                                modifier = Modifier
+                                    .fillMaxHeight()
+                                    .size(menuItemHeight.dp)
+                                    .padding(2.dp),
+                                painter = painterResource(id = images["freezer"]!!),
                                 contentDescription = "Image"
                             )
                         }
@@ -117,25 +157,10 @@ fun menu(
                             Image(
                                 modifier = Modifier
                                     .fillMaxHeight()
-                                    .size(menuItemHeight.dp),
+                                    .size(menuItemHeight.dp)
+                                    .padding(2.dp),
                                 painter = painterResource(id = images["about"]!!),
                                 contentDescription = "Image"
-                            )
-                        }
-                        IconButton(onClick = { onRequestPlayServices() }) {
-                            Image(
-                                modifier = Modifier
-                                    .fillMaxHeight()
-                                    .size(menuItemHeight.dp)
-                                    .alpha(
-                                        if (!info.playGamesServices) {
-                                            0.33f
-                                        } else {
-                                            1f
-                                        }
-                                    ),
-                                painter = painterResource(id = images["play-controller"]!!),
-                                contentDescription = "play"
                             )
                         }
                     }
@@ -160,7 +185,7 @@ fun menu(
                 },
                 valueRange = -3.0f..0.0f,
                 steps = 100,
-                modifier = androidx.compose.ui.Modifier
+                modifier = Modifier
                     .width(width75Percent.dp * 0.75f)
                     .background(color = Color(1, 1, 1, 1))
             )
