@@ -41,7 +41,7 @@ jobs:
           ./gradlew assembleDebugUnsigned
 
       - name: test
-        run: ./gradlew testDebugUnsignedUnitTest
+        run: export JAVA_HOME="/usr/lib/jvm/temurin-17-jdk-amd64" && ./gradlew testDebugUnsignedUnitTest
 
   with-proguard:
       runs-on: ubuntu-latest
