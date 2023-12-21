@@ -108,6 +108,7 @@ fun screen(
                         SnackbarResult.ActionPerformed -> {
                             onAllowAdaptChanged()
                         }
+                        else -> {}
                     }
                 }
             }
@@ -123,6 +124,7 @@ fun screen(
                         SnackbarResult.ActionPerformed -> {
                             onPromptPGS(true)
                         }
+                        else -> {}
                     }
                 }
                 onPromptPGS(false)

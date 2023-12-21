@@ -434,6 +434,7 @@ class MainActivity : AppCompatActivity() {
                     SOCIAL.PLAY -> playRate()
                     SOCIAL.YOUTUBE -> youtube()
                     SOCIAL.GITHUB -> github()
+                    else -> {}
                 }
             }
         )
