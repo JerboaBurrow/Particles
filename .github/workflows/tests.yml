@@ -36,6 +36,8 @@ jobs:
 
       - name: linux-build
         run: |
+          ls /usr/lib/jvm/
+          export JAVA_HOME="/usr/lib/jvm/java-17.0.0-openjdk-amd64"
           ./gradlew assembleDebugUnsigned
 
       - name: test
