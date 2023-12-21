@@ -34,10 +34,11 @@ jobs:
 
       - name: linux-build
         run: |
+          export JAVA_HOME="/usr/lib/jvm/temurin-17-jdk-amd64"
           ./gradlew assembleDebugUnsigned
 
       - name: test
-        run: ./gradlew testDebugUnsignedUnitTest
+        run: export JAVA_HOME="/usr/lib/jvm/temurin-17-jdk-amd64" && ./gradlew testDebugUnsignedUnitTest
 
       - name: create release
         id: createRelease
