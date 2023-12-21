@@ -29,6 +29,7 @@ fun menuPrompt(
     displayingMenu: Boolean,
     displayingSound: Boolean,
     menuItemHeight: Double,
+    pasued: Boolean,
     onDisplayingMenuChanged: (Boolean) -> Unit,
     onDisplayingMusicChanged: () -> Unit,
     onMusicSelected: (MUSIC) -> Unit,
@@ -195,12 +196,30 @@ fun menuPrompt(
                 .align(alignment = Alignment.BottomCenter)
         ) {
             AnimatedVisibility(
-                visible = true,
+                visible = !pasued && !displayingMenu,
                 enter = fadeIn(),
                 exit = fadeOut()
             ) {
                 Image(
                     painter = painterResource(id = images["pause"]!!),
+                    contentDescription = "menu",
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clickable(
+                            interactionSource = MutableInteractionSource(),
+                            indication = null,
+                            onClick = { onPause(); }
+                        )
+                        .alpha(0.66f)
+                )
+            }
+            AnimatedVisibility(
+                visible = pasued && !displayingMenu,
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
+                Image(
+                    painter = painterResource(id = images["play"]!!),
                     contentDescription = "menu",
                     modifier = Modifier
                         .fillMaxSize()

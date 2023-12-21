@@ -166,7 +166,7 @@ fun screen(
                 onRequestingSocial,
                 onResetTutorial
             )
-            menuPrompt(images,displayingMenu,displayingSound,menuItemHeight,onDisplayingMenuChanged,onDisplayingMusicChanged,onMusicSelected, onPause)
+            menuPrompt(images,displayingMenu,displayingSound,menuItemHeight,paused,onDisplayingMenuChanged,onDisplayingMusicChanged,onMusicSelected, onPause)
         }
     }
 }

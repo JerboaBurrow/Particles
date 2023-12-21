@@ -2,13 +2,16 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   width="35.189587mm"
-   height="22.48958mm"
-   viewBox="0 0 35.189587 22.48958"
+   width="30.618286mm"
+   height="33.508568mm"
+   viewBox="0 0 30.618286 33.508568"
    version="1.1"
    id="svg8"
    inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)"
-   sodipodi:docname="pause.svg"
+   sodipodi:docname="play-button.svg"
+   inkscape:export-filename="/media/harvey/ExtraFiles/Jerboa/art/play.png"
+   inkscape:export-xdpi="128"
+   inkscape:export-ydpi="128"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
@@ -25,9 +28,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1.979899"
-     inkscape:cx="49.750013"
-     inkscape:cy="60.861691"
+     inkscape:zoom="4.5057299"
+     inkscape:cx="42.945317"
+     inkscape:cy="75.348502"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -56,22 +59,22 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(-27.401837,-27.291569)">
-    <rect
-       style="fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:0.845475;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:stroke fill markers"
-       id="rect815"
-       width="21.644102"
-       height="2.7055128"
-       x="-49.35841"
-       y="40.635258"
-       transform="rotate(-90)" />
-    <rect
-       style="fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:0.845;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:stroke fill markers"
-       id="rect815-5-4"
-       width="21.644102"
-       height="2.7055128"
-       x="-49.35841"
-       y="48.282303"
-       transform="rotate(-90)" />
+     transform="translate(-3.1766286,4.4073639)">
+    <path
+       sodipodi:type="star"
+       style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.85;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="path821"
+       sodipodi:sides="3"
+       sodipodi:cx="15.371923"
+       sodipodi:cy="12.346921"
+       sodipodi:r1="12.456588"
+       sodipodi:r2="6.2282948"
+       sodipodi:arg1="0"
+       sodipodi:arg2="1.0471976"
+       inkscape:flatsided="false"
+       inkscape:rounded="0"
+       inkscape:randomized="0"
+       d="m 27.828511,12.346921 -9.34244,5.393862 -9.3424414,5.393859 -1e-6,-10.787721 1e-6,-10.7877215 9.3424414,5.3938601 z"
+       inkscape:transform-center-x="-3.1141478" />
   </g>
 </svg>
