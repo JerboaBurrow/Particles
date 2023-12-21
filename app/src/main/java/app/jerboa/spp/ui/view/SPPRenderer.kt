@@ -1372,7 +1372,7 @@ class SPPRenderer(
         if (DEBUG_GL){glError()}
 
         // draw the toys
-        gl3.glDrawArraysInstanced(gl3.GL_POINTS, 0, 1, 24)
+        gl3.glDrawArraysInstanced(gl3.GL_POINTS, 0, 1, 32)
         if (DEBUG_GL){glError()}
 
         if(DEBUG){debugString += "draw and query time "+"${System.nanoTime()-t3}"}
