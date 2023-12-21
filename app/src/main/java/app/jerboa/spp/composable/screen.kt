@@ -30,6 +30,7 @@ fun screen(
     allowAdapt: Boolean,
     colourMap: COLOUR_MAP,
     playingMusic: MUSIC,
+    paused: Boolean,
     adaptMsg: Boolean,
     promptPGS: Boolean,
     resolution: Pair<Int,Int>,
@@ -54,7 +55,8 @@ fun screen(
     onPromptPGS: (Boolean) -> Unit,
     onToyChanged: (TOY) -> Unit,
     onRequestReview: () -> Unit,
-    onUpdateClock: () -> Unit
+    onUpdateClock: () -> Unit,
+    onPause: () -> Unit
 ) {
 
     val scaffoldState = rememberScaffoldState()
@@ -152,6 +154,7 @@ fun screen(
                     view.setParticleNumber(particleNumber)
                     view.setAllowAdapt(allowAdapt)
                     view.setColourMap(colourMap)
+                    view.pause(paused)
                 }
             )
             about(
@@ -163,7 +166,7 @@ fun screen(
                 onRequestingSocial,
                 onResetTutorial
             )
-            menuPrompt(images,displayingMenu,displayingSound,menuItemHeight,onDisplayingMenuChanged,onDisplayingMusicChanged,onMusicSelected)
+            menuPrompt(images,displayingMenu,displayingSound,menuItemHeight,onDisplayingMenuChanged,onDisplayingMusicChanged,onMusicSelected, onPause)
         }
     }
 }

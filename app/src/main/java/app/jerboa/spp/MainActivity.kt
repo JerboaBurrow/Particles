@@ -121,7 +121,8 @@ class MainActivity : AppCompatActivity() {
         "web" to R.drawable.weblink_icon_,
         "github" to R.drawable.github_mark_white,
         "tutorial" to R.drawable.tutorial,
-        "news" to R.drawable.news
+        "news" to R.drawable.news,
+        "pause" to R.drawable.pause
     )
 
     private val rcAchievementUI = 9003
