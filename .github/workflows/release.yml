@@ -58,7 +58,7 @@ jobs:
         with:
             upload_url: ${{ steps.createRelease.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
             asset_path: app/release/app-release.aab
-            asset_name: Digiduce
+            asset_name: Particles
             asset_content_type: application/zip
             retention-days: 30
 
