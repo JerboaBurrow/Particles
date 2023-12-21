@@ -216,6 +216,8 @@ class SPPRenderer(
     private val computeVerts: FloatBuffer
     private val computeTexCoords: FloatBuffer
 
+    private var paused: Boolean = false
+
     init {
 
         Matrix.orthoM(projection,0,0f,resolution.first.toFloat(),0f,resolution.second.toFloat(),0.0f,100f)
@@ -269,6 +271,11 @@ class SPPRenderer(
         )
         computeTexCoords.flip()
         computeTexCoords.limit(6 * 2)
+    }
+
+    fun pause(v: Boolean)
+    {
+        paused = v
     }
 
     private fun achievements(){
@@ -1357,7 +1364,12 @@ class SPPRenderer(
 
     }
 
-    fun step(delta: Float){
+    private fun step(delta: Float){
+
+        if (paused)
+        {
+            return
+        }
 
         if (frameIndependent){
             updateMotionParams(delta)

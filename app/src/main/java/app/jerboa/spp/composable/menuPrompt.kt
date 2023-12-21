@@ -31,11 +31,14 @@ fun menuPrompt(
     menuItemHeight: Double,
     onDisplayingMenuChanged: (Boolean) -> Unit,
     onDisplayingMusicChanged: () -> Unit,
-    onMusicSelected: (MUSIC) -> Unit
+    onMusicSelected: (MUSIC) -> Unit,
+    onPause: () -> Unit
 ){
 
+    val fadeAlpha = 0.33f
+
     val alphaM1: Float by animateFloatAsState(
-        targetValue = if (!displayingMenu) 0.66f else 1.0f,
+        targetValue = if (!displayingMenu) fadeAlpha else 1.0f,
         animationSpec = tween(
             durationMillis = 500,
             easing = LinearEasing,
@@ -43,7 +46,7 @@ fun menuPrompt(
     )
 
     val alphaM2: Float by animateFloatAsState(
-        targetValue = if (displayingMenu) 0.66f else 1.0f,
+        targetValue = if (displayingMenu) fadeAlpha else 1.0f,
         animationSpec = tween(
             durationMillis = 500,
             easing = LinearEasing,
@@ -51,7 +54,7 @@ fun menuPrompt(
     )
 
     val alphaS1: Float by animateFloatAsState(
-        targetValue = if (!displayingSound) 0.66f else 1.0f,
+        targetValue = if (!displayingSound) fadeAlpha else 1.0f,
         animationSpec = tween(
             durationMillis = 500,
             easing = LinearEasing,
@@ -59,7 +62,7 @@ fun menuPrompt(
     )
 
     val alphaS2: Float by animateFloatAsState(
-        targetValue = if (displayingSound) 0.66f else 1.0f,
+        targetValue = if (displayingSound) fadeAlpha else 1.0f,
         animationSpec = tween(
             durationMillis = 500,
             easing = LinearEasing,
@@ -182,6 +185,32 @@ fun menuPrompt(
                             .alpha(alphaS2)
                     )
                 }
+            }
+        }
+        Box(
+            modifier = Modifier
+                .width(menuItemHeight.dp)
+                .height((menuItemHeight * 2.0).dp)
+                .padding((menuItemHeight * 0.1).dp)
+                .align(alignment = Alignment.BottomCenter)
+        ) {
+            AnimatedVisibility(
+                visible = true,
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
+                Image(
+                    painter = painterResource(id = images["pause"]!!),
+                    contentDescription = "menu",
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clickable(
+                            interactionSource = MutableInteractionSource(),
+                            indication = null,
+                            onClick = { onPause(); }
+                        )
+                        .alpha(0.66f)
+                )
             }
         }
         Box(

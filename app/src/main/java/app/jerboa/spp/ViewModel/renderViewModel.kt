@@ -30,6 +30,16 @@ const val REVIEW_RATE_LIMIT_MILLIS = 1000*60*15
 
 class RenderViewModel : ViewModel() {
 
+    // pausing
+
+    private val _paused = MutableLiveData(false)
+    val paused: MutableLiveData<Boolean> = _paused
+
+    fun onPause()
+    {
+        _paused.postValue(!_paused.value!!)
+    }
+
     // clock
     private val _clockTicking = MutableLiveData(true)
     private val _lastClock = MutableLiveData(System.currentTimeMillis())

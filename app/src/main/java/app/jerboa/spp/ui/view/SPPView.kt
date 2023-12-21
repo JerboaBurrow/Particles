@@ -72,6 +72,11 @@ class SPPView (
         renderer.setColourMap(v)
     }
 
+    fun pause(v: Boolean)
+    {
+        renderer.pause(v)
+    }
+
     override fun onResume() {
         super.onResume()
     }
