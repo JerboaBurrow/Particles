@@ -35,17 +35,21 @@ fun renderScreen(
     val promptPGS: Boolean by renderViewModel.promptInstallPGS.observeAsState(initial = false)
     val dismissedNews: Boolean by renderViewModel.dismissedNews.observeAsState(initial = false)
     val paused: Boolean by renderViewModel.paused.observeAsState(initial = false)
+    val speed: Float by renderViewModel.speed.observeAsState(initial = 1.0f)
+    val playSuccess: Boolean by renderViewModel.playSuccess.observeAsState(initial = false)
 
     screen(
         displayingMenu,
         displayingSound,
         displayingAbout,
+        playSuccess,
         toy,
         particleNumber,
         allowAdapt,
         colourMap,
         playingMusic,
         paused,
+        speed,
         adaptMsg,
         promptPGS,
         resolution,
@@ -71,7 +75,8 @@ fun renderScreen(
         onToyChanged = {renderViewModel.onToyChanged(it)},
         onRequestReview = {renderViewModel.onRequestingInAppReview()},
         onUpdateClock = {renderViewModel.onUpdateClock()},
-        onPause = {renderViewModel.onPause()}
+        onPause = {renderViewModel.onPause()},
+        onSpeedChanged = {renderViewModel.onSpeedChanged(it)}
     )
 
     if (!dismissedTutorial && (info.firstLaunch || resetTutorial) ){

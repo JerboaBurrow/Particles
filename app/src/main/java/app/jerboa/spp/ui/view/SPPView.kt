@@ -77,6 +77,11 @@ class SPPView (
         renderer.pause(v)
     }
 
+    fun setSpeed(v: Float)
+    {
+        renderer.setSpeed(v)
+    }
+
     override fun onResume() {
         super.onResume()
     }
