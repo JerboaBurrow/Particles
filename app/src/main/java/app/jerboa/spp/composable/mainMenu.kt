@@ -19,17 +19,22 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import app.jerboa.spp.AppInfo
 import app.jerboa.spp.ViewModel.COLOUR_MAP
+import app.jerboa.spp.ViewModel.MAX_LOG_SPEED
 import app.jerboa.spp.ViewModel.MAX_PARTICLES
 import app.jerboa.spp.ViewModel.TOY
 import kotlin.math.ceil
 import kotlin.math.log10
 import kotlin.math.pow
+import kotlin.math.round
+import kotlin.math.roundToLong
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun menu(
     displayingMenu: Boolean,
+    playSuccess: Boolean,
     particleNumber: Float,
+    speed: Float,
     width75Percent: Double,
     height10Percent: Double,
     menuItemHeight: Double,
@@ -39,10 +44,15 @@ fun menu(
     onAttractorChanged: (TOY) -> Unit,
     onRequestPlayServices: () -> Unit,
     onParticleNumberChanged: (Float) -> Unit,
-    onSelectColourMap: (COLOUR_MAP) -> Unit
+    onSelectColourMap: (COLOUR_MAP) -> Unit,
+    onSpeedChanged: (Float) -> Unit
 ) {
     var particleSliderValue by remember {
-        mutableStateOf(log10(particleNumber))
+        mutableFloatStateOf(log10(particleNumber))
+    }
+
+    var speedSliderValue by remember {
+        mutableFloatStateOf(log10(speed))
     }
 
     AnimatedVisibility(
@@ -53,7 +63,7 @@ fun menu(
         ),
         exit = slideOutVertically(
             // Exits by sliding up from offset 0 to -fullHeight.
-            targetOffsetY = { fullHeight -> -fullHeight }
+            targetOffsetY = { fullHeight -> fullHeight }
         )
     ) {
 
@@ -80,7 +90,7 @@ fun menu(
                                 .fillMaxHeight()
                                 .size(menuItemHeight.dp)
                                 .alpha(
-                                    if (!info.playGamesServices) {
+                                    if (playSuccess) {
                                         0.66f
                                     } else {
                                         1f
@@ -184,6 +194,29 @@ fun menu(
                     )
                 },
                 valueRange = -3.0f..0.0f,
+                steps = 100,
+                modifier = Modifier
+                    .width(width75Percent.dp * 0.75f)
+                    .background(color = Color(1, 1, 1, 1))
+            )
+            Spacer(modifier = Modifier.size(8.dp))
+            Text(
+                text = "Speed " + "${round(10.0f.pow(speedSliderValue)*100.0f)/100.0f}"
+                    .toString(),
+                fontSize = MaterialTheme.typography.body1.fontSize,
+                color = Color.White
+            )
+            Slider(
+                value = speedSliderValue,
+                onValueChange = { speedSliderValue = it },
+                onValueChangeFinished = {
+                    onSpeedChanged(
+                        10.0f.pow(
+                            speedSliderValue
+                        )
+                    )
+                },
+                valueRange = -MAX_LOG_SPEED..MAX_LOG_SPEED,
                 steps = 100,
                 modifier = Modifier
                     .width(width75Percent.dp * 0.75f)

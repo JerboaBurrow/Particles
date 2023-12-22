@@ -200,7 +200,7 @@ data class NielsOdedIntegratorShaderData(
                 "uniform highp sampler2D qTex;\n"+ // xp,yp,thetap,wp
                 "uniform highp sampler2D paramTex;\n"+ // i,.,.,.
                 "uniform int n; uniform int np; uniform float dt; uniform float seed;\n"+
-                "uniform float rad;\n"+
+                "uniform float rad; uniform float v;\n"+
                 "uniform float Lx; uniform float lx; uniform float Ly; uniform float ly;\n"+
                 "uniform float ar; uniform float at; uniform float br; uniform float bt;\n"+
                 "uniform float alpha; uniform float beta; uniform float gamma; uniform float DR;\n"+
@@ -209,7 +209,7 @@ data class NielsOdedIntegratorShaderData(
                 "    vec4 p = texture(pTex,o_texCoords); vec4 q = texture(qTex,o_texCoords);\n"+
                 "    vec4 param = texture(paramTex,o_texCoords);\n"+
                 "    vec2 r = vec2(res.x/2.0-p.x,res.y/2.0-p.y); float d = r.x*r.x+r.y*r.y;\n"+
-                "    vec2 f = (100.0+clamp(d,0.0,100.0))*vec2(cos(p.z),sin(p.z));\n"+
+                "    vec2 f = v*(100.0+clamp(d,0.0,100.0))*vec2(cos(p.z),sin(p.z));\n"+
                 "    bool allowRepulsion = d < softMaxRadialDistance*softMaxRadialDistance/3.0;\n"+
                 "    bool frozen = false;\n"+
                 "    float torque = 0.0;\n"+

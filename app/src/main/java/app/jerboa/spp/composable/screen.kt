@@ -25,12 +25,14 @@ fun screen(
     displayingMenu: Boolean,
     displayingSound: Boolean,
     displayingAbout: Boolean,
+    playSuccess: Boolean,
     toy: TOY,
     particleNumber: Float,
     allowAdapt: Boolean,
     colourMap: COLOUR_MAP,
     playingMusic: MUSIC,
     paused: Boolean,
+    speed: Float,
     adaptMsg: Boolean,
     promptPGS: Boolean,
     resolution: Pair<Int,Int>,
@@ -56,7 +58,8 @@ fun screen(
     onToyChanged: (TOY) -> Unit,
     onRequestReview: () -> Unit,
     onUpdateClock: () -> Unit,
-    onPause: () -> Unit
+    onPause: () -> Unit,
+    onSpeedChanged: (Float) -> Unit
 ) {
 
     val scaffoldState = rememberScaffoldState()
@@ -82,8 +85,10 @@ fun screen(
             },
             bottomBar = {
                 menu(
-                    displayingMenu,
+                    displayingMenu && !displayingAbout,
+                    playSuccess,
                     particleNumber,
+                    speed,
                     width75Percent,
                     height10Percent,
                     menuItemHeight,
@@ -93,7 +98,8 @@ fun screen(
                     onAttractorChanged,
                     onRequestPlayServices,
                     onParticleNumberChanged,
-                    onSelectColourMap
+                    onSelectColourMap,
+                    onSpeedChanged
                 )
             }
         ) {
@@ -155,6 +161,7 @@ fun screen(
                     view.setAllowAdapt(allowAdapt)
                     view.setColourMap(colourMap)
                     view.pause(paused)
+                    view.setSpeed(speed)
                 }
             )
             about(

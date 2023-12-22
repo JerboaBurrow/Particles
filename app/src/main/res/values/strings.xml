@@ -2,8 +2,8 @@
     <string name="app_name">Particles</string>
     <string name="game_services_project_id">17196155283</string>
     <string name="app_uri">app.jerboa.spp</string>
-    <string name="tagline">Particles: "</string>
-    <string name="description">"Place \"attractors\", \"repellers\", and \"spinners\" to manipulate the particles.\n License: GNU General Public License v3.0"</string>
+    <string name="tagline"></string>
+    <string name="description">"Place \"attractors\", \"repellers\", \"spinners\", and \"freezers\" to manipulate the particles.\n\n License: GNU General Public License v3.0"</string>
     <string name="OSSprompt">"Click for open Source Software we depend on! (Licenses)"</string>
     <string name="attrib">Some colour maps from/modified from ColorCET, CC-BY. Some Sounds mixed from freesound.org inc. CC-BY: "Rain on Windows, Interior, B.wav" by InspectorJ (www.jshaw.co.uk) and CC0: FlatHill, bsyapril88, suoguolh, deleted_user_229898, jackthemurray, Lydmakeren, and Sandermotions.</string>
     <string name="rate">"If you had fun, why not rate us on the Play Store? Thanks!"</string>

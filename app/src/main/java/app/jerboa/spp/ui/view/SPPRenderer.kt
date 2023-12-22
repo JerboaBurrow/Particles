@@ -39,8 +39,6 @@ class SPPRenderer(
     private var colourMap: COLOUR_MAP = COLOUR_MAP.R1
     ) : GLSurfaceView.Renderer {
 
-    private val frameIndependent = true
-
     private var lastReviewRequest: Long = System.currentTimeMillis()
 
     private var begun: Long = System.currentTimeMillis()
@@ -114,6 +112,7 @@ class SPPRenderer(
     // kept mod demoFrames
     private var demoFrameId = 0
 
+    private var speed = 1.0f
     // model parameters for underdamped Langevin equations
     // using Niels-Oded 2nd order integrator https://arxiv.org/abs/1212.1244
     private val M = 0.001
@@ -278,6 +277,11 @@ class SPPRenderer(
     fun pause(v: Boolean)
     {
         paused = v
+    }
+
+    fun setSpeed(v: Float)
+    {
+        speed = v
     }
 
     private fun achievements(){
@@ -1179,6 +1183,7 @@ class SPPRenderer(
         computeShader.setUniform("beta",beta.toFloat())
         computeShader.setUniform("gamma",gamma.toFloat())
         computeShader.setUniform("DR",DR.toFloat())
+        computeShader.setUniform("v", speed)
     }
 
     override fun onSurfaceCreated(p0: GL10?, p1: EGLConfig?) {
@@ -1417,9 +1422,7 @@ class SPPRenderer(
             return
         }
 
-        if (frameIndependent){
-            updateMotionParams(delta)
-        }
+        updateMotionParams(delta)
 
         val pTex = texBuffer[Textures[TextureId.X]!!]
         val qTex = texBuffer[Textures[TextureId.Y]!!]

@@ -8,7 +8,7 @@ import java.util.*
 
 const val MAX_PARTICLES = 500000f
 const val PARTICLES_SLIDER_DEFAULT = 100000f/ MAX_PARTICLES
-
+const val MAX_LOG_SPEED = 1.0f
 enum class COLOUR_MAP {
     R1,
     R2,
@@ -251,11 +251,28 @@ class RenderViewModel : ViewModel() {
         _requestingLicenses.value = true
     }
 
+    private val _playSuccess = MutableLiveData(false)
+    val playSuccess: MutableLiveData<Boolean> = _playSuccess
+
+    fun onPlaySuccess(v: Boolean)
+    {
+        _playSuccess.postValue(v)
+    }
+
+    // sliders
+
     private val _particleNumber = MutableLiveData(PARTICLES_SLIDER_DEFAULT)
     val particleNumber: MutableLiveData<Float> = _particleNumber
 
     fun onParticleNumberChanged(v: Float){
         _particleNumber.value = v
+    }
+
+    private val _speed = MutableLiveData(1.0f)
+    val speed: MutableLiveData<Float> = _speed
+
+    fun onSpeedChanged(v: Float){
+        _speed.value = v
     }
 
     // ADAPT

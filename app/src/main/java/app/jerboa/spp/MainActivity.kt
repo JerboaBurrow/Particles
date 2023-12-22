@@ -173,6 +173,7 @@ class MainActivity : AppCompatActivity() {
             if (isAuthenticated) {
                 // Continue with Play Games Services
                 playSuccess = true
+                renderViewModel.onPlaySuccess(true)
                 if (DEBUG) {
                     Log.d("playGames", "success")
                 }
@@ -185,6 +186,7 @@ class MainActivity : AppCompatActivity() {
                     Log.d("playGames", "failure ${isAuthenticatedTask.result.toString()}")
                 }
                 playSuccess = false
+                renderViewModel.onPlaySuccess(false)
             }
         }
     }
