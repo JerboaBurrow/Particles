@@ -43,7 +43,6 @@ val DEBUG = false
 data class AppInfo(
     val versionString: String,
     val firstLaunch: Boolean,
-    val playGamesServices: Boolean,
     val density: Float,
     val heightDp: Float,
     val widthDp: Float
@@ -84,8 +83,6 @@ val achievementStates = mutableMapOf(
 class MainActivity : AppCompatActivity() {
 
     private val renderViewModel by viewModels<RenderViewModel>()
-
-    private var playSuccess = false
 
     private var mediaPlayer = MediaPlayer()
 
@@ -172,7 +169,6 @@ class MainActivity : AppCompatActivity() {
                 isAuthenticatedTask.isSuccessful && isAuthenticatedTask.result.isAuthenticated
             if (isAuthenticated) {
                 // Continue with Play Games Services
-                playSuccess = true
                 renderViewModel.onPlaySuccess(true)
                 if (DEBUG) {
                     Log.d("playGames", "success")
@@ -185,7 +181,6 @@ class MainActivity : AppCompatActivity() {
                 if (DEBUG) {
                     Log.d("playGames", "failure ${isAuthenticatedTask.result.toString()}")
                 }
-                playSuccess = false
                 renderViewModel.onPlaySuccess(false)
             }
         }
@@ -391,9 +386,9 @@ class MainActivity : AppCompatActivity() {
             this, androidx.lifecycle.Observer { request ->
                 if (request) {
                     if (DEBUG) {
-                        Log.d("playGames", "$playSuccess")
+                        Log.d("playGames", "${renderViewModel.playSuccess.value!!}")
                     }
-                    if (!playSuccess && isGooglePlayGamesServicesInstalled(this)) {
+                    if (!renderViewModel.playSuccess.value!! && isGooglePlayGamesServicesInstalled(this)) {
                         if (DEBUG) {
                             Log.d("playGames", "login")
                         }
@@ -560,7 +555,6 @@ class MainActivity : AppCompatActivity() {
         val appInfo = AppInfo(
             versionString,
             firstLaunch,
-            playSuccess,
             if (resources.getBoolean(R.bool.isTablet)) {
                 displayInfo.density
             } else {
