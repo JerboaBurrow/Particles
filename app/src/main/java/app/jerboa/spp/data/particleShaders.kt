@@ -204,6 +204,7 @@ data class NielsOdedIntegratorShaderData(
                 "uniform float Lx; uniform float lx; uniform float Ly; uniform float ly;\n"+
                 "uniform float ar; uniform float at; uniform float br; uniform float bt;\n"+
                 "uniform float alpha; uniform float beta; uniform float gamma; uniform float DR;\n"+
+                "uniform int paused;\n"+
                 "void main(void) {\n"+
                 "    float fn = float(n);\n"+
                 "    vec4 p = texture(pTex,o_texCoords); vec4 q = texture(qTex,o_texCoords);\n"+
@@ -249,7 +250,8 @@ data class NielsOdedIntegratorShaderData(
                 "    float cross = (cos(newTheta)*r.y-sin(newTheta)*r.x)/sqrt(d);\n"+
                 "    if (newX < lx+rad*5.0 || newX > Lx - rad*5.0) { newTheta += cross*dt; }\n"+
                 "    if (newY < ly+rad*5.0 || newY > Ly - rad*5.0) { newTheta += cross*dt; }\n"+
-                "    newP = vec4(newX,newY,newTheta,1.0);\n"+
-                "    newQ = vec4(x,y,theta,w);\n"+
+                "    if (paused == 0) { newP = vec4(newX,newY,newTheta,1.0);\n"+
+                "                       newQ = vec4(x,y,theta,w);}\n"+
+                "    else { newP = p; newQ = q; } \n"+
                 "}"
 ) : ShaderData(vertexShader, fragmentShader)
