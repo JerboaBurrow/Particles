@@ -1,5 +1,6 @@
 package app.jerboa.spp.ui.view
 
+import android.opengl.EGL14
 import android.opengl.GLES31.*
 import android.opengl.GLSurfaceView
 import android.opengl.Matrix
@@ -112,7 +113,6 @@ class SPPRenderer(
     // kept mod demoFrames
     private var demoFrameId = 0
 
-    private var speed = 1.0f
     // model parameters for underdamped Langevin equations
     // using Niels-Oded 2nd order integrator https://arxiv.org/abs/1212.1244
     private val M = 0.001
@@ -217,7 +217,16 @@ class SPPRenderer(
     private val computeVerts: FloatBuffer
     private val computeTexCoords: FloatBuffer
 
+    private val fadeShader = Shader(
+        FadeShaderData().vertexShader,
+        FadeShaderData().fragmentShader,
+        name = "FadeShader"
+    )
+
+    private var fadeRate = 0.1f
     private var paused: Boolean = false
+    private var showToys: Boolean = true
+    private var speed = 1.0f
 
     init {
 
@@ -284,94 +293,33 @@ class SPPRenderer(
         speed = v
     }
 
-    private fun achievements(){
-        if (DEMO_REAL){return}
-        val dt = delta.toFloat()*1e-9f
-        clock += dt
-        timeSinceLastTap += dt
+    fun setFade(v: Float)
+    {
+        fadeRate = v
+    }
 
-        if (clock > 30f){
-            onAchievementStateChanged(
-                Pair(
-                    "AverageFan",
-                    clock.toInt()
-                )
-            )
+    fun setShowToys(v: Boolean){
+        showToys = v
+    }
 
-            onAchievementStateChanged(
-                Pair(
-                    "AverageEnjoyer",
-                    clock.toInt()
-                )
-            )
+    fun setParticleNumber(v: Float){
+        if (particleNumber == v){return}
+        particleNumber = v
+        newP = ceil(MAXN*particleNumber).toInt()
+        // recall this function comes down via a compose THREAD
+        // use a switch so the main GL THREAD handles the change
+        // Overwise the wrong GL THREAD will be used!
+        reset = true
+    }
 
-            onAchievementStateChanged(
-                Pair(
-                    "SuperFan",
-                    clock.toInt()
-                )
-            )
+    fun setAllowAdapt(b: Boolean){
+        allowAdapt = b
+    }
 
-            clock = 0f
-        }
-
-        if (attractors.size == maxAorR && repellors.size == maxAorR){
-            onAchievementStateChanged(
-                Pair(
-                    "ShowMeWhatYouGot",
-                    1
-                )
-            )
-        }
-        if (!stillThereAchieved && timeSinceLastTap >= 60*10){
-            onAchievementStateChanged(
-                Pair(
-                    "StillThere",
-                    1
-                )
-            )
-            stillThereAchieved = true
-        }
-
-        if (!allParticlesOfScreenAchieved && allParticlesOfScreen){
-            onAchievementStateChanged(
-                Pair(
-                    "GetLost",
-                    1
-                )
-            )
-            allParticlesOfScreenAchieved = true
-        }
-
-        if (!insideAchieved && toyInsideAnother){
-            onAchievementStateChanged(
-                Pair(
-                    "DoubleTrouble",
-                    1
-                )
-            )
-            insideAchieved = true
-        }
-
-        if (!squareAchieved && toysInSquareFormation){
-            onAchievementStateChanged(
-                Pair(
-                    "HipToBeSquare",
-                    1
-                )
-            )
-            squareAchieved = true
-        }
-
-        if (!circleAchieved && toysInCircleFormation){
-            onAchievementStateChanged(
-                Pair(
-                    "CirclesTheWay",
-                    1
-                )
-            )
-            circleAchieved = true
-        }
+    fun setColourMap(v: COLOUR_MAP){
+        if (v == colourMap){return}
+        colourMap = v
+        recompileDrawShader = true
     }
 
     fun screenToWorld(x: Float, y: Float): FloatArray {
@@ -609,222 +557,6 @@ class SPPRenderer(
             }
         }
 
-    }
-
-    private fun pointsRoughlyCircular(points: List<Pair<Float,Float>>, tolerance: Float = 0.33f): Boolean{
-
-        if (points.size<6){ return false }
-
-        var mux = 0f
-        var muy = 0f
-
-        for (i in points.iterator()){
-            mux += i.first
-            muy += i.second
-        }
-
-        mux /= points.size
-        muy /= points.size
-
-        var sxx = 0f
-        var syy = 0f
-        var sxy = 0f
-
-        for (i in points.iterator()){
-            val rx = i.first-mux
-            val ry = i.second-muy
-
-            sxx += rx*rx
-            syy += ry*ry
-            sxy += rx*ry
-        }
-
-        sxx /= points.size
-        syy /= points.size
-        sxy /= points.size
-
-        val b = sxx+syy
-        val c = 4*(sxx*syy-sxy*sxy)
-
-        val det = sqrt(b*b-c)
-
-        val m = (b+det)/(b-det)
-
-        if(DEBUG){Log.d("circle","$sxx, $syy, $sxy, $det, $b, $m")}
-
-        if ( abs(m-1) < tolerance){
-            return true
-        }
-
-        return false
-
-    }
-
-    private fun pointsRoughlySquare(points: List<Pair<Float,Float>>, tolerance: Float = 160f*160f): Boolean{
-        if (points.size != 4){ return false }
-
-        val dists = mutableListOf<Float>()
-
-        //Log.d("square",points.toString())
-
-        for (i in points.indices){
-            for (j in points.indices){
-                if (i != j){
-                    val rx = points[i].first-points[j].first
-                    val ry = points[i].second-points[j].second
-                    val d2 = rx*rx+ry*ry
-
-                    if (dists.size == 0) { dists.add(d2) }
-                    if (dists.size == 1){
-                        if (abs(dists[0] - d2 ) > tolerance){
-                            dists.add(d2)
-                        }
-                    }
-
-                    if (dists.size == 2){
-                        if (abs(dists[0] - d2 ) > tolerance && abs(dists[1] - d2 ) > tolerance){
-                            //Log.d("square",dists.toString() + " $d2")
-                            return false
-                        }
-                    }
-                }
-            }
-        }
-
-        return true
-    }
-
-    private fun isSquareFormation(){
-        val lAttractors = attractors.toList()
-        val lRepellors = repellors.toList()
-        val lSpinners = spinners.toList()
-        if (lAttractors.size == 4 && lRepellors.isEmpty() && lSpinners.isEmpty()){
-            val points = listOf(
-                lAttractors[0],
-                lAttractors[1],
-                lAttractors[2],
-                lAttractors[3]
-            )
-            toysInSquareFormation = pointsRoughlySquare(points)
-        }
-        else if (lRepellors.size == 4 && lAttractors.isEmpty() && lSpinners.isEmpty()){
-            val points = listOf(
-                lRepellors[0],
-                lRepellors[1],
-                lRepellors[2],
-                lRepellors[3]
-            )
-            toysInSquareFormation = pointsRoughlySquare(points)
-        }
-        else if (lRepellors.isEmpty() && lAttractors.isEmpty() && lSpinners.size == 4) {
-            val points = listOf(
-                lSpinners[0],
-                lSpinners[1],
-                lSpinners[2],
-                lSpinners[3]
-            )
-            toysInSquareFormation = pointsRoughlySquare(points)
-        }
-        else if (lRepellors.size+lAttractors.size+lSpinners.size == 4){
-            val points = mutableListOf<Pair<Float,Float>>()
-            for (element in lAttractors){
-                points.add(element)
-            }
-            for (element in lRepellors){
-                points.add(element)
-            }
-            for (element in lSpinners){
-                points.add(element)
-            }
-            toysInSquareFormation = pointsRoughlySquare(points.toList())
-        }
-        if(DEBUG){Log.d("square", toysInSquareFormation.toString())}
-    }
-
-    private fun isCircleFormation(){
-        val lAttractors = attractors.toList()
-        val lRepellors = repellors.toList()
-        val lSpinners = spinners.toList()
-        if (lRepellors.size+lAttractors.size+lSpinners.size >= 6){
-            val points = mutableListOf<Pair<Float,Float>>()
-            for (element in lAttractors){
-                points.add(element)
-            }
-            for (element in lRepellors){
-                points.add(element)
-            }
-            for (element in lSpinners){
-                points.add(element)
-            }
-            toysInCircleFormation = pointsRoughlyCircular(points.toList())
-        }
-        if(DEBUG){Log.d("circle", toysInCircleFormation.toString())}
-    }
-
-    private fun isToyInsideAnother(){
-        if (toyInsideAnother){return}
-        val lAttractors = attractors.toList()
-        val lRepellors = repellors.toList()
-        val lSpinners = spinners.toList()
-        for (i in lAttractors.indices){
-            for (j in lRepellors.indices){
-                val rx = lAttractors[i].first-lRepellors[j].first
-                val ry = lAttractors[i].second-lRepellors[j].second
-
-                val d = rx*rx+ry*ry
-
-                if (d < arScale*arScale){
-                    toyInsideAnother = true
-                    return
-                }
-            }
-        }
-        for (i in lAttractors.indices){
-            for (j in lSpinners.indices){
-                val rx = lAttractors[i].first-lSpinners[j].first
-                val ry = lAttractors[i].second-lSpinners[j].second
-
-                val d = rx*rx+ry*ry
-
-                if (d < arScale*arScale){
-                    toyInsideAnother = true
-                    return
-                }
-            }
-        }
-        for (i in lSpinners.indices){
-            for (j in lRepellors.indices){
-                val rx = lSpinners[i].first-lRepellors[j].first
-                val ry = lSpinners[i].second-lRepellors[j].second
-
-                val d = rx*rx+ry*ry
-
-                if (d < arScale*arScale){
-                    toyInsideAnother = true
-                    return
-                }
-            }
-        }
-    }
-
-    fun setParticleNumber(v: Float){
-        if (particleNumber == v){return}
-        particleNumber = v
-        newP = ceil(MAXN*particleNumber).toInt()
-        // recall this function comes down via a compose THREAD
-        // use a switch so the main GL THREAD handles the change
-        // Overwise the wrong GL THREAD will be used!
-        reset = true
-    }
-
-    fun setAllowAdapt(b: Boolean){
-        allowAdapt = b
-    }
-
-    fun setColourMap(v: COLOUR_MAP){
-        if (v == colourMap){return}
-        colourMap = v
-        recompileDrawShader = true
     }
 
     private fun adapt(){
@@ -1138,6 +870,9 @@ class SPPRenderer(
         toyDrawShader.setUniform("scale",arScale)
         toyDrawShader.setUniform("T",atrPeriod.toFloat())
 
+        fadeShader.release()
+        fadeShader.compile()
+
         if (DEBUG_GL){glError()}
 
         gl3.glGenQueries(1,queryBuffer)
@@ -1188,7 +923,14 @@ class SPPRenderer(
 
     override fun onSurfaceCreated(p0: GL10?, p1: EGLConfig?) {
 
+        EGL14.eglSurfaceAttrib(
+            EGL14.eglGetCurrentDisplay(),
+            EGL14.eglGetCurrentSurface(EGL14.EGL_DRAW),
+            EGL14.EGL_SWAP_BEHAVIOR, EGL14.EGL_BUFFER_PRESERVED
+        )
+
         gl3.glClearColor(0f,0f,0f, 1f)
+        glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
         p = ceil(MAXN*particleNumber).toInt()
         initGPUData()
 
@@ -1196,6 +938,22 @@ class SPPRenderer(
 
     override fun onSurfaceChanged(p0: GL10?, p1: Int, p2: Int) {
         gl3.glViewport(0,0,p1,p2)
+        EGL14.eglSurfaceAttrib(
+            EGL14.eglGetCurrentDisplay(),
+            EGL14.eglGetCurrentSurface(EGL14.EGL_DRAW),
+            EGL14.EGL_SWAP_BEHAVIOR, EGL14.EGL_BUFFER_PRESERVED
+        )
+        glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
+    }
+
+    private fun fade() {
+
+        gl3.glEnableVertexAttribArray(0)
+        gl3.glVertexAttribPointer(0, 3, gl3.GL_FLOAT, false, 0, computeVerts)
+        fadeShader.use()
+        fadeShader.setUniform("fadeRate", fadeRate)
+
+        glDrawArrays(GL_TRIANGLES, 0, 6)
     }
 
     override fun onDrawFrame(p0: GL10?) {
@@ -1215,12 +973,13 @@ class SPPRenderer(
         }
         if(DEBUG){debugString += "check formation time "+"${System.nanoTime()-t1}"}
 
-        val t2 = System.nanoTime()
         lastTapped++
+
         gl3.glViewport(0,0,resolution.first,resolution.second)
         gl3.glEnable(gl3.GL_BLEND);
         gl3.glBlendFunc(gl3.GL_SRC_ALPHA, gl3.GL_ONE_MINUS_SRC_ALPHA);
-        gl3.glClear(gl3.GL_COLOR_BUFFER_BIT or gl3.GL_DEPTH_BUFFER_BIT)
+
+        fade()
 
         if (DEMO_REAL) {
             if (demoFrameId > demoFrames) {
@@ -1249,21 +1008,6 @@ class SPPRenderer(
 
         if (DEBUG_GL){glError()}
 
-        val m = ceil(sqrt(p.toFloat())).toInt()
-
-        particleDrawShader.use()
-
-        transitionStep = if (transitionStep > 0){
-            transitionStep - 1
-        }
-        else {
-            0
-        }
-
-        particleDrawShader.setUniform("transitionStep",transitionStep)
-
-        if (DEBUG_GL){glError()}
-
         val pTex = texBuffer[Textures[TextureId.X]!!]
         val qTex = texBuffer[Textures[TextureId.Y]!!]
 
@@ -1277,8 +1021,61 @@ class SPPRenderer(
         gl3.glActiveTexture(gl3.GL_TEXTURE0)
         gl3.glBindTexture(gl3.GL_TEXTURE_2D, pTex)
 
+        drawParticles()
+
+        if (showToys) {
+            drawToys()
+        }
+
+        // compute step
+        val t0 = System.nanoTime()
+        step(delta.toFloat()*1e-9f)
+        if(DEBUG){debugString += "step time "+"${System.nanoTime()-t0}"}
+        // measure time
+        val t = System.nanoTime()
+        delta = t-last
+        last = t
+
+        timeSinceLastAdapt += delta*1e-9f
+
+        deltas[frameNumber] = 1.0f / (delta.toFloat()*1e-9f)
+        frameNumber += 1
+        if (frameNumber >= 60){
+            onUpdateClock()
+            frameNumber = 0
+            val mu = deltas.sum()/deltas.size
+            if (PERFORMANCE){
+                Log.i("FPS", "$mu")
+            }
+            if (mu < 30.0f){
+                adapt()
+            }
+        }
+
+        val t4 = System.nanoTime()
+        achievements()
+        if(DEBUG){debugString += "achievements time "+"${System.nanoTime()-t4}"}
+        if(DEBUG){debugString += "achievements time "+"${System.nanoTime()-t4}"}
+        if(DEBUG){debugString += "full time "+ "${System.nanoTime()-t1}"; Log.d("Times",debugString)}
+
+    }
+
+    private fun drawParticles() {
         gl3.glEnableVertexAttribArray(0)
         gl3.glVertexAttribPointer(0, 3, gl3.GL_FLOAT, false, 0, drawVertices)
+
+        val m = ceil(sqrt(p.toFloat())).toInt()
+
+        particleDrawShader.use()
+
+        transitionStep = if (transitionStep > 0){
+            transitionStep - 1
+        }
+        else {
+            0
+        }
+
+        particleDrawShader.setUniform("transitionStep",transitionStep)
 
         particleDrawShader.setUniform("qTex",1)
         particleDrawShader.setUniform("pTex",0)
@@ -1286,10 +1083,6 @@ class SPPRenderer(
         particleDrawShader.setUniform("n",m)
 
         if (DEBUG_GL){glError()}
-
-        if(DEBUG){debugString += "setup time "+"${System.nanoTime()-t2}"}
-
-        val t3 = System.nanoTime()
 
         // instanced drawing of p particles
 
@@ -1309,7 +1102,9 @@ class SPPRenderer(
             }
         }
         if (DEBUG_GL){glError()}
+    }
 
+    private fun drawToys() {
         for (i in attr.indices){
             attr[i] = 0.0f
             rep[i] = 0.0f
@@ -1379,40 +1174,6 @@ class SPPRenderer(
         // draw the toys
         gl3.glDrawArraysInstanced(gl3.GL_POINTS, 0, 1, 32)
         if (DEBUG_GL){glError()}
-
-        if(DEBUG){debugString += "draw and query time "+"${System.nanoTime()-t3}"}
-
-        // compute step
-        val t0 = System.nanoTime()
-        step(delta.toFloat()*1e-9f)
-        if(DEBUG){debugString += "step time "+"${System.nanoTime()-t0}"}
-        // measure time
-        val t = System.nanoTime()
-        delta = t-last
-        last = t
-
-        timeSinceLastAdapt += delta*1e-9f
-
-        deltas[frameNumber] = 1.0f / (delta.toFloat()*1e-9f)
-        frameNumber += 1
-        if (frameNumber >= 60){
-            onUpdateClock()
-            frameNumber = 0
-            val mu = deltas.sum()/deltas.size
-            if (PERFORMANCE){
-                Log.i("FPS", "$mu")
-            }
-            if (mu < 30.0f){
-                adapt()
-            }
-        }
-
-        val t4 = System.nanoTime()
-        achievements()
-        if(DEBUG){debugString += "achievements time "+"${System.nanoTime()-t4}"}
-        if(DEBUG){debugString += "achievements time "+"${System.nanoTime()-t4}"}
-        if(DEBUG){debugString += "full time "+ "${System.nanoTime()-t1}"; Log.d("Times",debugString)}
-
     }
 
     private fun step(delta: Float){
@@ -1636,6 +1397,292 @@ class SPPRenderer(
         drawBuffers.limit(2)
         gl3.glDeleteBuffers(2,drawBuffers)
         if (DEBUG_GL){glError()}
+    }
+
+    private fun achievements(){
+        if (DEMO_REAL){return}
+        val dt = delta.toFloat()*1e-9f
+        clock += dt
+        timeSinceLastTap += dt
+
+        if (clock > 30f){
+            onAchievementStateChanged(
+                Pair(
+                    "AverageFan",
+                    clock.toInt()
+                )
+            )
+
+            onAchievementStateChanged(
+                Pair(
+                    "AverageEnjoyer",
+                    clock.toInt()
+                )
+            )
+
+            onAchievementStateChanged(
+                Pair(
+                    "SuperFan",
+                    clock.toInt()
+                )
+            )
+
+            clock = 0f
+        }
+
+        if (attractors.size == maxAorR && repellors.size == maxAorR){
+            onAchievementStateChanged(
+                Pair(
+                    "ShowMeWhatYouGot",
+                    1
+                )
+            )
+        }
+        if (!stillThereAchieved && timeSinceLastTap >= 60*10){
+            onAchievementStateChanged(
+                Pair(
+                    "StillThere",
+                    1
+                )
+            )
+            stillThereAchieved = true
+        }
+
+        if (!allParticlesOfScreenAchieved && allParticlesOfScreen){
+            onAchievementStateChanged(
+                Pair(
+                    "GetLost",
+                    1
+                )
+            )
+            allParticlesOfScreenAchieved = true
+        }
+
+        if (!insideAchieved && toyInsideAnother){
+            onAchievementStateChanged(
+                Pair(
+                    "DoubleTrouble",
+                    1
+                )
+            )
+            insideAchieved = true
+        }
+
+        if (!squareAchieved && toysInSquareFormation){
+            onAchievementStateChanged(
+                Pair(
+                    "HipToBeSquare",
+                    1
+                )
+            )
+            squareAchieved = true
+        }
+
+        if (!circleAchieved && toysInCircleFormation){
+            onAchievementStateChanged(
+                Pair(
+                    "CirclesTheWay",
+                    1
+                )
+            )
+            circleAchieved = true
+        }
+    }
+
+    private fun pointsRoughlyCircular(points: List<Pair<Float,Float>>, tolerance: Float = 0.33f): Boolean{
+
+        if (points.size<6){ return false }
+
+        var mux = 0f
+        var muy = 0f
+
+        for (i in points.iterator()){
+            mux += i.first
+            muy += i.second
+        }
+
+        mux /= points.size
+        muy /= points.size
+
+        var sxx = 0f
+        var syy = 0f
+        var sxy = 0f
+
+        for (i in points.iterator()){
+            val rx = i.first-mux
+            val ry = i.second-muy
+
+            sxx += rx*rx
+            syy += ry*ry
+            sxy += rx*ry
+        }
+
+        sxx /= points.size
+        syy /= points.size
+        sxy /= points.size
+
+        val b = sxx+syy
+        val c = 4*(sxx*syy-sxy*sxy)
+
+        val det = sqrt(b*b-c)
+
+        val m = (b+det)/(b-det)
+
+        if(DEBUG){Log.d("circle","$sxx, $syy, $sxy, $det, $b, $m")}
+
+        if ( abs(m-1) < tolerance){
+            return true
+        }
+
+        return false
+
+    }
+
+    private fun pointsRoughlySquare(points: List<Pair<Float,Float>>, tolerance: Float = 160f*160f): Boolean{
+        if (points.size != 4){ return false }
+
+        val dists = mutableListOf<Float>()
+
+        //Log.d("square",points.toString())
+
+        for (i in points.indices){
+            for (j in points.indices){
+                if (i != j){
+                    val rx = points[i].first-points[j].first
+                    val ry = points[i].second-points[j].second
+                    val d2 = rx*rx+ry*ry
+
+                    if (dists.size == 0) { dists.add(d2) }
+                    if (dists.size == 1){
+                        if (abs(dists[0] - d2 ) > tolerance){
+                            dists.add(d2)
+                        }
+                    }
+
+                    if (dists.size == 2){
+                        if (abs(dists[0] - d2 ) > tolerance && abs(dists[1] - d2 ) > tolerance){
+                            //Log.d("square",dists.toString() + " $d2")
+                            return false
+                        }
+                    }
+                }
+            }
+        }
+
+        return true
+    }
+
+    private fun isSquareFormation(){
+        val lAttractors = attractors.toList()
+        val lRepellors = repellors.toList()
+        val lSpinners = spinners.toList()
+        if (lAttractors.size == 4 && lRepellors.isEmpty() && lSpinners.isEmpty()){
+            val points = listOf(
+                lAttractors[0],
+                lAttractors[1],
+                lAttractors[2],
+                lAttractors[3]
+            )
+            toysInSquareFormation = pointsRoughlySquare(points)
+        }
+        else if (lRepellors.size == 4 && lAttractors.isEmpty() && lSpinners.isEmpty()){
+            val points = listOf(
+                lRepellors[0],
+                lRepellors[1],
+                lRepellors[2],
+                lRepellors[3]
+            )
+            toysInSquareFormation = pointsRoughlySquare(points)
+        }
+        else if (lRepellors.isEmpty() && lAttractors.isEmpty() && lSpinners.size == 4) {
+            val points = listOf(
+                lSpinners[0],
+                lSpinners[1],
+                lSpinners[2],
+                lSpinners[3]
+            )
+            toysInSquareFormation = pointsRoughlySquare(points)
+        }
+        else if (lRepellors.size+lAttractors.size+lSpinners.size == 4){
+            val points = mutableListOf<Pair<Float,Float>>()
+            for (element in lAttractors){
+                points.add(element)
+            }
+            for (element in lRepellors){
+                points.add(element)
+            }
+            for (element in lSpinners){
+                points.add(element)
+            }
+            toysInSquareFormation = pointsRoughlySquare(points.toList())
+        }
+        if(DEBUG){Log.d("square", toysInSquareFormation.toString())}
+    }
+
+    private fun isCircleFormation(){
+        val lAttractors = attractors.toList()
+        val lRepellors = repellors.toList()
+        val lSpinners = spinners.toList()
+        if (lRepellors.size+lAttractors.size+lSpinners.size >= 6){
+            val points = mutableListOf<Pair<Float,Float>>()
+            for (element in lAttractors){
+                points.add(element)
+            }
+            for (element in lRepellors){
+                points.add(element)
+            }
+            for (element in lSpinners){
+                points.add(element)
+            }
+            toysInCircleFormation = pointsRoughlyCircular(points.toList())
+        }
+        if(DEBUG){Log.d("circle", toysInCircleFormation.toString())}
+    }
+
+    private fun isToyInsideAnother(){
+        if (toyInsideAnother){return}
+        val lAttractors = attractors.toList()
+        val lRepellors = repellors.toList()
+        val lSpinners = spinners.toList()
+        for (i in lAttractors.indices){
+            for (j in lRepellors.indices){
+                val rx = lAttractors[i].first-lRepellors[j].first
+                val ry = lAttractors[i].second-lRepellors[j].second
+
+                val d = rx*rx+ry*ry
+
+                if (d < arScale*arScale){
+                    toyInsideAnother = true
+                    return
+                }
+            }
+        }
+        for (i in lAttractors.indices){
+            for (j in lSpinners.indices){
+                val rx = lAttractors[i].first-lSpinners[j].first
+                val ry = lAttractors[i].second-lSpinners[j].second
+
+                val d = rx*rx+ry*ry
+
+                if (d < arScale*arScale){
+                    toyInsideAnother = true
+                    return
+                }
+            }
+        }
+        for (i in lSpinners.indices){
+            for (j in lRepellors.indices){
+                val rx = lSpinners[i].first-lRepellors[j].first
+                val ry = lSpinners[i].second-lRepellors[j].second
+
+                val d = rx*rx+ry*ry
+
+                if (d < arScale*arScale){
+                    toyInsideAnother = true
+                    return
+                }
+            }
+        }
     }
 
     enum class CONFIGURATION {

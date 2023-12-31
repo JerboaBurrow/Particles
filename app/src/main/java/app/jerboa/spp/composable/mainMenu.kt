@@ -6,6 +6,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Checkbox
+import androidx.compose.material.CheckboxColors
+import androidx.compose.material.CheckboxDefaults
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Slider
@@ -19,8 +22,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import app.jerboa.spp.AppInfo
 import app.jerboa.spp.ViewModel.COLOUR_MAP
+import app.jerboa.spp.ViewModel.MAX_LOG_FADE
 import app.jerboa.spp.ViewModel.MAX_LOG_SPEED
 import app.jerboa.spp.ViewModel.MAX_PARTICLES
+import app.jerboa.spp.ViewModel.MIN_LOG_FADE
 import app.jerboa.spp.ViewModel.TOY
 import kotlin.math.ceil
 import kotlin.math.log10
@@ -35,6 +40,8 @@ fun menu(
     playSuccess: Boolean,
     particleNumber: Float,
     speed: Float,
+    fade: Float,
+    showToys: Boolean,
     width75Percent: Double,
     height10Percent: Double,
     menuItemHeight: Double,
@@ -45,7 +52,9 @@ fun menu(
     onRequestPlayServices: () -> Unit,
     onParticleNumberChanged: (Float) -> Unit,
     onSelectColourMap: (COLOUR_MAP) -> Unit,
-    onSpeedChanged: (Float) -> Unit
+    onSpeedChanged: (Float) -> Unit,
+    onFadeChanged: (Float) -> Unit,
+    onShowToysChanged: (Boolean) -> Unit
 ) {
     var particleSliderValue by remember {
         mutableFloatStateOf(log10(particleNumber))
@@ -53,6 +62,14 @@ fun menu(
 
     var speedSliderValue by remember {
         mutableFloatStateOf(log10(speed))
+    }
+
+    var fadeSliderValue by remember {
+        mutableFloatStateOf(log10(fade))
+    }
+
+    var showToysValue by remember {
+        mutableStateOf(true)
     }
 
     AnimatedVisibility(
@@ -80,7 +97,9 @@ fun menu(
                     .height((menuItemHeight).dp)
             ) {
                 Row(
-                    modifier = Modifier.fillMaxWidth().fillMaxHeight(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .fillMaxHeight(),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center
                 ) {
@@ -222,6 +241,47 @@ fun menu(
                     .width(width75Percent.dp * 0.75f)
                     .background(color = Color(1, 1, 1, 1))
             )
+            Spacer(modifier = Modifier.size(8.dp))
+            Text(
+                text = "Tracing " + "${round(fadeSliderValue*100.0f)/100.0f}"
+                    .toString(),
+                fontSize = MaterialTheme.typography.body1.fontSize,
+                color = Color.White
+            )
+            Slider(
+                value = fadeSliderValue,
+                onValueChange = { fadeSliderValue = it },
+                onValueChangeFinished = {
+                    onFadeChanged(
+                        10.0f.pow( (1.0f-fadeSliderValue)*(MAX_LOG_FADE-MIN_LOG_FADE)+ MIN_LOG_FADE )
+                    )
+                },
+                valueRange = 0.0f..1.0f,
+                steps = 100,
+                modifier = Modifier
+                    .width(width75Percent.dp * 0.75f)
+                    .background(color = Color(1, 1, 1, 1))
+            )
+            Spacer(modifier = Modifier.size(8.dp))
+            Text(
+                text = "Show Toys"
+                    .toString(),
+                fontSize = MaterialTheme.typography.body1.fontSize,
+                color = Color.White
+            )
+            Checkbox(
+                checked = showToysValue,
+                onCheckedChange = { showToysValue = it; onShowToysChanged(it)},
+                colors = checkBoxColors()
+            )
         }
     }
+}
+
+@Composable
+fun checkBoxColors(): CheckboxColors {
+    return CheckboxDefaults.colors(
+        checkedColor = Color.White,
+        uncheckedColor = Color(1.0f,1.0f,1.0f,0.5f)
+    )
 }
