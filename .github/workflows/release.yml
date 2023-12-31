@@ -40,25 +40,12 @@ jobs:
       - name: test
         run: export JAVA_HOME="/usr/lib/jvm/temurin-17-jdk-amd64" && ./gradlew testDebugUnsignedUnitTest
 
-      - name: create release
-        id: createRelease
-        uses: actions/create-release@v1
-        env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#     https://github.com/softprops/action-gh-release
+      - name: release
+        uses: softprops/action-gh-release@v1
         with:
-            draft: true
-            prerelease: false
-            release_name: "release-${{ github.ref_name }}"
-            tag_name: ${{ github.ref }}
-
-      - name: upload release artifact
-        uses: actions/upload-release-asset@v1
-        env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-            upload_url: ${{ steps.createRelease.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
-            asset_path: app/release/app-release.aab
-            asset_name: Particles
-            asset_content_type: application/zip
-            retention-days: 30
+          draft: true
+          prerelease: true
+          name: "release-${{ github.ref_name }}"
+          tag_name: ${{ github.ref }}
 
