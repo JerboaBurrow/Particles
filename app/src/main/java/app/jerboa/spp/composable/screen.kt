@@ -19,7 +19,8 @@ import app.jerboa.spp.ui.SPPView
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalAnimationApi::class)
-@SuppressLint("CoroutineCreationDuringComposition")
+// see scaffold below
+@SuppressLint("CoroutineCreationDuringComposition", "UnusedMaterialScaffoldPaddingParameter")
 @Composable
 fun screen(
     displayingMenu: Boolean,
@@ -30,9 +31,11 @@ fun screen(
     particleNumber: Float,
     allowAdapt: Boolean,
     colourMap: COLOUR_MAP,
+    showToys: Boolean,
     playingMusic: MUSIC,
     paused: Boolean,
     speed: Float,
+    fade: Float,
     adaptMsg: Boolean,
     promptPGS: Boolean,
     resolution: Pair<Int,Int>,
@@ -59,7 +62,9 @@ fun screen(
     onRequestReview: () -> Unit,
     onUpdateClock: () -> Unit,
     onPause: () -> Unit,
-    onSpeedChanged: (Float) -> Unit
+    onSpeedChanged: (Float) -> Unit,
+    onFadeChanged: (Float) -> Unit,
+    onShowToysChanged: (Boolean) -> Unit
 ) {
 
     val scaffoldState = rememberScaffoldState()
@@ -77,11 +82,11 @@ fun screen(
     Column(
         modifier = Modifier.fillMaxWidth()
     ) {
-
+        // padding is unused is we are using the scaffold as
+        //  a hacky overlay on top of opengl
         Scaffold(
             scaffoldState = scaffoldState,
             topBar = {
-
             },
             bottomBar = {
                 menu(
@@ -89,6 +94,8 @@ fun screen(
                     playSuccess,
                     particleNumber,
                     speed,
+                    fade,
+                    showToys,
                     width75Percent,
                     height10Percent,
                     menuItemHeight,
@@ -99,7 +106,9 @@ fun screen(
                     onRequestPlayServices,
                     onParticleNumberChanged,
                     onSelectColourMap,
-                    onSpeedChanged
+                    onSpeedChanged,
+                    onFadeChanged,
+                    onShowToysChanged
                 )
             }
         ) {
@@ -162,6 +171,8 @@ fun screen(
                     view.setColourMap(colourMap)
                     view.pause(paused)
                     view.setSpeed(speed)
+                    view.setFade(fade)
+                    view.showToys(showToys)
                 }
             )
             about(

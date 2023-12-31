@@ -82,6 +82,15 @@ class SPPView (
         renderer.setSpeed(v)
     }
 
+    fun setFade(v: Float)
+    {
+        renderer.setFade(v)
+    }
+
+    fun showToys(v: Boolean){
+        renderer.setShowToys(v)
+    }
+
     override fun onResume() {
         super.onResume()
     }
