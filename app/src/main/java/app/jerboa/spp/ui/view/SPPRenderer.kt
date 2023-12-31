@@ -919,6 +919,12 @@ class SPPRenderer(
         computeShader.setUniform("gamma",gamma.toFloat())
         computeShader.setUniform("DR",DR.toFloat())
         computeShader.setUniform("v", speed)
+        if (paused) {
+            computeShader.setUniform("paused", 1)
+        }
+        else {
+            computeShader.setUniform("paused", 0)
+        }
     }
 
     override fun onSurfaceCreated(p0: GL10?, p1: EGLConfig?) {
@@ -963,7 +969,11 @@ class SPPRenderer(
         if (reset){
             initGPUData()
         }
-        if (recompileDrawShader){compileDrawShader(); recompileDrawShader=false}
+        if (recompileDrawShader)
+        {
+            compileDrawShader()
+            recompileDrawShader=false
+        }
 
         val t1 = System.nanoTime()
         if (frameNumber == queryFormationFrequency && !DEMO_REAL){
@@ -1177,11 +1187,6 @@ class SPPRenderer(
     }
 
     private fun step(delta: Float){
-
-        if (paused)
-        {
-            return
-        }
 
         updateMotionParams(delta)
 
