@@ -439,6 +439,15 @@ class MainActivity : AppCompatActivity() {
             }
         )
 
+        renderViewModel.showToys.observe(
+            this, androidx.lifecycle.Observer { show ->
+                val prefs = getSharedPreferences("jerboa.app.spp.prefs", MODE_PRIVATE)
+                val prefsEdit = prefs.edit()
+                prefsEdit.putBoolean("showToys", show)
+                prefsEdit.apply()
+            }
+        )
+
         renderViewModel.playingMusic.observe(
             this, androidx.lifecycle.Observer { playingMusic ->
                 when (playingMusic) {
@@ -516,14 +525,22 @@ class MainActivity : AppCompatActivity() {
         var showNews = false
         if (!firstLaunch) {
             Log.d("launch", "not first")
-            if (!prefs.contains("news-22-12-23")) {
+            if (!prefs.contains("news-31-12-23")) {
                 Log.d("launch", "show news")
                 val prefsEdit = prefs.edit()
-                prefsEdit.putBoolean("news-22-12-23", true)
+                prefsEdit.putBoolean("news-31-12-23", true)
                 prefsEdit.apply()
                 showNews = true
             }
         }
+
+        if (!prefs.contains("showToys")) {
+            val prefsEdit = prefs.edit()
+            prefsEdit.putBoolean("showToys", false)
+            prefsEdit.apply()
+        }
+
+        renderViewModel.onShowToysChanged(prefs.getBoolean("showToys", false))
 
 //        if (BuildConfig.DEBUG){
 //            prefs.edit().clear().apply()

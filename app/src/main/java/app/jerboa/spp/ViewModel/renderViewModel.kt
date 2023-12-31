@@ -284,7 +284,7 @@ class RenderViewModel : ViewModel() {
         _fade.value = v
     }
 
-    private val _showToys = MutableLiveData(true)
+    private val _showToys = MutableLiveData(false)
     val showToys: MutableLiveData<Boolean> = _showToys
 
     fun onShowToysChanged(v: Boolean){
