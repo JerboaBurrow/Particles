@@ -525,10 +525,10 @@ class MainActivity : AppCompatActivity() {
         var showNews = false
         if (!firstLaunch) {
             Log.d("launch", "not first")
-            if (!prefs.contains("news-22-12-23")) {
+            if (!prefs.contains("news-31-12-23")) {
                 Log.d("launch", "show news")
                 val prefsEdit = prefs.edit()
-                prefsEdit.putBoolean("news-22-12-23", true)
+                prefsEdit.putBoolean("news-31-12-23", true)
                 prefsEdit.apply()
                 showNews = true
             }
