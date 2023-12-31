@@ -37,7 +37,7 @@ fun renderScreen(
     val paused: Boolean by renderViewModel.paused.observeAsState(initial = false)
     val speed: Float by renderViewModel.speed.observeAsState(initial = 1.0f)
     val fade: Float by renderViewModel.fade.observeAsState(initial = 1.0f)
-    val showToys: Boolean by renderViewModel.showToys.observeAsState(initial = true)
+    val showToys: Boolean by renderViewModel.showToys.observeAsState(initial = false)
     val playSuccess: Boolean by renderViewModel.playSuccess.observeAsState(initial = false)
 
     screen(

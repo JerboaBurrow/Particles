@@ -69,7 +69,7 @@ fun menu(
     }
 
     var showToysValue by remember {
-        mutableStateOf(true)
+        mutableStateOf(showToys)
     }
 
     AnimatedVisibility(
