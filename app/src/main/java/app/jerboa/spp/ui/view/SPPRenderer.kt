@@ -169,10 +169,10 @@ class SPPRenderer(
     // stored in a GL::mat4 (4x4 matrix)
     private val toysAlpha = 0.5f
     private val maxAorR = 8
-    private val attractors = mutableListOf<Pair<Float,Float>>()
-    private val repellors = mutableListOf<Pair<Float,Float>>()
-    private val spinners = mutableListOf<Pair<Float,Float>>()
-    private val freezers = mutableListOf<Pair<Float,Float>>()
+    private val attractors = BufferedMutableList<Pair<Float,Float>>()
+    private val repellors = BufferedMutableList<Pair<Float,Float>>()
+    private val spinners = BufferedMutableList<Pair<Float,Float>>()
+    private val freezers = BufferedMutableList<Pair<Float,Float>>()
     // drawing parameters
     private val arScale = scale * 30f
     private val atrPeriod = 60*3
@@ -340,29 +340,28 @@ class SPPRenderer(
 
     private fun toySelected(x: Float, y: Float, eps: Float = 2.0f*arScale): Pair<TOY, Int>? {
 
-        for (i in 0 until attractors.size){
+        for (i in 0 until attractors.sizeFront){
             val a = attractors[i]
             if (norm2(x,y,a.first,a.second) < eps*eps){
-
                 return Pair(TOY.ATTRACTOR, i)
             }
         }
 
-        for (i in 0 until repellors.size){
+        for (i in 0 until repellors.sizeFront){
             val a = repellors[i]
             if (norm2(x,y,a.first,a.second) < eps*eps){
                 return Pair(TOY.REPELLOR, i)
             }
         }
 
-        for (i in 0 until spinners.size){
+        for (i in 0 until spinners.sizeFront){
             val a = spinners[i]
             if (norm2(x,y,a.first,a.second) < eps*eps){
                 return Pair(TOY.SPINNER, i)
             }
         }
 
-        for (i in 0 until freezers.size){
+        for (i in 0 until freezers.sizeFront){
             val a = freezers[i]
             if (norm2(x,y,a.first,a.second) < eps*eps){
                 return Pair(TOY.FREEZER, i)
@@ -392,34 +391,34 @@ class SPPRenderer(
                     when (toyType)
                     {
                         TOY.ATTRACTOR -> {
-                            if (attractors.size < maxAorR){
+                            if (attractors.sizeBack < maxAorR){
                                 attractors.add(Pair(wx, wy))
                             }
-                            draggedToy = Pair(TOY.ATTRACTOR, attractors.size-1)
+                            draggedToy = Pair(TOY.ATTRACTOR, attractors.sizeBack-1)
                             onToyChanged(TOY.ATTRACTOR)
                             dragPlacedToy = true
                         }
                         TOY.REPELLOR -> {
-                            if (repellors.size < maxAorR) {
+                            if (repellors.sizeBack < maxAorR) {
                                 repellors.add(Pair(wx, wy))
                             }
-                            draggedToy = Pair(TOY.REPELLOR, repellors.size-1)
+                            draggedToy = Pair(TOY.REPELLOR, repellors.sizeBack-1)
                             onToyChanged(TOY.REPELLOR)
                             dragPlacedToy = true
                         }
                         TOY.SPINNER -> {
-                            if (spinners.size < maxAorR){
+                            if (spinners.sizeBack < maxAorR){
                                 spinners.add(Pair(wx, wy))
                             }
-                            draggedToy = Pair(TOY.SPINNER, spinners.size-1)
+                            draggedToy = Pair(TOY.SPINNER, spinners.sizeBack-1)
                             onToyChanged(TOY.SPINNER)
                             dragPlacedToy = true
                         }
                         TOY.FREEZER -> {
-                            if (freezers.size < maxAorR){
+                            if (freezers.sizeBack < maxAorR){
                                 freezers.add(Pair(wx, wy))
                             }
-                            draggedToy = Pair(TOY.FREEZER, freezers.size-1)
+                            draggedToy = Pair(TOY.FREEZER, freezers.sizeBack-1)
                             onToyChanged(TOY.FREEZER)
                             dragPlacedToy = true
                         }
@@ -502,7 +501,7 @@ class SPPRenderer(
 
         if (mode == TOY.ATTRACTOR){
             var removed = false
-            for (i in 0 until attractors.size){
+            for (i in 0 until attractors.sizeBack){
                 val a = attractors[i]
                 if (norm2(x,y,a.first,a.second) < eps*eps){
                     attractors.removeAt(i)
@@ -510,13 +509,13 @@ class SPPRenderer(
                     break
                 }
             }
-            if (!removed && attractors.size < maxAorR){
+            if (!removed && attractors.sizeBack < maxAorR){
                 attractors.add(Pair(x,y))
             }
         }
         else if (mode == TOY.REPELLOR){
             var removed = false
-            for (i in 0 until repellors.size){
+            for (i in 0 until repellors.sizeBack){
                 val a = repellors[i]
                 if (norm2(x,y,a.first,a.second) < eps*eps){
                     repellors.removeAt(i)
@@ -524,13 +523,13 @@ class SPPRenderer(
                     break
                 }
             }
-            if (!removed && repellors.size < maxAorR){
+            if (!removed && repellors.sizeBack < maxAorR){
                 repellors.add(Pair(x,y))
             }
         }
         else if (mode == TOY.SPINNER){
             var removed = false
-            for (i in 0 until spinners.size){
+            for (i in 0 until spinners.sizeBack){
                 val a = spinners[i]
                 if (norm2(x,y,a.first,a.second) < eps*eps){
                     spinners.removeAt(i)
@@ -538,13 +537,13 @@ class SPPRenderer(
                     break
                 }
             }
-            if (!removed && spinners.size < maxAorR){
+            if (!removed && spinners.sizeBack < maxAorR){
                 spinners.add(Pair(x,y))
             }
         }
         else if (mode == TOY.FREEZER){
             var removed = false
-            for (i in 0 until freezers.size){
+            for (i in 0 until freezers.sizeBack){
                 val a = freezers[i]
                 if (norm2(x,y,a.first,a.second) < eps*eps){
                     freezers.removeAt(i)
@@ -552,7 +551,7 @@ class SPPRenderer(
                     break
                 }
             }
-            if (!removed && freezers.size < maxAorR){
+            if (!removed && freezers.sizeBack < maxAorR){
                 freezers.add(Pair(x,y))
             }
         }
@@ -964,6 +963,11 @@ class SPPRenderer(
 
     override fun onDrawFrame(p0: GL10?) {
 
+        attractors.commit()
+        repellors.commit()
+        spinners.commit()
+        freezers.commit()
+
         if (System.currentTimeMillis() - lastReviewRequest > REVIEW_RATE_LIMIT_MILLIS){onRequestReview(); lastReviewRequest = System.currentTimeMillis()}
         debugString = ""
         if (reset){
@@ -1155,10 +1159,10 @@ class SPPRenderer(
         toyDrawShader.setUniform("spin",Mat4(spin))
         toyDrawShader.setUniform("freeze",Mat4(freezer))
 
-        toyDrawShader.setUniform("na",attractors.size)
-        toyDrawShader.setUniform("nr",repellors.size)
-        toyDrawShader.setUniform("ns",spinners.size)
-        toyDrawShader.setUniform("nf",freezers.size)
+        toyDrawShader.setUniform("na",attractors.sizeFront)
+        toyDrawShader.setUniform("nr",repellors.sizeFront)
+        toyDrawShader.setUniform("ns",spinners.sizeFront)
+        toyDrawShader.setUniform("nf",freezers.sizeFront)
 
         toyDrawShader.setUniform("t",arTime.toFloat())
         toyDrawShader.setUniform("contTime",contTime.toFloat())
@@ -1269,8 +1273,7 @@ class SPPRenderer(
             rep[i] = 0.0f
             spin[i] = 0.0f
         }
-        // rare concurrent write errors on some devices? yes but gone now
-        //   for various reasons
+
         val lAttractors = attractors.toList()
         for (i in lAttractors.indices){
             attr[i * 2] = lAttractors[i].first
@@ -1300,10 +1303,10 @@ class SPPRenderer(
         computeShader.setUniform("spin",Mat4(spin))
         computeShader.setUniform("freeze",Mat4(freezer))
 
-        computeShader.setUniform("na",attractors.size)
-        computeShader.setUniform("nr",repellors.size)
-        computeShader.setUniform("ns",spinners.size)
-        computeShader.setUniform("nf",freezers.size)
+        computeShader.setUniform("na",attractors.sizeFront)
+        computeShader.setUniform("nr",repellors.sizeFront)
+        computeShader.setUniform("ns",spinners.sizeFront)
+        computeShader.setUniform("nf",freezers.sizeFront)
 
         gl3.glDepthMask(false)
         gl3.glDisable(gl3.GL_BLEND)
@@ -1435,7 +1438,7 @@ class SPPRenderer(
             clock = 0f
         }
 
-        if (attractors.size == maxAorR && repellors.size == maxAorR){
+        if (attractors.sizeFront == maxAorR && repellors.sizeFront == maxAorR){
             onAchievementStateChanged(
                 Pair(
                     "ShowMeWhatYouGot",

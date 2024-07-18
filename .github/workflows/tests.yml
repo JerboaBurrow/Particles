@@ -30,6 +30,7 @@ jobs:
           mkdir cmdline-tools
           mv latest cmdline-tools
           yes | ./cmdline-tools/latest/bin/sdkmanager --licenses
+          ./cmdline-tools/latest/bin/sdkmanager "emulator"
           ./cmdline-tools/latest/bin/sdkmanager --install "system-images;android-34;google_apis;x86_64"
           ./cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-34"
           echo no | ./cmdline-tools/latest/bin/avdmanager create avd --name android34 --package "system-images;android-34;google_apis;x86_64"
@@ -61,6 +62,7 @@ jobs:
           mkdir cmdline-tools
           mv latest cmdline-tools
           yes | ./cmdline-tools/latest/bin/sdkmanager --licenses
+          ./cmdline-tools/latest/bin/sdkmanager "emulator"
           ./cmdline-tools/latest/bin/sdkmanager --install "system-images;android-34;google_apis;x86_64"
           ./cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-34"
           echo no | ./cmdline-tools/latest/bin/avdmanager create avd --name android34 --package "system-images;android-34;google_apis;x86_64"
