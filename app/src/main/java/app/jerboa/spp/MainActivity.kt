@@ -12,6 +12,7 @@ import android.os.Bundle
 import android.util.DisplayMetrics
 import android.util.Log
 import android.view.View
+import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -251,42 +252,41 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun playRate() {
+    private fun tryStartActivity(intent: Intent, failInfoToast: String) {
         try {
-            val intent = Intent(Intent.ACTION_VIEW).apply {
-                data = Uri.parse(
-                    "https://play.google.com/store/apps/details?id=app.jerboa.spp"
-                )
-                setPackage("com.android.vending")
-            }
             startActivity(intent)
         } catch (e: ActivityNotFoundException) {
-            Log.e("playRate", "ActivityNotFoundException, is Google Play Installed?")
+            Log.e("tryStartActivity", failInfoToast)
+            val toast = Toast.makeText(this, failInfoToast, Toast.LENGTH_SHORT) // in Activity
+            toast.show()
         }
+    }
+    private fun playRate() {
+        val intent = Intent(Intent.ACTION_VIEW).apply {
+            data = Uri.parse(
+                "https://play.google.com/store/apps/details?id=app.jerboa.spp"
+            )
+            setPackage("com.android.vending")
+        }
+        tryStartActivity(intent, "Could not open Play Store")
     }
 
     private fun youtube() {
-
         val uri = Uri.parse("https://www.youtube.com/channel/UCP3KhLhmG3Z1CMWyLkn7pbQ")
         val intent = Intent(Intent.ACTION_VIEW, uri)
-        startActivity(intent)
-
+        tryStartActivity(intent, "Could not open Youtube")
     }
 
     private fun web() {
-
         val uri = Uri.parse("https://jerboa.app")
         val intent = Intent(Intent.ACTION_VIEW, uri)
-        startActivity(intent)
-
+        tryStartActivity(intent, "Could not open https://jerboa.app")
     }
 
     private fun github() {
-
         val uri = Uri.parse("https://github.com/JerboaBurrow/Particles")
         val intent = Intent(Intent.ACTION_VIEW, uri)
-        startActivity(intent)
-
+        tryStartActivity(intent, "Could not open Github")
     }
 
     private fun showLicenses() {
@@ -295,21 +295,17 @@ class MainActivity : AppCompatActivity() {
         //on opening OSS sometimes there is a crash..
         //https://github.com/google/play-services-plugins/issues/100
         //com.google.android.gms.internal.oss_licenses.zzf.dummy_placeholder = getResources().getIdentifier("third_party_license_metadata", "raw", getPackageName());
-        startActivity(intent)
+        tryStartActivity(intent, "Could not show licenses")
     }
 
     private fun installPGS() {
-        try {
-            val intent = Intent(Intent.ACTION_VIEW).apply {
-                data = Uri.parse(
-                    "https://play.google.com/store/apps/details?id=com.google.android.play.games"
-                )
-                setPackage("com.android.vending")
-            }
-            startActivity(intent)
-        } catch (e: ActivityNotFoundException) {
-            Log.e("playRate", "ActivityNotFoundException, is Google Play Installed?")
+        val intent = Intent(Intent.ACTION_VIEW).apply {
+            data = Uri.parse(
+                "https://play.google.com/store/apps/details?id=com.google.android.play.games"
+            )
+            setPackage("com.android.vending")
         }
+        tryStartActivity(intent, "Could not open Play Store")
     }
 
     private fun requestUserReviewPrompt() {
