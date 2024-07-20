@@ -21,10 +21,11 @@ class BufferedMutableList<T> {
         private set
 
     var sizeBack: Int = 0
-        get() = front.size
+        get() = back.size
         private set
 
-    var indices: IntRange = front.indices
+    var indices: IntRange = IntRange(0,-1)
+        get() = front.indices
 
     operator fun get(index: Int) = front[index]
     operator fun set(index: Int, element: T) = back.set(index, element)
@@ -32,6 +33,6 @@ class BufferedMutableList<T> {
     fun add(element: T) = back.add(element)
     fun removeAt(index: Int) = back.removeAt(index)
     fun clear() = back.clear()
-    fun commit() { front = back }
+    fun commit() { front = back.toMutableList() }
     fun toList() = front.toList()
 }
