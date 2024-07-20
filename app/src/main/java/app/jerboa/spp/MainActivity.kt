@@ -90,6 +90,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var reviewManager: ReviewManager
 
     private var lastPlayTime: Long = 0L
+    private var totalTime: Long = 0L
     private var seenReview: Boolean = false
     private var lastReviewTries: Long = 0L
 
@@ -469,15 +470,11 @@ class MainActivity : AppCompatActivity() {
         renderViewModel.playTime.observe(
             this, androidx.lifecycle.Observer { time ->
                 run {
-                    val prefs = getSharedPreferences("jerboa.app.spp.prefs", MODE_PRIVATE)
-                    val prefsEdit = prefs.edit()
-                    val totalTime = if (seenReview) {
+                    totalTime = if (seenReview) {
                         0L
                     } else {
                         lastPlayTime + time
                     }
-                    prefsEdit.putLong("playTime", totalTime)
-                    prefsEdit.apply()
                 }
             }
         )
@@ -514,6 +511,7 @@ class MainActivity : AppCompatActivity() {
                 requestUserReviewPrompt()
             }
         }
+        Log.d("play time", "$lastPlayTime")
 
         val versionString =
             BuildConfig.VERSION_NAME + " (vc" + BuildConfig.VERSION_CODE + ") : " + Date(BuildConfig.TIMESTAMP)
@@ -609,6 +607,10 @@ class MainActivity : AppCompatActivity() {
 
     public override fun onStop()
     {
+        val prefs = getSharedPreferences("jerboa.app.spp.prefs", MODE_PRIVATE)
+        val prefsEdit = prefs.edit()
+        prefsEdit.putLong("playTime", totalTime)
+        prefsEdit.apply()
         super.onStop()
         renderViewModel.stopClock()
     }
