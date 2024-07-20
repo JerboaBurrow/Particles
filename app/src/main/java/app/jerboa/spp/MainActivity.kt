@@ -116,7 +116,7 @@ class MainActivity : AppCompatActivity() {
         "music-rain" to R.drawable.music_rain_,
         "music-none" to R.drawable.music_none_,
         "yt" to R.drawable.ic_yt,
-        "web" to R.drawable.weblink_icon_,
+        "web" to R.drawable.ic_logo,
         "github" to R.drawable.github_mark_white,
         "tutorial" to R.drawable.tutorial,
         "news" to R.drawable.news,
