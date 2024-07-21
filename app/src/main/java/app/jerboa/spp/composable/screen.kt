@@ -35,6 +35,9 @@ fun screen(
     playingMusic: MUSIC,
     paused: Boolean,
     speed: Float,
+    attraction: Float,
+    repulsion: Float,
+    mass: Float,
     fade: Float,
     adaptMsg: Boolean,
     promptPGS: Boolean,
@@ -63,6 +66,9 @@ fun screen(
     onUpdateClock: () -> Unit,
     onPause: () -> Unit,
     onSpeedChanged: (Float) -> Unit,
+    onMassChanged: (Float) -> Unit,
+    onAttractorStrengthChanged: (Float) -> Unit,
+    onRepellorStrengthChanged: (Float) -> Unit,
     onFadeChanged: (Float) -> Unit,
     onShowToysChanged: (Boolean) -> Unit
 ) {
@@ -94,6 +100,9 @@ fun screen(
                     playSuccess,
                     particleNumber,
                     speed,
+                    attraction,
+                    repulsion,
+                    mass,
                     fade,
                     showToys,
                     width75Percent,
@@ -107,6 +116,9 @@ fun screen(
                     onParticleNumberChanged,
                     onSelectColourMap,
                     onSpeedChanged,
+                    onMassChanged,
+                    onAttractorStrengthChanged,
+                    onRepellorStrengthChanged,
                     onFadeChanged,
                     onShowToysChanged
                 )
@@ -171,6 +183,9 @@ fun screen(
                     view.setColourMap(colourMap)
                     view.pause(paused)
                     view.setSpeed(speed)
+                    view.setMass(mass)
+                    view.setRepulsion(repulsion)
+                    view.setAttraction(attraction)
                     view.setFade(fade)
                     view.showToys(showToys)
                 }

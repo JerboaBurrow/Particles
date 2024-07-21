@@ -11,6 +11,10 @@ const val PARTICLES_SLIDER_DEFAULT = 100000f/ MAX_PARTICLES
 const val MAX_LOG_SPEED = 1.0f
 const val MAX_LOG_FADE = 0.0f
 const val MIN_LOG_FADE = -2.0f
+const val MIN_LOG_MASS = -3f
+const val MAX_LOG_MASS = 0.5f
+const val MIN_LOG_AR = 1f
+const val MAX_LOG_AR = 6f
 enum class COLOUR_MAP {
     R1,
     R2,
@@ -282,6 +286,27 @@ class RenderViewModel : ViewModel() {
 
     fun onFadeChanged(v: Float){
         _fade.value = v
+    }
+
+    private val _attractorStrength = MutableLiveData(50000.0f)
+    val attractorStrength: MutableLiveData<Float> = _attractorStrength
+
+    fun onAttractorStrengthChanged(v: Float){
+        _attractorStrength.value = v
+    }
+
+    private val _repellorStrength = MutableLiveData(50000.0f)
+    val repellorStrength: MutableLiveData<Float> = _repellorStrength
+
+    fun onRepellorStrengthChanged(v: Float){
+        _repellorStrength.value = v
+    }
+
+    private val _mass = MutableLiveData(0.1f)
+    val mass: MutableLiveData<Float> = _mass
+
+    fun onMassStrengthChanged(v: Float){
+        _mass.value = v
     }
 
     private val _showToys = MutableLiveData(false)

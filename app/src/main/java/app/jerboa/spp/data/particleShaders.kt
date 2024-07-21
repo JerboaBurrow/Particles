@@ -204,7 +204,7 @@ data class NielsOdedIntegratorShaderData(
                 "uniform float Lx; uniform float lx; uniform float Ly; uniform float ly;\n"+
                 "uniform float ar; uniform float at; uniform float br; uniform float bt;\n"+
                 "uniform float alpha; uniform float beta; uniform float gamma; uniform float DR;\n"+
-                "uniform int paused;\n"+
+                "uniform int paused; uniform float AttractorStrength; uniform float RepellorStrength;\n"+
                 "void main(void) {\n"+
                 "    float fn = float(n);\n"+
                 "    vec4 p = texture(pTex,o_texCoords); vec4 q = texture(qTex,o_texCoords);\n"+
@@ -221,12 +221,12 @@ data class NielsOdedIntegratorShaderData(
                 "       vec2 r = vec2(attr[col][0+o]-p.x,attr[col][1+o]-p.y);\n"+
                 "       float d = r.x*r.x+r.y*r.y;\n"+
                 "       if (d < 3.0) { float t = 2.0*PI*prng(param.x/fn+seed,seed+p.w); r = vec2(cos(t),sin(t)); d = 1.0; }\n"+
-                "       else { f.x += 50000.0 * r.x / d; f.y += 50000.0 * r.y / d;}}\n"+
+                "       else { f.x += AttractorStrength * r.x / d; f.y += AttractorStrength * r.y / d;}}\n"+
                 //      REPELLERS
                 "       if (j < nr && allowRepulsion){\n"+
                 "       vec2 r = vec2(rep[col][0+o]-p.x,rep[col][1+o]-p.y);\n"+
                 "       float d = r.x*r.x+r.y*r.y;\n"+
-                "       f.x -= 50000.0*r.x/d; f.y -= 50000.0*r.y/d;}\n"+
+                "       f.x -= RepellorStrength*r.x/d; f.y -= RepellorStrength*r.y/d;}\n"+
                 //      SPINNERS
                 "       if (j < ns){\n"+
                 "       vec2 r = vec2(spin[col][0+o]-p.x,spin[col][1+o]-p.y);\n"+

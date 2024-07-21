@@ -72,24 +72,13 @@ class SPPView (
         renderer.setColourMap(v)
     }
 
-    fun pause(v: Boolean)
-    {
-        renderer.pause(v)
-    }
-
-    fun setSpeed(v: Float)
-    {
-        renderer.setSpeed(v)
-    }
-
-    fun setFade(v: Float)
-    {
-        renderer.setFade(v)
-    }
-
-    fun showToys(v: Boolean){
-        renderer.setShowToys(v)
-    }
+    fun pause(v: Boolean) { renderer.pause(v) }
+    fun setSpeed(v: Float) { renderer.setSpeed(v) }
+    fun setMass(v: Float) { renderer.setMass(v) }
+    fun setAttraction(v: Float) { renderer.setAttraction(v) }
+    fun setRepulsion(v: Float) { renderer.setRepulsion(v) }
+    fun setFade(v: Float) { renderer.setFade(v) }
+    fun showToys(v: Boolean){ renderer.setShowToys(v) }
 
     override fun onResume() {
         super.onResume()
