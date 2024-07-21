@@ -36,6 +36,9 @@ fun renderScreen(
     val dismissedNews: Boolean by renderViewModel.dismissedNews.observeAsState(initial = false)
     val paused: Boolean by renderViewModel.paused.observeAsState(initial = false)
     val speed: Float by renderViewModel.speed.observeAsState(initial = 1.0f)
+    val attraction: Float by renderViewModel.attractorStrength.observeAsState(50000f)
+    val repulsion: Float by renderViewModel.repellorStrength.observeAsState(50000f)
+    val mass: Float by renderViewModel.mass.observeAsState(0.1f)
     val fade: Float by renderViewModel.fade.observeAsState(initial = 1.0f)
     val showToys: Boolean by renderViewModel.showToys.observeAsState(initial = false)
     val playSuccess: Boolean by renderViewModel.playSuccess.observeAsState(initial = false)
@@ -53,6 +56,9 @@ fun renderScreen(
         playingMusic,
         paused,
         speed,
+        attraction,
+        repulsion,
+        mass,
         fade,
         adaptMsg,
         promptPGS,
@@ -81,6 +87,9 @@ fun renderScreen(
         onUpdateClock = {renderViewModel.onUpdateClock()},
         onPause = {renderViewModel.onPause()},
         onSpeedChanged = {renderViewModel.onSpeedChanged(it)},
+        onMassChanged = {renderViewModel.onMassStrengthChanged(it)},
+        onAttractorStrengthChanged = {renderViewModel.onAttractorStrengthChanged(it)},
+        onRepellorStrengthChanged = {renderViewModel.onRepellorStrengthChanged(it)},
         onFadeChanged = {renderViewModel.onFadeChanged(it)},
         onShowToysChanged = {renderViewModel.onShowToysChanged(it)}
     )

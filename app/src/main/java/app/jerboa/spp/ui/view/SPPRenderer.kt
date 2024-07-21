@@ -115,8 +115,10 @@ class SPPRenderer(
 
     // model parameters for underdamped Langevin equations
     // using Niels-Oded 2nd order integrator https://arxiv.org/abs/1212.1244
-    private val M = 0.001
-    private val J = 0.01
+    private var M = 0.1f
+    private val J = 0.01f
+    private var attractorStrength = 50000.0f
+    private var repellorStrength = 50000.0f
     private var dt = 1.0/60.0f
     // DR,cr,br,ar,ct,bt,at,alpha,beta,gamma
     // can be computed once if DR, M, J do not vary
@@ -282,25 +284,13 @@ class SPPRenderer(
         computeTexCoords.flip()
         computeTexCoords.limit(6 * 2)
     }
-
-    fun pause(v: Boolean)
-    {
-        paused = v
-    }
-
-    fun setSpeed(v: Float)
-    {
-        speed = v
-    }
-
-    fun setFade(v: Float)
-    {
-        fadeRate = v
-    }
-
-    fun setShowToys(v: Boolean){
-        showToys = v
-    }
+    fun pause(v: Boolean) { paused = v }
+    fun setSpeed(v: Float) { speed = v }
+    fun setMass(v: Float) { M = v }
+    fun setAttraction(v: Float) { attractorStrength = v }
+    fun setRepulsion(v: Float) { repellorStrength = v }
+    fun setFade(v: Float) { fadeRate = v }
+    fun setShowToys(v: Boolean){ showToys = v }
 
     fun setParticleNumber(v: Float){
         if (particleNumber == v){return}
@@ -847,6 +837,8 @@ class SPPRenderer(
         computeShader.setUniform("gamma",gamma.toFloat())
         computeShader.setUniform("DR",DR.toFloat())
         computeShader.setUniform("rad",0.5f*scale)
+        computeShader.setUniform("AttractorStrength", attractorStrength)
+        computeShader.setUniform("RepellorStrength", repellorStrength)
 
         computeShader.setUniform("res",
             Vec2(resolution.first.toFloat(),resolution.second.toFloat())
@@ -918,6 +910,8 @@ class SPPRenderer(
         computeShader.setUniform("gamma",gamma.toFloat())
         computeShader.setUniform("DR",DR.toFloat())
         computeShader.setUniform("v", speed)
+        computeShader.setUniform("AttractorStrength", attractorStrength)
+        computeShader.setUniform("RepellorStrength", repellorStrength)
         if (paused) {
             computeShader.setUniform("paused", 1)
         }

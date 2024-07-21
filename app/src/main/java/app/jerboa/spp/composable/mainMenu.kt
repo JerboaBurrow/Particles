@@ -4,8 +4,9 @@ import androidx.compose.animation.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Checkbox
 import androidx.compose.material.CheckboxColors
 import androidx.compose.material.CheckboxDefaults
@@ -17,22 +18,80 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import app.jerboa.spp.AppInfo
 import app.jerboa.spp.ViewModel.COLOUR_MAP
+import app.jerboa.spp.ViewModel.MAX_LOG_AR
 import app.jerboa.spp.ViewModel.MAX_LOG_FADE
+import app.jerboa.spp.ViewModel.MAX_LOG_MASS
 import app.jerboa.spp.ViewModel.MAX_LOG_SPEED
 import app.jerboa.spp.ViewModel.MAX_PARTICLES
+import app.jerboa.spp.ViewModel.MIN_LOG_AR
 import app.jerboa.spp.ViewModel.MIN_LOG_FADE
+import app.jerboa.spp.ViewModel.MIN_LOG_MASS
 import app.jerboa.spp.ViewModel.TOY
 import kotlin.math.ceil
 import kotlin.math.log10
 import kotlin.math.pow
 import kotlin.math.round
-import kotlin.math.roundToLong
 
+@Composable
+fun label(
+    text: String
+)
+{
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(50))
+            .background(
+                color = Color.Black,
+                shape = RoundedCornerShape(30.dp)
+            )
+            .padding(4.dp)
+    ) {
+        Text(
+            text = text,
+            fontSize = MaterialTheme.typography.body1.fontSize,
+            color = Color.White,
+        )
+    }
+}
+
+@Composable
+fun logSlider(
+    v: Float,
+    min: Float,
+    max: Float,
+    name: String,
+    onChange: (Float) -> Unit,
+    width75Percent: Double
+) {
+
+    var sliderValue by remember {
+        mutableFloatStateOf(log10(v))
+    }
+
+    label(text = "$name " + "${round(10.0f.pow(sliderValue) * 100.0f) / 100.0f}")
+    Slider(
+        value = sliderValue,
+        onValueChange = { sliderValue = it },
+        onValueChangeFinished = {
+            onChange(
+                10.0f.pow(
+                    sliderValue
+                )
+            )
+        },
+        valueRange = min..max,
+        steps = 100,
+        modifier = Modifier
+            .width(width75Percent.dp * 0.75f)
+            .background(color = Color(1, 1, 1, 1))
+    )
+}
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun menu(
@@ -40,6 +99,9 @@ fun menu(
     playSuccess: Boolean,
     particleNumber: Float,
     speed: Float,
+    attraction: Float,
+    repulsion: Float,
+    mass: Float,
     fade: Float,
     showToys: Boolean,
     width75Percent: Double,
@@ -53,15 +115,14 @@ fun menu(
     onParticleNumberChanged: (Float) -> Unit,
     onSelectColourMap: (COLOUR_MAP) -> Unit,
     onSpeedChanged: (Float) -> Unit,
+    onMassChanged: (Float) -> Unit,
+    onAttractorStrengthChanged: (Float) -> Unit,
+    onRepellorStrengthChanged: (Float) -> Unit,
     onFadeChanged: (Float) -> Unit,
     onShowToysChanged: (Boolean) -> Unit
 ) {
     var particleSliderValue by remember {
         mutableFloatStateOf(log10(particleNumber))
-    }
-
-    var speedSliderValue by remember {
-        mutableFloatStateOf(log10(speed))
     }
 
     var fadeSliderValue by remember {
@@ -87,7 +148,7 @@ fun menu(
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
         ) {
             colourMapMenu(images,menuItemHeight,onSelectColourMap)
 
@@ -196,84 +257,74 @@ fun menu(
                 }
             }
             Spacer(modifier = Modifier.size(8.dp))
-            Text(
-                text = "Particles " + ceil(particleNumber * MAX_PARTICLES).toInt()
-                    .toString(),
-                fontSize = MaterialTheme.typography.body1.fontSize,
-                color = Color.White
-            )
-            Slider(
-                value = particleSliderValue,
-                onValueChange = { particleSliderValue = it },
-                onValueChangeFinished = {
-                    onParticleNumberChanged(
-                        10.0f.pow(
-                            particleSliderValue
+            Column (
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+                modifier = Modifier.width(width75Percent.dp * 0.75f).verticalScroll(rememberScrollState())
+            ) {
+                label(text = "Particles " + ceil(particleNumber * MAX_PARTICLES).toInt())
+                Slider(
+                    value = particleSliderValue,
+                    onValueChange = { particleSliderValue = it },
+                    onValueChangeFinished = {
+                        onParticleNumberChanged(
+                            10.0f.pow(
+                                particleSliderValue
+                            )
                         )
-                    )
-                },
-                valueRange = -3.0f..0.0f,
-                steps = 100,
-                modifier = Modifier
-                    .width(width75Percent.dp * 0.75f)
-                    .background(color = Color(1, 1, 1, 1))
-            )
-            Spacer(modifier = Modifier.size(8.dp))
-            Text(
-                text = "Speed " + "${round(10.0f.pow(speedSliderValue)*100.0f)/100.0f}"
-                    .toString(),
-                fontSize = MaterialTheme.typography.body1.fontSize,
-                color = Color.White
-            )
-            Slider(
-                value = speedSliderValue,
-                onValueChange = { speedSliderValue = it },
-                onValueChangeFinished = {
-                    onSpeedChanged(
-                        10.0f.pow(
-                            speedSliderValue
+                    },
+                    valueRange = -3.0f..0.0f,
+                    steps = 100,
+                    modifier = Modifier
+                        .width(width75Percent.dp * 0.75f)
+                        .background(color = Color(1, 1, 1, 1))
+                )
+                Spacer(modifier = Modifier.size(8.dp))
+                logSlider(speed, -3.0f, MAX_LOG_SPEED, "Speed", onSpeedChanged, width75Percent)
+                Spacer(modifier = Modifier.size(8.dp))
+                logSlider(
+                    attraction,
+                    MIN_LOG_AR,
+                    MAX_LOG_AR,
+                    "Attraction",
+                    onAttractorStrengthChanged,
+                    width75Percent
+                )
+                Spacer(modifier = Modifier.size(8.dp))
+                logSlider(
+                    repulsion,
+                    MIN_LOG_AR,
+                    MAX_LOG_AR,
+                    "Repulsion",
+                    onRepellorStrengthChanged,
+                    width75Percent
+                )
+                Spacer(modifier = Modifier.size(8.dp))
+                logSlider(mass, MIN_LOG_MASS, MAX_LOG_MASS, "Mass", onMassChanged, width75Percent)
+                Spacer(modifier = Modifier.size(8.dp))
+                label(text = "Tracing " + "${round(fadeSliderValue * 100.0f) / 100.0f}")
+                Slider(
+                    value = fadeSliderValue,
+                    onValueChange = { fadeSliderValue = it },
+                    onValueChangeFinished = {
+                        onFadeChanged(
+                            10.0f.pow((1.0f - fadeSliderValue) * (MAX_LOG_FADE - MIN_LOG_FADE) + MIN_LOG_FADE)
                         )
-                    )
-                },
-                valueRange = -MAX_LOG_SPEED..MAX_LOG_SPEED,
-                steps = 100,
-                modifier = Modifier
-                    .width(width75Percent.dp * 0.75f)
-                    .background(color = Color(1, 1, 1, 1))
-            )
-            Spacer(modifier = Modifier.size(8.dp))
-            Text(
-                text = "Tracing " + "${round(fadeSliderValue*100.0f)/100.0f}"
-                    .toString(),
-                fontSize = MaterialTheme.typography.body1.fontSize,
-                color = Color.White
-            )
-            Slider(
-                value = fadeSliderValue,
-                onValueChange = { fadeSliderValue = it },
-                onValueChangeFinished = {
-                    onFadeChanged(
-                        10.0f.pow( (1.0f-fadeSliderValue)*(MAX_LOG_FADE-MIN_LOG_FADE)+ MIN_LOG_FADE )
-                    )
-                },
-                valueRange = 0.0f..1.0f,
-                steps = 100,
-                modifier = Modifier
-                    .width(width75Percent.dp * 0.75f)
-                    .background(color = Color(1, 1, 1, 1))
-            )
-            Spacer(modifier = Modifier.size(8.dp))
-            Text(
-                text = "Show Toys"
-                    .toString(),
-                fontSize = MaterialTheme.typography.body1.fontSize,
-                color = Color.White
-            )
-            Checkbox(
-                checked = showToysValue,
-                onCheckedChange = { showToysValue = it; onShowToysChanged(it)},
-                colors = checkBoxColors()
-            )
+                    },
+                    valueRange = 0.0f..1.0f,
+                    steps = 100,
+                    modifier = Modifier
+                        .width(width75Percent.dp * 0.75f)
+                        .background(color = Color(1, 1, 1, 1))
+                )
+                Spacer(modifier = Modifier.size(8.dp))
+                label(text = "Show Toys")
+                Checkbox(
+                    checked = showToysValue,
+                    onCheckedChange = { showToysValue = it; onShowToysChanged(it) },
+                    colors = checkBoxColors()
+                )
+            }
         }
     }
 }
