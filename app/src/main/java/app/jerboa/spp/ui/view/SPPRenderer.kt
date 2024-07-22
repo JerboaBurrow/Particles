@@ -140,6 +140,7 @@ class SPPRenderer(
     private val rep = FloatArray(16){0f}
     private val spin = FloatArray(16){0f}
     private val freezer = FloatArray(16){0f}
+    private val orbiter = FloatArray(16){0f}
 
     private var bounds: Pair<Pair<Float,Float>,Pair<Float,Float>>
 
@@ -175,6 +176,7 @@ class SPPRenderer(
     private val repellors = BufferedMutableList<Pair<Float,Float>>()
     private val spinners = BufferedMutableList<Pair<Float,Float>>()
     private val freezers = BufferedMutableList<Pair<Float,Float>>()
+    private val orbiters = BufferedMutableList<Pair<Float, Float>>()
     // drawing parameters
     private val arScale = scale * 30f
     private val atrPeriod = 60*3
@@ -358,6 +360,13 @@ class SPPRenderer(
             }
         }
 
+        for (i in 0 until orbiters.sizeFront){
+            val a = orbiters[i]
+            if (norm2(x,y,a.first,a.second) < eps*eps){
+                return Pair(TOY.ORBITER, i)
+            }
+        }
+
         return null
     }
 
@@ -412,6 +421,14 @@ class SPPRenderer(
                             onToyChanged(TOY.FREEZER)
                             dragPlacedToy = true
                         }
+                        TOY.ORBITER -> {
+                            if (orbiters.sizeBack < maxAorR){
+                                orbiters.add(Pair(wx, wy))
+                            }
+                            draggedToy = Pair(TOY.ORBITER, orbiters.sizeBack-1)
+                            onToyChanged(TOY.ORBITER)
+                            dragPlacedToy = true
+                        }
                         TOY.NOTHING -> {dragPlacedToy = false}
                     }
                 }
@@ -463,6 +480,13 @@ class SPPRenderer(
                                 dx = wx - freezers[toy.second].first
                                 dy = wy - freezers[toy.second].second
                                 freezers[toy.second] = Pair(wx, wy)
+                            }
+                        }
+                        TOY.ORBITER -> {
+                            if (toy.second in orbiters.indices) {
+                                dx = wx - orbiters[toy.second].first
+                                dy = wy - orbiters[toy.second].second
+                                orbiters[toy.second] = Pair(wx, wy)
                             }
                         }
                         TOY.NOTHING -> {}
@@ -543,6 +567,20 @@ class SPPRenderer(
             }
             if (!removed && freezers.sizeBack < maxAorR){
                 freezers.add(Pair(x,y))
+            }
+        }
+        else if (mode == TOY.ORBITER){
+            var removed = false
+            for (i in 0 until orbiters.sizeBack){
+                val a = orbiters[i]
+                if (norm2(x,y,a.first,a.second) < eps*eps){
+                    orbiters.removeAt(i)
+                    removed = true
+                    break
+                }
+            }
+            if (!removed && orbiters.sizeBack < maxAorR){
+                orbiters.add(Pair(x,y))
             }
         }
 
@@ -961,6 +999,7 @@ class SPPRenderer(
         repellors.commit()
         spinners.commit()
         freezers.commit()
+        orbiters.commit()
 
         if (System.currentTimeMillis() - lastReviewRequest > REVIEW_RATE_LIMIT_MILLIS){onRequestReview(); lastReviewRequest = System.currentTimeMillis()}
         debugString = ""
@@ -1118,6 +1157,7 @@ class SPPRenderer(
             rep[i] = 0.0f
             spin[i] = 0.0f
             freezer[i] = 0.0f
+            orbiter[i] = 0.0f
         }
         // rare concurrent write errors on some devices?
         val lAttractors = attractors.toList()
@@ -1144,6 +1184,12 @@ class SPPRenderer(
             freezer[i * 2 + 1] = lFreezers[i].second
         }
 
+        val lOrbiters = orbiters.toList()
+        for (i in lOrbiters.indices) {
+            orbiter[i * 2] = lOrbiters[i].first
+            orbiter[i * 2 + 1] = lOrbiters[i].second
+        }
+
         toyDrawShader.use()
 
         // upload the positions
@@ -1152,11 +1198,13 @@ class SPPRenderer(
         toyDrawShader.setUniform("rep",Mat4(rep))
         toyDrawShader.setUniform("spin",Mat4(spin))
         toyDrawShader.setUniform("freeze",Mat4(freezer))
+        toyDrawShader.setUniform("orbit", Mat4(orbiter))
 
         toyDrawShader.setUniform("na",attractors.sizeFront)
         toyDrawShader.setUniform("nr",repellors.sizeFront)
         toyDrawShader.setUniform("ns",spinners.sizeFront)
         toyDrawShader.setUniform("nf",freezers.sizeFront)
+        toyDrawShader.setUniform("no",orbiters.sizeFront)
 
         toyDrawShader.setUniform("t",arTime.toFloat())
         toyDrawShader.setUniform("contTime",contTime.toFloat())
@@ -1180,7 +1228,7 @@ class SPPRenderer(
         if (DEBUG_GL){glError()}
 
         // draw the toys
-        gl3.glDrawArraysInstanced(gl3.GL_POINTS, 0, 1, 32)
+        gl3.glDrawArraysInstanced(gl3.GL_POINTS, 0, 1, 40)
         if (DEBUG_GL){glError()}
     }
 
@@ -1292,15 +1340,23 @@ class SPPRenderer(
             freezer[i * 2 + 1] = lFreezers[i].second
         }
 
+        val lOrbiters = orbiters.toList()
+        for (i in lOrbiters.indices) {
+            orbiter[i * 2] = lOrbiters[i].first
+            orbiter[i * 2 + 1] = lOrbiters[i].second
+        }
+
         computeShader.setUniform("attr",Mat4(attr))
         computeShader.setUniform("rep",Mat4(rep))
         computeShader.setUniform("spin",Mat4(spin))
         computeShader.setUniform("freeze",Mat4(freezer))
+        computeShader.setUniform("orbit", Mat4(orbiter))
 
         computeShader.setUniform("na",attractors.sizeFront)
         computeShader.setUniform("nr",repellors.sizeFront)
         computeShader.setUniform("ns",spinners.sizeFront)
         computeShader.setUniform("nf",freezers.sizeFront)
+        computeShader.setUniform("no",orbiters.sizeFront)
 
         gl3.glDepthMask(false)
         gl3.glDisable(gl3.GL_BLEND)

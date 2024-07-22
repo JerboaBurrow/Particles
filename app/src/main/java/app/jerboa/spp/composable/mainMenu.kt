@@ -180,6 +180,16 @@ fun menu(
                             contentDescription = "play"
                         )
                     }
+                    IconButton(onClick = { onDisplayingAboutChanged(true) }) {
+                        Image(
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .size(menuItemHeight.dp)
+                                .padding(2.dp),
+                            painter = painterResource(id = images["about"]!!),
+                            contentDescription = "Image"
+                        )
+                    }
                 }
             }
             Box(
@@ -243,13 +253,13 @@ fun menu(
                                 contentDescription = "Image"
                             )
                         }
-                        IconButton(onClick = { onDisplayingAboutChanged(true) }) {
+                        IconButton(onClick = { onAttractorChanged(TOY.ORBITER) }) {
                             Image(
                                 modifier = Modifier
                                     .fillMaxHeight()
                                     .size(menuItemHeight.dp)
                                     .padding(2.dp),
-                                painter = painterResource(id = images["about"]!!),
+                                painter = painterResource(id = images["orbiter"]!!),
                                 contentDescription = "Image"
                             )
                         }

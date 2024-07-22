@@ -38,5 +38,5 @@ files[400]=xxxhdpi
 mkdir ${FILE}
 for i in {75,100,150,200,300,400}
 do
-	inkscape -w $(($i*BASE/100)) -h $(($i*BASE/100)) -e ${FILE}/${FILE}-${files[$i]}.png ${FILE}.svg
+	inkscape -w $(($i*BASE/100)) -h $(($i*BASE/100)) -o ${FILE}/${FILE}-${files[$i]}.png ${FILE}.svg
 done
