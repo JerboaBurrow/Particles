@@ -101,6 +101,7 @@ class MainActivity : AppCompatActivity() {
         "attractor" to R.drawable.attractor_,
         "repeller" to R.drawable.repeller_,
         "spinner" to R.drawable.spinner_,
+        "orbiter" to R.drawable.orbiter_,
         "play-controller" to R.drawable.games_controller_grey,
         "play-logo" to R.drawable.play_,
         "music" to R.drawable.ic_music,
