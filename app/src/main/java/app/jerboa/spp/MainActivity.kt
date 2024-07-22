@@ -38,6 +38,7 @@ import com.google.android.play.core.review.model.ReviewErrorCode
 import java.lang.Integer.min
 import java.util.*
 
+val news = "news-21-07-24"
 
 val DEBUG = false
 
@@ -519,10 +520,10 @@ class MainActivity : AppCompatActivity() {
         var showNews = false
         if (!firstLaunch) {
             Log.d("launch", "not first")
-            if (!prefs.contains("news-31-12-23")) {
+            if (!prefs.contains(news)) {
                 Log.d("launch", "show news")
                 val prefsEdit = prefs.edit()
-                prefsEdit.putBoolean("news-31-12-23", true)
+                prefsEdit.putBoolean(news, true)
                 prefsEdit.apply()
                 showNews = true
             }
