@@ -363,7 +363,7 @@ class SPPRenderer(
 
     // drag event
     fun drag(x: Float, y: Float, state: DRAG_ACTION, toyType: TOY){
-
+        if (DEMO_REAL){return}
         val w = screenToWorld(x,resolution.second-y)
         val wx = w[0]
         val wy = w[1]
@@ -488,7 +488,7 @@ class SPPRenderer(
     
     // add an attractor or repeller toy
     private fun force(x: Float, y: Float, mode: TOY = TOY.NOTHING, eps: Float = scale){
-
+        if (DEMO_REAL){return}
         if (mode == TOY.ATTRACTOR){
             var removed = false
             for (i in 0 until attractors.sizeBack){
