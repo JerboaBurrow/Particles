@@ -38,6 +38,8 @@ fun renderScreen(
     val speed: Float by renderViewModel.speed.observeAsState(initial = 1.0f)
     val attraction: Float by renderViewModel.attractorStrength.observeAsState(50000f)
     val repulsion: Float by renderViewModel.repellorStrength.observeAsState(50000f)
+    val orbit: Float by renderViewModel.orbitStrength.observeAsState(0.5f)
+    val spin: Float by renderViewModel.spinStrength.observeAsState(1500f)
     val mass: Float by renderViewModel.mass.observeAsState(0.1f)
     val fade: Float by renderViewModel.fade.observeAsState(initial = 1.0f)
     val showToys: Boolean by renderViewModel.showToys.observeAsState(initial = false)
@@ -58,6 +60,8 @@ fun renderScreen(
         speed,
         attraction,
         repulsion,
+        orbit,
+        spin,
         mass,
         fade,
         adaptMsg,
@@ -75,7 +79,7 @@ fun renderScreen(
         onAllowAdaptChanged = {renderViewModel.onAllowAdaptChanged()},
         onAdaptMessageShown = {renderViewModel.onAdaptMessageShown()},
         onRequestingLicenses = {renderViewModel.onRequestingLicenses()},
-        onParticleNumberChanged = {renderViewModel.onParticleNumberChanged(it)},
+        onParameterChanged = {renderViewModel.onParameterChanged(it)},
         onSelectColourMap = {renderViewModel.onSelectColourMap(it)},
         selectDefaultColourMap = {renderViewModel.selectDefaultColourMap()},
         onMusicSelected = {renderViewModel.onMusicSelected(it)},
@@ -86,11 +90,6 @@ fun renderScreen(
         onRequestReview = {renderViewModel.onRequestingInAppReview()},
         onUpdateClock = {renderViewModel.onUpdateClock()},
         onPause = {renderViewModel.onPause()},
-        onSpeedChanged = {renderViewModel.onSpeedChanged(it)},
-        onMassChanged = {renderViewModel.onMassStrengthChanged(it)},
-        onAttractorStrengthChanged = {renderViewModel.onAttractorStrengthChanged(it)},
-        onRepellorStrengthChanged = {renderViewModel.onRepellorStrengthChanged(it)},
-        onFadeChanged = {renderViewModel.onFadeChanged(it)},
         onShowToysChanged = {renderViewModel.onShowToysChanged(it)}
     )
 

@@ -119,6 +119,8 @@ class SPPRenderer(
     private val J = 0.01f
     private var attractorStrength = 50000.0f
     private var repellorStrength = 50000.0f
+    private var orbitStrength = 0.5f
+    private var spinStrength = 1500f
     private var dt = 1.0/60.0f
     // DR,cr,br,ar,ct,bt,at,alpha,beta,gamma
     // can be computed once if DR, M, J do not vary
@@ -292,6 +294,8 @@ class SPPRenderer(
     fun setAttraction(v: Float) { attractorStrength = v }
     fun setRepulsion(v: Float) { repellorStrength = v }
     fun setFade(v: Float) { fadeRate = v }
+    fun setSpin(v: Float) { spinStrength = v }
+    fun setOrbit(v: Float) { orbitStrength = v }
     fun setShowToys(v: Boolean){ showToys = v }
 
     fun setParticleNumber(v: Float){
@@ -877,6 +881,8 @@ class SPPRenderer(
         computeShader.setUniform("rad",0.5f*scale)
         computeShader.setUniform("AttractorStrength", attractorStrength)
         computeShader.setUniform("RepellorStrength", repellorStrength)
+        computeShader.setUniform("orbitStrength", orbitStrength)
+        computeShader.setUniform("spinStrength", spinStrength)
 
         computeShader.setUniform("res",
             Vec2(resolution.first.toFloat(),resolution.second.toFloat())
@@ -950,6 +956,8 @@ class SPPRenderer(
         computeShader.setUniform("v", speed)
         computeShader.setUniform("AttractorStrength", attractorStrength)
         computeShader.setUniform("RepellorStrength", repellorStrength)
+        computeShader.setUniform("orbitStrength", orbitStrength)
+        computeShader.setUniform("spinStrength", spinStrength)
         if (paused) {
             computeShader.setUniform("paused", 1)
         }
