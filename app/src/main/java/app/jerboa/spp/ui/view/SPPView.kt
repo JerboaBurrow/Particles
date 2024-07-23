@@ -78,6 +78,8 @@ class SPPView (
     fun setAttraction(v: Float) { renderer.setAttraction(v) }
     fun setRepulsion(v: Float) { renderer.setRepulsion(v) }
     fun setFade(v: Float) { renderer.setFade(v) }
+    fun setSpin(v: Float) { renderer.setSpin(v) }
+    fun setOrbit(v: Float) { renderer.setOrbit(v) }
     fun showToys(v: Boolean){ renderer.setShowToys(v) }
 
     override fun onResume() {

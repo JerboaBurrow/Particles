@@ -27,11 +27,16 @@ import app.jerboa.spp.ViewModel.COLOUR_MAP
 import app.jerboa.spp.ViewModel.MAX_LOG_AR
 import app.jerboa.spp.ViewModel.MAX_LOG_FADE
 import app.jerboa.spp.ViewModel.MAX_LOG_MASS
+import app.jerboa.spp.ViewModel.MAX_LOG_ORBIT
 import app.jerboa.spp.ViewModel.MAX_LOG_SPEED
+import app.jerboa.spp.ViewModel.MAX_LOG_SPIN
 import app.jerboa.spp.ViewModel.MAX_PARTICLES
 import app.jerboa.spp.ViewModel.MIN_LOG_AR
 import app.jerboa.spp.ViewModel.MIN_LOG_FADE
 import app.jerboa.spp.ViewModel.MIN_LOG_MASS
+import app.jerboa.spp.ViewModel.MIN_LOG_ORBIT
+import app.jerboa.spp.ViewModel.MIN_LOG_SPIN
+import app.jerboa.spp.ViewModel.PARAM
 import app.jerboa.spp.ViewModel.TOY
 import kotlin.math.ceil
 import kotlin.math.log10
@@ -101,6 +106,8 @@ fun menu(
     speed: Float,
     attraction: Float,
     repulsion: Float,
+    orbit: Float,
+    spin: Float,
     mass: Float,
     fade: Float,
     showToys: Boolean,
@@ -112,13 +119,8 @@ fun menu(
     onDisplayingAboutChanged: (Boolean) -> Unit,
     onAttractorChanged: (TOY) -> Unit,
     onRequestPlayServices: () -> Unit,
-    onParticleNumberChanged: (Float) -> Unit,
+    onParameterChanged: (Pair<Float, PARAM>) -> Unit,
     onSelectColourMap: (COLOUR_MAP) -> Unit,
-    onSpeedChanged: (Float) -> Unit,
-    onMassChanged: (Float) -> Unit,
-    onAttractorStrengthChanged: (Float) -> Unit,
-    onRepellorStrengthChanged: (Float) -> Unit,
-    onFadeChanged: (Float) -> Unit,
     onShowToysChanged: (Boolean) -> Unit
 ) {
     var particleSliderValue by remember {
@@ -132,6 +134,8 @@ fun menu(
     var showToysValue by remember {
         mutableStateOf(showToys)
     }
+
+    var scroll = rememberScrollState()
 
     AnimatedVisibility(
         visible = displayingMenu,
@@ -270,16 +274,22 @@ fun menu(
             Column (
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center,
-                modifier = Modifier.width(width75Percent.dp * 0.75f).verticalScroll(rememberScrollState())
+                modifier = Modifier
+                    .width(width75Percent.dp * 0.75f)
+                    .verticalScroll(scroll)
+                    .verticalScrollBar(scroll)
             ) {
                 label(text = "Particles " + ceil(particleNumber * MAX_PARTICLES).toInt())
                 Slider(
                     value = particleSliderValue,
                     onValueChange = { particleSliderValue = it },
                     onValueChangeFinished = {
-                        onParticleNumberChanged(
-                            10.0f.pow(
-                                particleSliderValue
+                        onParameterChanged(
+                            Pair(
+                                10.0f.pow(
+                                    particleSliderValue
+                                ),
+                                PARAM.PARTICLES
                             )
                         )
                     },
@@ -290,14 +300,14 @@ fun menu(
                         .background(color = Color(1, 1, 1, 1))
                 )
                 Spacer(modifier = Modifier.size(8.dp))
-                logSlider(speed, -3.0f, MAX_LOG_SPEED, "Speed", onSpeedChanged, width75Percent)
+                logSlider(speed, -3.0f, MAX_LOG_SPEED, "Speed", {onParameterChanged(Pair(it, PARAM.SPEED))}, width75Percent)
                 Spacer(modifier = Modifier.size(8.dp))
                 logSlider(
                     attraction,
                     MIN_LOG_AR,
                     MAX_LOG_AR,
                     "Attraction",
-                    onAttractorStrengthChanged,
+                    {onParameterChanged(Pair(it, PARAM.ATTRACTION))},
                     width75Percent
                 )
                 Spacer(modifier = Modifier.size(8.dp))
@@ -306,19 +316,26 @@ fun menu(
                     MIN_LOG_AR,
                     MAX_LOG_AR,
                     "Repulsion",
-                    onRepellorStrengthChanged,
+                    {onParameterChanged(Pair(it, PARAM.REPULSION))},
                     width75Percent
                 )
                 Spacer(modifier = Modifier.size(8.dp))
-                logSlider(mass, MIN_LOG_MASS, MAX_LOG_MASS, "Mass", onMassChanged, width75Percent)
+                logSlider(orbit, MIN_LOG_ORBIT, MAX_LOG_ORBIT, "Orbit", {onParameterChanged(Pair(it, PARAM.ORBIT))}, width75Percent)
+                Spacer(modifier = Modifier.size(8.dp))
+                logSlider(spin, MIN_LOG_SPIN, MAX_LOG_SPIN, "Spin", {onParameterChanged(Pair(it, PARAM.SPIN))}, width75Percent)
+                Spacer(modifier = Modifier.size(8.dp))
+                logSlider(mass, MIN_LOG_MASS, MAX_LOG_MASS, "Mass", {onParameterChanged(Pair(it, PARAM.MASS))}, width75Percent)
                 Spacer(modifier = Modifier.size(8.dp))
                 label(text = "Tracing " + "${round(fadeSliderValue * 100.0f) / 100.0f}")
                 Slider(
                     value = fadeSliderValue,
                     onValueChange = { fadeSliderValue = it },
                     onValueChangeFinished = {
-                        onFadeChanged(
-                            10.0f.pow((1.0f - fadeSliderValue) * (MAX_LOG_FADE - MIN_LOG_FADE) + MIN_LOG_FADE)
+                        onParameterChanged(
+                            Pair(
+                                10.0f.pow((1.0f - fadeSliderValue) * (MAX_LOG_FADE - MIN_LOG_FADE) + MIN_LOG_FADE),
+                                PARAM.FADE
+                            )
                         )
                     },
                     valueRange = 0.0f..1.0f,

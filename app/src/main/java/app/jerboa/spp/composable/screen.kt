@@ -12,6 +12,7 @@ import androidx.lifecycle.MutableLiveData
 import app.jerboa.spp.AppInfo
 import app.jerboa.spp.ViewModel.COLOUR_MAP
 import app.jerboa.spp.ViewModel.MUSIC
+import app.jerboa.spp.ViewModel.PARAM
 import app.jerboa.spp.ViewModel.SOCIAL
 import app.jerboa.spp.ViewModel.TOY
 import app.jerboa.spp.data.ColourMap
@@ -37,6 +38,8 @@ fun screen(
     speed: Float,
     attraction: Float,
     repulsion: Float,
+    orbit: Float,
+    spin: Float,
     mass: Float,
     fade: Float,
     adaptMsg: Boolean,
@@ -54,7 +57,7 @@ fun screen(
     onAllowAdaptChanged: () -> Unit,
     onAdaptMessageShown: () -> Unit,
     onRequestingLicenses: () -> Unit,
-    onParticleNumberChanged: (Float) -> Unit,
+    onParameterChanged: (Pair<Float, PARAM>) -> Unit,
     onSelectColourMap: (COLOUR_MAP) -> Unit,
     selectDefaultColourMap: () -> Unit,
     onMusicSelected: (MUSIC) -> Unit,
@@ -65,11 +68,6 @@ fun screen(
     onRequestReview: () -> Unit,
     onUpdateClock: () -> Unit,
     onPause: () -> Unit,
-    onSpeedChanged: (Float) -> Unit,
-    onMassChanged: (Float) -> Unit,
-    onAttractorStrengthChanged: (Float) -> Unit,
-    onRepellorStrengthChanged: (Float) -> Unit,
-    onFadeChanged: (Float) -> Unit,
     onShowToysChanged: (Boolean) -> Unit
 ) {
 
@@ -102,6 +100,8 @@ fun screen(
                     speed,
                     attraction,
                     repulsion,
+                    orbit,
+                    spin,
                     mass,
                     fade,
                     showToys,
@@ -113,13 +113,8 @@ fun screen(
                     onDisplayingAboutChanged,
                     onAttractorChanged,
                     onRequestPlayServices,
-                    onParticleNumberChanged,
+                    onParameterChanged,
                     onSelectColourMap,
-                    onSpeedChanged,
-                    onMassChanged,
-                    onAttractorStrengthChanged,
-                    onRepellorStrengthChanged,
-                    onFadeChanged,
                     onShowToysChanged
                 )
             }
@@ -186,6 +181,8 @@ fun screen(
                     view.setMass(mass)
                     view.setRepulsion(repulsion)
                     view.setAttraction(attraction)
+                    view.setOrbit(orbit)
+                    view.setSpin(spin)
                     view.setFade(fade)
                     view.showToys(showToys)
                 }

@@ -210,6 +210,7 @@ data class NielsOdedIntegratorShaderData(
                 "uniform float ar; uniform float at; uniform float br; uniform float bt;\n"+
                 "uniform float alpha; uniform float beta; uniform float gamma; uniform float DR;\n"+
                 "uniform int paused; uniform float AttractorStrength; uniform float RepellorStrength;\n"+
+                "uniform float spinStrength; uniform float orbitStrength;\n"+
                 "void main(void) {\n"+
                 "    float fn = float(n);\n"+
                 "    vec4 p = texture(pTex,o_texCoords); vec4 q = texture(qTex,o_texCoords);\n"+
@@ -236,7 +237,7 @@ data class NielsOdedIntegratorShaderData(
                 "       if (j < ns){\n"+
                 "       vec2 r = vec2(spin[col][0+o]-p.x,spin[col][1+o]-p.y);\n"+
                 "       float d = sqrt(r.x*r.x+r.y*r.y);\n"+
-                "       if (d > softMaxRadialDistance/10.0){torque -= 1500.0*min(1.0/d,10.0);}}\n"+
+                "       if (d > softMaxRadialDistance/10.0){torque -= spinStrength*min(1.0/d,10.0);}}\n"+
                 //      FREEZERS
                 "       if (j < nf){\n"+
                 "       vec2 r = vec2(freeze[col][0+o]-p.x,freeze[col][1+o]-p.y);\n"+
@@ -246,7 +247,7 @@ data class NielsOdedIntegratorShaderData(
                 "       if (j < no){\n"+
                 "       vec2 r = vec2(orbit[col][0+o]-p.x,orbit[col][1+o]-p.y);\n"+
                 "       float d = r.x*r.x+r.y*r.y;\n"+
-                "       if (d > 1.0){f.x += 0.5*r.x; f.y += 0.5*r.y;}}\n"+
+                "       if (d > 1.0){f.x += orbitStrength*r.x; f.y += orbitStrength*r.y;}}\n"+
                 "    \n}"+
                 "    float x = p.x; float y = p.y; float theta = p.z;\n"+
                 "    float xp = q.x; float yp = q.y; float thetap = q.z;\n"+
