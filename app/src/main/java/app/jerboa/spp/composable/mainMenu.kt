@@ -277,7 +277,7 @@ fun menu(
                 modifier = Modifier
                     .width(width75Percent.dp * 0.75f)
                     .verticalScroll(scroll)
-                    .verticalScrollBar(scroll)
+                    .verticalScrollBar(scroll, false)
             ) {
                 label(text = "Particles " + ceil(particleNumber * MAX_PARTICLES).toInt())
                 Slider(

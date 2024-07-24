@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun Modifier.verticalScrollBar(
     scroll: ScrollState,
+    animated: Boolean,
     color: Color = Color.White,
     width: Dp = 8.dp,
     fadeIn: Int = 100,
@@ -24,7 +25,7 @@ fun Modifier.verticalScrollBar(
 ): Modifier {
 
     val alpha by animateFloatAsState(
-        targetValue = if (scroll.isScrollInProgress) 1f else 0f,
+        targetValue = if (!animated) 1f else {if (scroll.isScrollInProgress) 1f else 0f},
         animationSpec = tween(durationMillis = if (scroll.isScrollInProgress) fadeIn else fadeOut),
         label = ""
     )
