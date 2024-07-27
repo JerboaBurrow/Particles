@@ -1,11 +1,5 @@
 package app.jerboa.spp.data
 
-import android.util.Log
-import app.jerboa.glskeleton.utils.compileGLSLProgram
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
-import android.opengl.GLES31 as gl3
-
 abstract class ShaderData(open val vertexShader: String, open val fragmentShader: String)
 class Mat4(
     val elements: FloatArray = FloatArray(16){0f}

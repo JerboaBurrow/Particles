@@ -17,7 +17,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.jerboa.spp.AppInfo
 import app.jerboa.spp.R
-import app.jerboa.spp.ViewModel.SOCIAL
+import app.jerboa.spp.viewmodel.SOCIAL
 
 @Composable
 fun socials(

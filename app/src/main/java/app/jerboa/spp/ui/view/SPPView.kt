@@ -1,19 +1,14 @@
-package app.jerboa.spp.ui
+package app.jerboa.spp.ui.view
 
 import android.content.Context
 import android.opengl.GLSurfaceView
 import android.util.AttributeSet
-import android.util.Log
-import android.view.DragEvent
 import android.view.GestureDetector
 import android.view.MotionEvent
 import androidx.core.view.GestureDetectorCompat
-import androidx.core.view.MotionEventCompat
-import app.jerboa.spp.ViewModel.COLOUR_MAP
-import app.jerboa.spp.ViewModel.PARTICLES_SLIDER_DEFAULT
-import app.jerboa.spp.ViewModel.TOY
-import app.jerboa.spp.ui.view.DRAG_ACTION
-import app.jerboa.spp.ui.view.SPPRenderer
+import app.jerboa.spp.viewmodel.COLOUR_MAP
+import app.jerboa.spp.viewmodel.PARTICLES_SLIDER_DEFAULT
+import app.jerboa.spp.viewmodel.TOY
 
 class SPPView (
     context: Context,
@@ -101,7 +96,7 @@ class SPPView (
                     lastTouchX = event.getX(pointer)
                     lastTouchY = event.getY(pointer)
                 }
-                renderer.drag(lastTouchX,lastTouchY,DRAG_ACTION.START, placingToy)
+                renderer.drag(lastTouchX,lastTouchY,DRAG.START, placingToy)
                 pointerId = event.getPointerId(0)
             }
             MotionEvent.ACTION_MOVE -> {
@@ -120,12 +115,12 @@ class SPPView (
                     lastTouchX = x
                     lastTouchY = y
 
-                    renderer.drag(x, y, DRAG_ACTION.CONTINUE, placingToy)
+                    renderer.drag(x, y, DRAG.CONTINUE, placingToy)
                 }
             }
             MotionEvent.ACTION_UP -> {
                 pointerId = MotionEvent.INVALID_POINTER_ID
-                renderer.drag(lastTouchX,lastTouchY,DRAG_ACTION.STOP, placingToy)
+                renderer.drag(lastTouchX,lastTouchY,DRAG.STOP, placingToy)
             }
             MotionEvent.ACTION_POINTER_UP -> {
                 event.actionIndex.also { pointer ->
@@ -134,7 +129,7 @@ class SPPView (
                             val newPointerIndex = if (pointer == 0) 1 else 0
                             lastTouchX = event.getX(newPointerIndex)
                             lastTouchY = event.getY(newPointerIndex)
-                            renderer.drag(lastTouchX,lastTouchY,DRAG_ACTION.STOP, placingToy)
+                            renderer.drag(lastTouchX,lastTouchY,DRAG.STOP, placingToy)
                         }
                 }
             }

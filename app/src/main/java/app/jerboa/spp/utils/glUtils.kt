@@ -1,4 +1,4 @@
-package app.jerboa.glskeleton.utils
+package app.jerboa.spp.utils
 import android.util.Log
 import java.nio.FloatBuffer
 import android.opengl.GLES30 as gl3

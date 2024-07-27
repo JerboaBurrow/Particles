@@ -1,4 +1,4 @@
-package app.jerboa.spp.ViewModel
+package app.jerboa.spp.viewmodel
 
 import android.media.MediaPlayer
 import android.util.Log

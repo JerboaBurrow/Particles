@@ -2,7 +2,7 @@ package app.jerboa.spp.data
 
 import android.opengl.GLES31
 import android.util.Log
-import app.jerboa.glskeleton.utils.compileGLSLProgram
+import app.jerboa.spp.utils.compileGLSLProgram
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
