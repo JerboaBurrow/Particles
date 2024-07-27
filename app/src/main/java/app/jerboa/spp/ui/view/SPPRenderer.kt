@@ -5,8 +5,7 @@ import android.opengl.GLES31.*
 import android.opengl.GLSurfaceView
 import android.opengl.Matrix
 import android.util.Log
-import app.jerboa.glskeleton.utils.*
-import app.jerboa.spp.ViewModel.*
+import app.jerboa.spp.viewmodel.*
 import app.jerboa.spp.data.*
 import app.jerboa.spp.utils.*
 import kotlinx.coroutines.CoroutineScope
@@ -26,7 +25,7 @@ import android.opengl.GLES31 as gl3
 const val DEBUG: Boolean = false
 const val PERFORMANCE: Boolean = false
 
-enum class DRAG_ACTION {START, STOP, CONTINUE}
+enum class DRAG {START, STOP, CONTINUE}
 
 class SPPRenderer(
     private val resolution: Pair<Int,Int>,
@@ -375,14 +374,14 @@ class SPPRenderer(
     }
 
     // drag event
-    fun drag(x: Float, y: Float, state: DRAG_ACTION, toyType: TOY){
+    fun drag(x: Float, y: Float, state: DRAG, toyType: TOY){
         if (DEMO_REAL){return}
         val w = screenToWorld(x,resolution.second-y)
         val wx = w[0]
         val wy = w[1]
 
         when (state){
-            DRAG_ACTION.START -> {
+            DRAG.START -> {
                 dragStartTime = System.currentTimeMillis()
                 val toy = toySelected(wx, wy)
                 if (toy != null){
@@ -438,7 +437,7 @@ class SPPRenderer(
                 }
                 dragDelta = Vec2(0f,0f)
             }
-            DRAG_ACTION.STOP -> {
+            DRAG.STOP -> {
                 draggedToy = null
 
                 if (dragPlacedToy){dragPlacedToy = false; return}
@@ -452,7 +451,7 @@ class SPPRenderer(
                 }
 
             }
-            DRAG_ACTION.CONTINUE -> {
+            DRAG.CONTINUE -> {
                 var dx: Float = 0f
                 var dy: Float = 0f
                 val toy = draggedToy
@@ -644,8 +643,8 @@ class SPPRenderer(
 
         particleDrawShader.fragmentShader = ParticleDrawShaderData().fragmentShader
 
+        particleDrawShader.release()
         particleDrawShader.compile()
-
         particleDrawShader.use()
 
         // now we add a few uniforms that don't need to be updated
@@ -661,7 +660,9 @@ class SPPRenderer(
         particleDrawShader.setUniform("scale",scale)
         particleDrawShader.setUniform("transitionSteps",transitionSteps)
 
-        if (DEBUG_GL){glError()}
+        if (DEBUG_GL){
+            glError()
+        }
 
     }
 
@@ -823,7 +824,9 @@ class SPPRenderer(
         val qTex = texBuffer[Textures[TextureId.Y]!!]
         val paramTex = texBuffer[Textures[TextureId.PARAM]!!]
 
-        if (DEBUG_GL){glError()}
+        if (DEBUG_GL){
+            glError()
+        }
 
         // instance and pack each texture
 
@@ -833,12 +836,16 @@ class SPPRenderer(
         initTexture2DRGBA32F(pTex, m)
         transferToTexture2DRGBA32F(pTex, particleBuffer, m)
 
-        if (DEBUG_GL){glError()}
+        if (DEBUG_GL){
+            glError()
+        }
 
         initTexture2DRGBA32F(qTex, m)
         transferToTexture2DRGBA32F(qTex, qBuffer, m)
 
-        if (DEBUG_GL){glError()}
+        if (DEBUG_GL){
+            glError()
+        }
 
         initTexture2DRGBA32F(paramTex,m)
         transferToTexture2DRGBA32F(paramTex,pBuffer,m)
@@ -850,7 +857,9 @@ class SPPRenderer(
 
         compileDrawShader()
 
-        if (DEBUG_GL){glError()}
+        if (DEBUG_GL){
+            glError()
+        }
 
         computeShader.release()
         computeShader.compile()
@@ -908,7 +917,9 @@ class SPPRenderer(
         fadeShader.release()
         fadeShader.compile()
 
-        if (DEBUG_GL){glError()}
+        if (DEBUG_GL){
+            glError()
+        }
 
         gl3.glGenQueries(1,queryBuffer)
     }
@@ -1061,7 +1072,9 @@ class SPPRenderer(
             demoFrameId += 1
         }
 
-        if (DEBUG_GL){glError()}
+        if (DEBUG_GL){
+            glError()
+        }
 
         val pTex = texBuffer[Textures[TextureId.X]!!]
         val qTex = texBuffer[Textures[TextureId.Y]!!]
@@ -1137,7 +1150,9 @@ class SPPRenderer(
 
         particleDrawShader.setUniform("n",m)
 
-        if (DEBUG_GL){glError()}
+        if (DEBUG_GL){
+            glError()
+        }
 
         // instanced drawing of p particles
 
@@ -1156,7 +1171,9 @@ class SPPRenderer(
                 allParticlesOfScreen = true
             }
         }
-        if (DEBUG_GL){glError()}
+        if (DEBUG_GL){
+            glError()
+        }
     }
 
     private fun drawToys() {
@@ -1229,15 +1246,21 @@ class SPPRenderer(
             toyDrawShader.setUniform("alpha",toysAlpha)
         }
 
-        if (DEBUG_GL){glError()}
+        if (DEBUG_GL){
+            glError()
+        }
 
         gl3.glEnableVertexAttribArray(0)
         gl3.glVertexAttribPointer(0, 3, gl3.GL_FLOAT, false, 0, drawVertices)
-        if (DEBUG_GL){glError()}
+        if (DEBUG_GL){
+            glError()
+        }
 
         // draw the toys
         gl3.glDrawArraysInstanced(gl3.GL_POINTS, 0, 1, 40)
-        if (DEBUG_GL){glError()}
+        if (DEBUG_GL){
+            glError()
+        }
     }
 
     private fun step(delta: Float){
@@ -1250,14 +1273,18 @@ class SPPRenderer(
 
         val m = ceil(sqrt(p.toFloat())).toInt()
 
-        if (DEBUG_GL){glError()}
+        if (DEBUG_GL){
+            glError()
+        }
 
         // gen frame buffer which we will "draw" particle positions to
         fbos.clear()
         gl3.glGenFramebuffers(1,fbos)
         val fbo = fbos[0]
         gl3.glBindFramebuffer(gl3.GL_FRAMEBUFFER, fbo)
-        if (DEBUG_GL){glError()}
+        if (DEBUG_GL){
+            glError()
+        }
 
         // frame buffer textures
         // position now
@@ -1285,7 +1312,9 @@ class SPPRenderer(
             0
         )
 
-        if (DEBUG_GL){glError()}
+        if (DEBUG_GL){
+            glError()
+        }
         glBufferStatus()
 
         // pTex and qTex need to be dranw too, paramTex is constant for now
@@ -1295,7 +1324,9 @@ class SPPRenderer(
         drawBuffers.flip()
         drawBuffers.limit(2)
         gl3.glDrawBuffers(2,drawBuffers)
-        if (DEBUG_GL){glError()}
+        if (DEBUG_GL){
+            glError()
+        }
         glBufferStatus()
 
         gl3.glActiveTexture(gl3.GL_TEXTURE2)
@@ -1371,22 +1402,30 @@ class SPPRenderer(
 
         gl3.glViewport(0, 0, m, m)
 
-        if (DEBUG_GL){glError()}
+        if (DEBUG_GL){
+            glError()
+        }
 
         // upload the vertices into attribute 0 (see shaders)
         gl3.glEnableVertexAttribArray(0)
         gl3.glVertexAttribPointer(0, 3, gl3.GL_FLOAT, false, 0, computeVerts)
-        if (DEBUG_GL){glError()}
+        if (DEBUG_GL){
+            glError()
+        }
 
         // textures go ini attribute 1
         gl3.glEnableVertexAttribArray(1)
         gl3.glVertexAttribPointer(1, 2, gl3.GL_FLOAT, false, 0, computeTexCoords)
-        if (DEBUG_GL){glError()}
+        if (DEBUG_GL){
+            glError()
+        }
 
         // draw the quad === compute the next positions
         gl3.glDrawArrays(gl3.GL_TRIANGLES, 0, 6)
 
-        if (DEBUG_GL){glError()}
+        if (DEBUG_GL){
+            glError()
+        }
 
         // if needed we can retrieve and print particle positions while developing
         // this of course crushes performance
@@ -1399,7 +1438,9 @@ class SPPRenderer(
             returnBuffer.limit(4 * m * m)
 
             glBufferStatus()
-            if (DEBUG_GL){glError()}
+            if (DEBUG_GL){
+                glError()
+            }
             // get all pixels in the return buffer
             gl3.glReadPixels(
                 0,
@@ -1412,7 +1453,9 @@ class SPPRenderer(
             )
             returnBuffer.flip()
             returnBuffer.limit(4 * m * m)
-            if (DEBUG_GL){glError()}
+            if (DEBUG_GL){
+                glError()
+            }
             glBufferStatus()
 
             // get result as float array
@@ -1430,7 +1473,9 @@ class SPPRenderer(
             returnBuffer.limit(4 * m * m)
 
             glBufferStatus()
-            if (DEBUG_GL){glError()}
+            if (DEBUG_GL){
+                glError()
+            }
             // get all pixels in the return buffer
             gl3.glReadPixels(
                 0,
@@ -1443,7 +1488,9 @@ class SPPRenderer(
             )
             returnBuffer.flip()
             returnBuffer.limit(4 * m * m)
-            if (DEBUG_GL){glError()}
+            if (DEBUG_GL){
+                glError()
+            }
             glBufferStatus()
 
             // get result as float array
@@ -1462,7 +1509,9 @@ class SPPRenderer(
         drawBuffers.flip()
         drawBuffers.limit(2)
         gl3.glDeleteBuffers(2,drawBuffers)
-        if (DEBUG_GL){glError()}
+        if (DEBUG_GL){
+            glError()
+        }
     }
 
     private fun achievements(){

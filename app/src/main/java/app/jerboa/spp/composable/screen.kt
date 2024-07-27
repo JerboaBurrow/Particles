@@ -1,22 +1,19 @@
 package app.jerboa.spp.composable
 
 import android.annotation.SuppressLint
-import android.util.Log
 import androidx.compose.animation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.lifecycle.MutableLiveData
 import app.jerboa.spp.AppInfo
-import app.jerboa.spp.ViewModel.COLOUR_MAP
-import app.jerboa.spp.ViewModel.MUSIC
-import app.jerboa.spp.ViewModel.PARAM
-import app.jerboa.spp.ViewModel.SOCIAL
-import app.jerboa.spp.ViewModel.TOY
-import app.jerboa.spp.data.ColourMap
-import app.jerboa.spp.ui.SPPView
+import app.jerboa.spp.viewmodel.COLOUR_MAP
+import app.jerboa.spp.viewmodel.MUSIC
+import app.jerboa.spp.viewmodel.PARAM
+import app.jerboa.spp.viewmodel.SOCIAL
+import app.jerboa.spp.viewmodel.TOY
+import app.jerboa.spp.ui.view.SPPView
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalAnimationApi::class)

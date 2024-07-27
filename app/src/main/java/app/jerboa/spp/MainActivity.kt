@@ -16,10 +16,10 @@ import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import app.jerboa.spp.ViewModel.MUSIC
-import app.jerboa.spp.ViewModel.REVIEW_RATE_LIMIT_MILLIS
-import app.jerboa.spp.ViewModel.RenderViewModel
-import app.jerboa.spp.ViewModel.SOCIAL
+import app.jerboa.spp.viewmodel.MUSIC
+import app.jerboa.spp.viewmodel.REVIEW_RATE_LIMIT_MILLIS
+import app.jerboa.spp.viewmodel.RenderViewModel
+import app.jerboa.spp.viewmodel.SOCIAL
 import app.jerboa.spp.composable.renderScreen
 import app.jerboa.spp.ui.theme.SPPTheme
 import com.google.android.gms.common.ConnectionResult
