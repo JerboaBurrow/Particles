@@ -10,8 +10,13 @@ import app.jerboa.spp.data.*
 import app.jerboa.spp.utils.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.newSingleThreadContext
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.FloatBuffer
@@ -95,9 +100,8 @@ class SPPRenderer(
     private var last: Long = System.nanoTime()
     // id for a frame (will be kep mod 60)
     private var frameNumber: Int = 0
-    // rate-limit touch events
-    private val touchRateLimit = 10 // frames
     private var lastTapped: Int = 0
+    private val tapMutex = Mutex()
     // smoothed framerate states
     private val deltas: FloatArray = FloatArray(60){0f}
 
@@ -458,37 +462,37 @@ class SPPRenderer(
                 if (toy != null) {
                     when (toy.first) {
                         TOY.ATTRACTOR -> {
-                            if (toy.second in attractors.indices) {
-                                dx = wx - attractors[toy.second].first
-                                dy = wy - attractors[toy.second].second
+                            if (toy.second in attractors.indicesBack) {
+                                dx = wx - attractors.getBack(toy.second).first
+                                dy = wy - attractors.getBack(toy.second).second
                                 attractors[toy.second] = Pair(wx, wy)
                             }
                         }
                         TOY.REPELLOR -> {
-                            if (toy.second in repellors.indices) {
-                                dx = wx - repellors[toy.second].first
-                                dy = wy - repellors[toy.second].second
+                            if (toy.second in repellors.indicesBack) {
+                                dx = wx - repellors.getBack(toy.second).first
+                                dy = wy - repellors.getBack(toy.second).second
                                 repellors[toy.second] = Pair(wx, wy)
                             }
                         }
                         TOY.SPINNER -> {
-                            if (toy.second in spinners.indices) {
-                                dx = wx - spinners[toy.second].first
-                                dy = wy - spinners[toy.second].second
+                            if (toy.second in spinners.indicesBack) {
+                                dx = wx - spinners.getBack(toy.second).first
+                                dy = wy - spinners.getBack(toy.second).second
                                 spinners[toy.second] = Pair(wx, wy)
                             }
                         }
                         TOY.FREEZER -> {
-                            if (toy.second in freezers.indices) {
-                                dx = wx - freezers[toy.second].first
-                                dy = wy - freezers[toy.second].second
+                            if (toy.second in freezers.indicesBack) {
+                                dx = wx - freezers.getBack(toy.second).first
+                                dy = wy - freezers.getBack(toy.second).second
                                 freezers[toy.second] = Pair(wx, wy)
                             }
                         }
                         TOY.ORBITER -> {
-                            if (toy.second in orbiters.indices) {
-                                dx = wx - orbiters[toy.second].first
-                                dy = wy - orbiters[toy.second].second
+                            if (toy.second in orbiters.indicesBack) {
+                                dx = wx - orbiters.getBack(toy.second).first
+                                dy = wy - orbiters.getBack(toy.second).second
                                 orbiters[toy.second] = Pair(wx, wy)
                             }
                         }
@@ -503,14 +507,17 @@ class SPPRenderer(
     // propagate a tap event
     fun tap(x: Float,y: Float, type: TOY = TOY.ATTRACTOR){
         if (DEMO_REAL){return}
-        val w = screenToWorld(x,resolution.second-y)
-        val wx = w[0]
-        val wy = w[1]
-        if (lastTapped>touchRateLimit) {
-            force(wx, wy, type, 2.0f*arScale)
-            lastTapped = 0
+        runBlocking {
+            withContext(Dispatchers.Default) {
+                tapMutex.withLock {
+                    val w = screenToWorld(x, resolution.second - y)
+                    val wx = w[0]
+                    val wy = w[1]
+                    force(wx, wy, type, 2.0f * arScale)
+                    timeSinceLastTap = 0f
+                }
+            }
         }
-        timeSinceLastTap = 0f
     }
     
     // add an attractor or repeller toy
@@ -519,7 +526,7 @@ class SPPRenderer(
         if (mode == TOY.ATTRACTOR){
             var removed = false
             for (i in 0 until attractors.sizeBack){
-                val a = attractors[i]
+                val a = attractors.getBack(i)
                 if (norm2(x,y,a.first,a.second) < eps*eps){
                     attractors.removeAt(i)
                     removed=true
@@ -533,7 +540,7 @@ class SPPRenderer(
         else if (mode == TOY.REPELLOR){
             var removed = false
             for (i in 0 until repellors.sizeBack){
-                val a = repellors[i]
+                val a = repellors.getBack(i)
                 if (norm2(x,y,a.first,a.second) < eps*eps){
                     repellors.removeAt(i)
                     removed = true
@@ -547,7 +554,7 @@ class SPPRenderer(
         else if (mode == TOY.SPINNER){
             var removed = false
             for (i in 0 until spinners.sizeBack){
-                val a = spinners[i]
+                val a = spinners.getBack(i)
                 if (norm2(x,y,a.first,a.second) < eps*eps){
                     spinners.removeAt(i)
                     removed = true
@@ -561,7 +568,7 @@ class SPPRenderer(
         else if (mode == TOY.FREEZER){
             var removed = false
             for (i in 0 until freezers.sizeBack){
-                val a = freezers[i]
+                val a = freezers.getBack(i)
                 if (norm2(x,y,a.first,a.second) < eps*eps){
                     freezers.removeAt(i)
                     removed = true
@@ -575,7 +582,7 @@ class SPPRenderer(
         else if (mode == TOY.ORBITER){
             var removed = false
             for (i in 0 until orbiters.sizeBack){
-                val a = orbiters[i]
+                val a = orbiters.getBack(i)
                 if (norm2(x,y,a.first,a.second) < eps*eps){
                     orbiters.removeAt(i)
                     removed = true
