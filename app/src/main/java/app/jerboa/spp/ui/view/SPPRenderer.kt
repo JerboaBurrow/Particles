@@ -188,10 +188,14 @@ class SPPRenderer(
     private var arTime = 0
     private var contTime = 0
 
-    private var draggedToy: Pair<TOY, Int>? = null
-    private var dragDelta: Vec2 = Vec2(0f,0f)
-    private var dragStartTime: Long = 0L
-    private var dragPlacedToy: Boolean = false
+    data class TouchEvent(
+        var draggedToy: Pair<TOY, Int>? = null,
+        var dragDelta: Vec2 = Vec2(0f,0f),
+        var dragStartTime: Long = 0L,
+        var dragPlacedToy: Boolean = false
+    )
+
+    private var touchEvents: MutableMap<UInt, TouchEvent> = mutableMapOf()
 
     data class TapDelta (val distance: Float, val timeMillis: Long)
     private val tapDelta = TapDelta(arScale*0.5f, 100L)
@@ -378,87 +382,104 @@ class SPPRenderer(
     }
 
     // drag event
-    fun drag(x: Float, y: Float, state: DRAG, toyType: TOY){
+    fun handleTouchEvent(x: Float, y: Float, state: DRAG, toyType: TOY, pointer: UInt){
         if (DEMO_REAL){return}
+
+        if (pointer !in touchEvents)
+        {
+            touchEvents[pointer] = TouchEvent()
+        }
+        val touchEvent = touchEvents[pointer]!!
+
         val w = screenToWorld(x,resolution.second-y)
         val wx = w[0]
         val wy = w[1]
 
-        when (state){
+        when (state) {
             DRAG.START -> {
-                dragStartTime = System.currentTimeMillis()
+                touchEvent.dragStartTime = System.currentTimeMillis()
                 val toy = toySelected(wx, wy)
-                if (toy != null){
-                    draggedToy = toy
+                if (toy != null) {
+                    touchEvent.draggedToy = toy
                     onToyChanged(toy.first)
-                    dragPlacedToy = false
-                }
-                else {
-                    when (toyType)
-                    {
+                    touchEvent.dragPlacedToy = false
+                } else {
+                    when (toyType) {
                         TOY.ATTRACTOR -> {
-                            if (attractors.sizeBack < maxAorR){
+                            if (attractors.sizeBack < maxAorR) {
                                 attractors.add(Pair(wx, wy))
                             }
-                            draggedToy = Pair(TOY.ATTRACTOR, attractors.sizeBack-1)
+                            touchEvent.draggedToy = Pair(TOY.ATTRACTOR, attractors.sizeBack - 1)
                             onToyChanged(TOY.ATTRACTOR)
-                            dragPlacedToy = true
+                            touchEvent.dragPlacedToy = true
                         }
+
                         TOY.REPELLOR -> {
                             if (repellors.sizeBack < maxAorR) {
                                 repellors.add(Pair(wx, wy))
                             }
-                            draggedToy = Pair(TOY.REPELLOR, repellors.sizeBack-1)
+                            touchEvent.draggedToy = Pair(TOY.REPELLOR, repellors.sizeBack - 1)
                             onToyChanged(TOY.REPELLOR)
-                            dragPlacedToy = true
+                            touchEvent.dragPlacedToy = true
                         }
+
                         TOY.SPINNER -> {
-                            if (spinners.sizeBack < maxAorR){
+                            if (spinners.sizeBack < maxAorR) {
                                 spinners.add(Pair(wx, wy))
                             }
-                            draggedToy = Pair(TOY.SPINNER, spinners.sizeBack-1)
+                            touchEvent.draggedToy = Pair(TOY.SPINNER, spinners.sizeBack - 1)
                             onToyChanged(TOY.SPINNER)
-                            dragPlacedToy = true
+                            touchEvent.dragPlacedToy = true
                         }
+
                         TOY.FREEZER -> {
-                            if (freezers.sizeBack < maxAorR){
+                            if (freezers.sizeBack < maxAorR) {
                                 freezers.add(Pair(wx, wy))
                             }
-                            draggedToy = Pair(TOY.FREEZER, freezers.sizeBack-1)
+                            touchEvent.draggedToy = Pair(TOY.FREEZER, freezers.sizeBack - 1)
                             onToyChanged(TOY.FREEZER)
-                            dragPlacedToy = true
+                            touchEvent.dragPlacedToy = true
                         }
+
                         TOY.ORBITER -> {
-                            if (orbiters.sizeBack < maxAorR){
+                            if (orbiters.sizeBack < maxAorR) {
                                 orbiters.add(Pair(wx, wy))
                             }
-                            draggedToy = Pair(TOY.ORBITER, orbiters.sizeBack-1)
+                            touchEvent.draggedToy = Pair(TOY.ORBITER, orbiters.sizeBack - 1)
                             onToyChanged(TOY.ORBITER)
-                            dragPlacedToy = true
+                            touchEvent.dragPlacedToy = true
                         }
-                        TOY.NOTHING -> {dragPlacedToy = false}
+
+                        TOY.NOTHING -> {
+                            touchEvent.dragPlacedToy = false
+                        }
                     }
                 }
-                dragDelta = Vec2(0f,0f)
+                touchEvent.dragDelta = Vec2(0f, 0f)
+                touchEvents[pointer] = touchEvent
             }
+
             DRAG.STOP -> {
-                draggedToy = null
+                touchEvent.draggedToy = null
 
-                if (dragPlacedToy){dragPlacedToy = false; return}
-
-                val dragDistance2 = dragDelta.x*dragDelta.x + dragDelta.y*dragDelta.y
-                val dragTime = System.currentTimeMillis() - dragStartTime
-                dragStartTime = 0L
-                if (dragDistance2 < tapDelta.distance*tapDelta.distance || dragTime < tapDelta.timeMillis)
-                {
-                    tap(x, y, toyType)
+                if (touchEvent.dragPlacedToy) {
+                    touchEvent.dragPlacedToy = false; return
                 }
 
+                val d = touchEvent.dragDelta
+                val dragDistance2 = d.x * d.x + d.y * d.y
+                val dragTime = System.currentTimeMillis() - touchEvent.dragStartTime
+                touchEvent.dragStartTime = 0L
+                if (dragDistance2 < tapDelta.distance * tapDelta.distance || dragTime < tapDelta.timeMillis) {
+                    touchEvents.remove(pointer)
+                    tap(x, y, toyType)
+                }
             }
+
             DRAG.CONTINUE -> {
                 var dx: Float = 0f
                 var dy: Float = 0f
-                val toy = draggedToy
+                val toy = touchEvent.draggedToy
                 if (toy != null) {
                     when (toy.first) {
                         TOY.ATTRACTOR -> {
@@ -468,6 +489,7 @@ class SPPRenderer(
                                 attractors[toy.second] = Pair(wx, wy)
                             }
                         }
+
                         TOY.REPELLOR -> {
                             if (toy.second in repellors.indicesBack) {
                                 dx = wx - repellors.getBack(toy.second).first
@@ -475,6 +497,7 @@ class SPPRenderer(
                                 repellors[toy.second] = Pair(wx, wy)
                             }
                         }
+
                         TOY.SPINNER -> {
                             if (toy.second in spinners.indicesBack) {
                                 dx = wx - spinners.getBack(toy.second).first
@@ -482,6 +505,7 @@ class SPPRenderer(
                                 spinners[toy.second] = Pair(wx, wy)
                             }
                         }
+
                         TOY.FREEZER -> {
                             if (toy.second in freezers.indicesBack) {
                                 dx = wx - freezers.getBack(toy.second).first
@@ -489,6 +513,7 @@ class SPPRenderer(
                                 freezers[toy.second] = Pair(wx, wy)
                             }
                         }
+
                         TOY.ORBITER -> {
                             if (toy.second in orbiters.indicesBack) {
                                 dx = wx - orbiters.getBack(toy.second).first
@@ -496,10 +521,15 @@ class SPPRenderer(
                                 orbiters[toy.second] = Pair(wx, wy)
                             }
                         }
+
                         TOY.NOTHING -> {}
                     }
                 }
-                dragDelta = Vec2(dragDelta.x + sqrt(dx*dx), dragDelta.y + sqrt(dy*dy))
+                touchEvent.dragDelta = Vec2(
+                    touchEvent.dragDelta.x + sqrt(dx * dx),
+                    touchEvent.dragDelta.y + sqrt(dy * dy)
+                )
+                touchEvents[pointer] = touchEvent
             }
         }
     }

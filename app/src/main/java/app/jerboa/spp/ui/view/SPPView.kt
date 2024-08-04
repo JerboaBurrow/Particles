@@ -3,6 +3,7 @@ package app.jerboa.spp.ui.view
 import android.content.Context
 import android.opengl.GLSurfaceView
 import android.util.AttributeSet
+import android.util.Log
 import android.view.GestureDetector
 import android.view.MotionEvent
 import androidx.core.view.GestureDetectorCompat
@@ -37,14 +38,8 @@ class SPPView (
         allowAdapt,
         colourMap
     )
-    private val gestures: GestureDetectorCompat = GestureDetectorCompat(context,this)
+    private val gestures: GestureDetector = GestureDetector(context,this)
     var isDisplayingMenuChanged: Boolean = false
-
-    private var lastTouchX: Float = 0f
-    private var lastTouchY: Float = 0f
-    private var posX: Float = 0f
-    private var posY: Float = 0f
-    private var pointerId: Int = 0
 
     init {
         setEGLContextClientVersion(3)
@@ -90,46 +85,43 @@ class SPPView (
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
-        when (event.action) {
+        Log.d("event", "${event.action}")
+        when (event.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
                 event.actionIndex.also { pointer ->
-                    lastTouchX = event.getX(pointer)
-                    lastTouchY = event.getY(pointer)
+                    renderer.handleTouchEvent(
+                        event.getX(pointer),
+                        event.getY(pointer),
+                        DRAG.START,
+                        placingToy,
+                        0U
+                    )
                 }
-                renderer.drag(lastTouchX,lastTouchY,DRAG.START, placingToy)
-                pointerId = event.getPointerId(0)
+
+            }
+            MotionEvent.ACTION_POINTER_DOWN -> {
+                event.actionIndex.also { pointer ->
+                    renderer.handleTouchEvent(
+                        event.getX(pointer),
+                        event.getY(pointer),
+                        DRAG.START,
+                        placingToy,
+                        event.actionIndex.toUInt()
+                    )
+                }
             }
             MotionEvent.ACTION_MOVE -> {
-                val pointer = event.findPointerIndex(pointerId)
-                if (pointer in 0..event.pointerCount) {
-
-                    val (x: Float, y: Float) = pointer.let {
-                        event.getX(pointer) to event.getY(pointer)
-                    }
-
-                    posX += x - lastTouchX
-                    posY += y - lastTouchY
-
-                    invalidate()
-
-                    lastTouchX = x
-                    lastTouchY = y
-
-                    renderer.drag(x, y, DRAG.CONTINUE, placingToy)
-                }
+                val pointer = event.findPointerIndex(event.actionIndex)
+                renderer.handleTouchEvent(event.getX(pointer), event.getY(pointer), DRAG.CONTINUE, placingToy, event.actionIndex.toUInt())
             }
             MotionEvent.ACTION_UP -> {
-                pointerId = MotionEvent.INVALID_POINTER_ID
-                renderer.drag(lastTouchX,lastTouchY,DRAG.STOP, placingToy)
+                renderer.handleTouchEvent(event.getX(0),event.getY(0),DRAG.STOP, placingToy, event.actionIndex.toUInt())
             }
             MotionEvent.ACTION_POINTER_UP -> {
                 event.actionIndex.also { pointer ->
-                    event.getPointerId(pointer).takeIf { it == pointerId }
-                        ?.run {
-                            val newPointerIndex = if (pointer == 0) 1 else 0
-                            lastTouchX = event.getX(newPointerIndex)
-                            lastTouchY = event.getY(newPointerIndex)
-                            renderer.drag(lastTouchX,lastTouchY,DRAG.STOP, placingToy)
+                    event.getPointerId(pointer)
+                        .run {
+                            renderer.handleTouchEvent(event.getX(pointer),event.getY(pointer),DRAG.STOP, placingToy, event.actionIndex.toUInt())
                         }
                 }
             }
