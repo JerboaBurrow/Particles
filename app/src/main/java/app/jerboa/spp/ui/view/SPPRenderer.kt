@@ -164,7 +164,7 @@ class SPPRenderer(
         X,Y,PARAM,CMAP
     }
 
-    private val Textures: EnumMap<TextureId, Int> = EnumMap(
+    private val textures: EnumMap<TextureId, Int> = EnumMap(
         mutableMapOf(
             TextureId.X to 0,
             TextureId.Y to 1,
@@ -176,16 +176,16 @@ class SPPRenderer(
     // 8 so attractors and 8 repeller positions (x,y) can be
     // stored in a GL::mat4 (4x4 matrix)
     private val toysAlpha = 0.5f
-    private val maxAorR = 8
+    private val maxOfOneToy = 8
     private val attractors = BufferedMutableList<Pair<Float,Float>>()
     private val repellors = BufferedMutableList<Pair<Float,Float>>()
     private val spinners = BufferedMutableList<Pair<Float,Float>>()
     private val freezers = BufferedMutableList<Pair<Float,Float>>()
     private val orbiters = BufferedMutableList<Pair<Float, Float>>()
     // drawing parameters
-    private val arScale = scale * 30f
-    private val atrPeriod = 60*3
-    private var arTime = 0
+    private val toyScale = scale * 30f
+    private val toyPeriod = 60*3
+    private var toyFrame = 0
     private var contTime = 0
 
     data class TouchEvent(
@@ -198,7 +198,7 @@ class SPPRenderer(
     private var touchEvents: MutableMap<UInt, TouchEvent> = mutableMapOf()
 
     data class TapDelta (val distance: Float, val timeMillis: Long)
-    private val tapDelta = TapDelta(arScale*0.5f, 100L)
+    private val tapDelta = TapDelta(toyScale*0.5f, 100L)
 
     // shader for particle drawing (and vertices)
 
@@ -341,7 +341,7 @@ class SPPRenderer(
         return r
     }
 
-    private fun toySelected(x: Float, y: Float, eps: Float = 2.0f*arScale): Pair<TOY, Int>? {
+    private fun toySelected(x: Float, y: Float, eps: Float = 2.0f*toyScale): Pair<TOY, Int>? {
 
         for (i in 0 until attractors.sizeFront){
             val a = attractors[i]
@@ -406,7 +406,7 @@ class SPPRenderer(
                 } else {
                     when (toyType) {
                         TOY.ATTRACTOR -> {
-                            if (attractors.sizeBack < maxAorR) {
+                            if (attractors.sizeBack < maxOfOneToy) {
                                 attractors.add(Pair(wx, wy))
                             }
                             touchEvent.draggedToy = Pair(TOY.ATTRACTOR, attractors.sizeBack - 1)
@@ -415,7 +415,7 @@ class SPPRenderer(
                         }
 
                         TOY.REPELLOR -> {
-                            if (repellors.sizeBack < maxAorR) {
+                            if (repellors.sizeBack < maxOfOneToy) {
                                 repellors.add(Pair(wx, wy))
                             }
                             touchEvent.draggedToy = Pair(TOY.REPELLOR, repellors.sizeBack - 1)
@@ -424,7 +424,7 @@ class SPPRenderer(
                         }
 
                         TOY.SPINNER -> {
-                            if (spinners.sizeBack < maxAorR) {
+                            if (spinners.sizeBack < maxOfOneToy) {
                                 spinners.add(Pair(wx, wy))
                             }
                             touchEvent.draggedToy = Pair(TOY.SPINNER, spinners.sizeBack - 1)
@@ -433,7 +433,7 @@ class SPPRenderer(
                         }
 
                         TOY.FREEZER -> {
-                            if (freezers.sizeBack < maxAorR) {
+                            if (freezers.sizeBack < maxOfOneToy) {
                                 freezers.add(Pair(wx, wy))
                             }
                             touchEvent.draggedToy = Pair(TOY.FREEZER, freezers.sizeBack - 1)
@@ -442,7 +442,7 @@ class SPPRenderer(
                         }
 
                         TOY.ORBITER -> {
-                            if (orbiters.sizeBack < maxAorR) {
+                            if (orbiters.sizeBack < maxOfOneToy) {
                                 orbiters.add(Pair(wx, wy))
                             }
                             touchEvent.draggedToy = Pair(TOY.ORBITER, orbiters.sizeBack - 1)
@@ -543,7 +543,7 @@ class SPPRenderer(
                     val w = screenToWorld(x, resolution.second - y)
                     val wx = w[0]
                     val wy = w[1]
-                    force(wx, wy, type, 2.0f * arScale)
+                    force(wx, wy, type, 2.0f * toyScale)
                     timeSinceLastTap = 0f
                 }
             }
@@ -563,7 +563,7 @@ class SPPRenderer(
                     break
                 }
             }
-            if (!removed && attractors.sizeBack < maxAorR){
+            if (!removed && attractors.sizeBack < maxOfOneToy){
                 attractors.add(Pair(x,y))
             }
         }
@@ -577,7 +577,7 @@ class SPPRenderer(
                     break
                 }
             }
-            if (!removed && repellors.sizeBack < maxAorR){
+            if (!removed && repellors.sizeBack < maxOfOneToy){
                 repellors.add(Pair(x,y))
             }
         }
@@ -591,7 +591,7 @@ class SPPRenderer(
                     break
                 }
             }
-            if (!removed && spinners.sizeBack < maxAorR){
+            if (!removed && spinners.sizeBack < maxOfOneToy){
                 spinners.add(Pair(x,y))
             }
         }
@@ -605,7 +605,7 @@ class SPPRenderer(
                     break
                 }
             }
-            if (!removed && freezers.sizeBack < maxAorR){
+            if (!removed && freezers.sizeBack < maxOfOneToy){
                 freezers.add(Pair(x,y))
             }
         }
@@ -619,7 +619,7 @@ class SPPRenderer(
                     break
                 }
             }
-            if (!removed && orbiters.sizeBack < maxAorR){
+            if (!removed && orbiters.sizeBack < maxOfOneToy){
                 orbiters.add(Pair(x,y))
             }
         }
@@ -692,7 +692,7 @@ class SPPRenderer(
             Vec2(resolution.first.toFloat(),resolution.second.toFloat())
         )
 
-        particleDrawShader.setUniform("qTex",Textures[TextureId.X]!!)
+        particleDrawShader.setUniform("qTex",textures[TextureId.X]!!)
 
         particleDrawShader.setUniform("scale",scale)
         particleDrawShader.setUniform("transitionSteps",transitionSteps)
@@ -857,9 +857,9 @@ class SPPRenderer(
         texBuffer.limit(4)
         gl3.glGenTextures(4, texBuffer)
 
-        val pTex = texBuffer[Textures[TextureId.X]!!]
-        val qTex = texBuffer[Textures[TextureId.Y]!!]
-        val paramTex = texBuffer[Textures[TextureId.PARAM]!!]
+        val pTex = texBuffer[textures[TextureId.X]!!]
+        val qTex = texBuffer[textures[TextureId.Y]!!]
+        val paramTex = texBuffer[textures[TextureId.PARAM]!!]
 
         if (DEBUG_GL){
             glError()
@@ -948,8 +948,8 @@ class SPPRenderer(
             Vec2(resolution.first.toFloat(),resolution.second.toFloat())
         )
 
-        toyDrawShader.setUniform("scale",arScale)
-        toyDrawShader.setUniform("T",atrPeriod.toFloat())
+        toyDrawShader.setUniform("scale",toyScale)
+        toyDrawShader.setUniform("T",toyPeriod.toFloat())
 
         fadeShader.release()
         fadeShader.compile()
@@ -1113,8 +1113,8 @@ class SPPRenderer(
             glError()
         }
 
-        val pTex = texBuffer[Textures[TextureId.X]!!]
-        val qTex = texBuffer[Textures[TextureId.Y]!!]
+        val pTex = texBuffer[textures[TextureId.X]!!]
+        val qTex = texBuffer[textures[TextureId.Y]!!]
 
         // we bind the screen frame buffer (default)
 
@@ -1268,13 +1268,13 @@ class SPPRenderer(
         toyDrawShader.setUniform("nf",freezers.sizeFront)
         toyDrawShader.setUniform("no",orbiters.sizeFront)
 
-        toyDrawShader.setUniform("t",arTime.toFloat())
+        toyDrawShader.setUniform("t",toyFrame.toFloat())
         toyDrawShader.setUniform("contTime",contTime.toFloat())
 
-        arTime++
+        toyFrame++
         contTime++
         if (contTime > 100000){contTime = 0}
-        if (arTime == atrPeriod){arTime = 0}
+        if (toyFrame == toyPeriod){toyFrame = 0}
 
         if (DEBUG_TOYS) {
             toyDrawShader.setUniform("alpha",1f)
@@ -1304,9 +1304,9 @@ class SPPRenderer(
 
         updateMotionParams(delta)
 
-        val pTex = texBuffer[Textures[TextureId.X]!!]
-        val qTex = texBuffer[Textures[TextureId.Y]!!]
-        val paramTex = texBuffer[Textures[TextureId.PARAM]!!]
+        val pTex = texBuffer[textures[TextureId.X]!!]
+        val qTex = texBuffer[textures[TextureId.Y]!!]
+        val paramTex = texBuffer[textures[TextureId.PARAM]!!]
 
         val m = ceil(sqrt(p.toFloat())).toInt()
 
@@ -1582,7 +1582,11 @@ class SPPRenderer(
             clock = 0f
         }
 
-        if (attractors.sizeFront == maxAorR && repellors.sizeFront == maxAorR){
+        if (attractors.sizeFront == maxOfOneToy &&
+            repellors.sizeFront == maxOfOneToy &&
+            spinners.sizeFront == maxOfOneToy &&
+            freezers.sizeFront == maxOfOneToy &&
+            orbiters.sizeFront == maxOfOneToy){
             onAchievementStateChanged(
                 Pair(
                     "ShowMeWhatYouGot",
@@ -1641,6 +1645,14 @@ class SPPRenderer(
         }
     }
 
+    private fun allToysToList(): List<Pair<Float,Float>>{
+        val toys = mutableListOf<Pair<Float,Float>>()
+        for (l in listOf(attractors.toList(), repellors.toList(), spinners.toList(), freezers.toList(), orbiters.toList())) {
+            for (t in l){toys.add(t)}
+        }
+        return toys
+    }
+
     private fun pointsRoughlyCircular(points: List<Pair<Float,Float>>, tolerance: Float = 0.33f): Boolean{
 
         if (points.size<6){ return false }
@@ -1682,21 +1694,13 @@ class SPPRenderer(
 
         if(DEBUG){Log.d("circle","$sxx, $syy, $sxy, $det, $b, $m")}
 
-        if ( abs(m-1) < tolerance){
-            return true
-        }
-
-        return false
+        return abs(m-1) < tolerance
 
     }
 
     private fun pointsRoughlySquare(points: List<Pair<Float,Float>>, tolerance: Float = 160f*160f): Boolean{
         if (points.size != 4){ return false }
-
         val dists = mutableListOf<Float>()
-
-        //Log.d("square",points.toString())
-
         for (i in points.indices){
             for (j in points.indices){
                 if (i != j){
@@ -1710,10 +1714,8 @@ class SPPRenderer(
                             dists.add(d2)
                         }
                     }
-
                     if (dists.size == 2){
                         if (abs(dists[0] - d2 ) > tolerance && abs(dists[1] - d2 ) > tolerance){
-                            //Log.d("square",dists.toString() + " $d2")
                             return false
                         }
                     }
@@ -1725,115 +1727,38 @@ class SPPRenderer(
     }
 
     private fun isSquareFormation(){
-        val lAttractors = attractors.toList()
-        val lRepellors = repellors.toList()
-        val lSpinners = spinners.toList()
-        if (lAttractors.size == 4 && lRepellors.isEmpty() && lSpinners.isEmpty()){
-            val points = listOf(
-                lAttractors[0],
-                lAttractors[1],
-                lAttractors[2],
-                lAttractors[3]
-            )
-            toysInSquareFormation = pointsRoughlySquare(points)
-        }
-        else if (lRepellors.size == 4 && lAttractors.isEmpty() && lSpinners.isEmpty()){
-            val points = listOf(
-                lRepellors[0],
-                lRepellors[1],
-                lRepellors[2],
-                lRepellors[3]
-            )
-            toysInSquareFormation = pointsRoughlySquare(points)
-        }
-        else if (lRepellors.isEmpty() && lAttractors.isEmpty() && lSpinners.size == 4) {
-            val points = listOf(
-                lSpinners[0],
-                lSpinners[1],
-                lSpinners[2],
-                lSpinners[3]
-            )
-            toysInSquareFormation = pointsRoughlySquare(points)
-        }
-        else if (lRepellors.size+lAttractors.size+lSpinners.size == 4){
-            val points = mutableListOf<Pair<Float,Float>>()
-            for (element in lAttractors){
-                points.add(element)
-            }
-            for (element in lRepellors){
-                points.add(element)
-            }
-            for (element in lSpinners){
-                points.add(element)
-            }
-            toysInSquareFormation = pointsRoughlySquare(points.toList())
-        }
+        val toys = allToysToList()
+        toysInSquareFormation = pointsRoughlySquare(toys.toList())
         if(DEBUG){Log.d("square", toysInSquareFormation.toString())}
     }
 
     private fun isCircleFormation(){
-        val lAttractors = attractors.toList()
-        val lRepellors = repellors.toList()
-        val lSpinners = spinners.toList()
-        if (lRepellors.size+lAttractors.size+lSpinners.size >= 6){
-            val points = mutableListOf<Pair<Float,Float>>()
-            for (element in lAttractors){
-                points.add(element)
-            }
-            for (element in lRepellors){
-                points.add(element)
-            }
-            for (element in lSpinners){
-                points.add(element)
-            }
-            toysInCircleFormation = pointsRoughlyCircular(points.toList())
+        val toys = allToysToList()
+        if (toys.size >= 6){
+            toysInCircleFormation = pointsRoughlyCircular(toys.toList())
         }
         if(DEBUG){Log.d("circle", toysInCircleFormation.toString())}
     }
 
+    private fun coincidentToys(a: List<Pair<Float, Float>>, b: List<Pair<Float, Float>>): Boolean {
+        for (pa in a) {
+            for (pb in b) {
+                val rx = pa.first-pb.first
+                val ry = pa.second-pb.second
+                val d = rx*rx+ry*ry
+                if (d < toyScale*toyScale){
+                    return true
+                }
+            }
+        }
+        return false
+    }
+
     private fun isToyInsideAnother(){
         if (toyInsideAnother){return}
-        val lAttractors = attractors.toList()
-        val lRepellors = repellors.toList()
-        val lSpinners = spinners.toList()
-        for (i in lAttractors.indices){
-            for (j in lRepellors.indices){
-                val rx = lAttractors[i].first-lRepellors[j].first
-                val ry = lAttractors[i].second-lRepellors[j].second
-
-                val d = rx*rx+ry*ry
-
-                if (d < arScale*arScale){
-                    toyInsideAnother = true
-                    return
-                }
-            }
-        }
-        for (i in lAttractors.indices){
-            for (j in lSpinners.indices){
-                val rx = lAttractors[i].first-lSpinners[j].first
-                val ry = lAttractors[i].second-lSpinners[j].second
-
-                val d = rx*rx+ry*ry
-
-                if (d < arScale*arScale){
-                    toyInsideAnother = true
-                    return
-                }
-            }
-        }
-        for (i in lSpinners.indices){
-            for (j in lRepellors.indices){
-                val rx = lSpinners[i].first-lRepellors[j].first
-                val ry = lSpinners[i].second-lRepellors[j].second
-
-                val d = rx*rx+ry*ry
-
-                if (d < arScale*arScale){
-                    toyInsideAnother = true
-                    return
-                }
-            }
+        val toys = allToysToList()
+        if (coincidentToys(toys, toys)) {
+            toyInsideAnother = true
         }
     }
 
@@ -1843,7 +1768,7 @@ class SPPRenderer(
         CIRCLE,
         WIGGLE
     }
-    fun demoToys(
+    private fun demoToys(
         configuration: CONFIGURATION
     ) {
 
@@ -1851,16 +1776,16 @@ class SPPRenderer(
         val My = bounds.second.second
         val cx = Mx/2f
         val cy = My/2f
-        val h = arScale*4f
+        val h = toyScale*4f
 
         if (configuration == CONFIGURATION.SQUARE){
             attractors.clear()
             for (p in listOf(
-                Pair<Float,Float>(cx-h,cy-h),
-                Pair<Float,Float>(cx+h,cy-h),
-                Pair<Float,Float>(cx+h,cy+h),
-                Pair<Float,Float>(cx-h,cy+h),
-                Pair<Float,Float>(cx,cy)
+                Pair(cx-h,cy-h),
+                Pair(cx+h,cy-h),
+                Pair(cx+h,cy+h),
+                Pair(cx-h,cy+h),
+                Pair(cx,cy)
             )){
                 attractors.add(p)
             }
@@ -1868,10 +1793,10 @@ class SPPRenderer(
         else if (configuration == CONFIGURATION.TRIANGLE){
             attractors.clear()
             for (p in listOf(
-                Pair<Float,Float>(cx,cy+h),
-                Pair<Float,Float>(cx-h,cy-h),
-                Pair<Float,Float>(cx+h,cy-h),
-                Pair<Float,Float>(cx,cy)
+                Pair(cx,cy+h),
+                Pair(cx-h,cy-h),
+                Pair(cx+h,cy-h),
+                Pair(cx,cy)
             )){
                 attractors.add(p)
             }
@@ -1880,10 +1805,10 @@ class SPPRenderer(
             attractors.clear()
             val dtheta = 2f*PI.toFloat()/8f
             var theta = 0f
-            val h = arScale*4f
+            val h = toyScale*4f
             for (i in 0 until 8){
                 attractors.add(
-                    Pair<Float,Float>(
+                    Pair(
                         h*cos(theta)+cx,
                         h*sin(theta)+cy
                     )
@@ -1896,10 +1821,10 @@ class SPPRenderer(
             val dtheta = 2f*PI.toFloat()/8f
             var theta = 0f
             val h = My*0.75f
-            val l = arScale*4f
+            val l = toyScale*4f
             for (i in 0 until 8){
                 attractors.add(
-                    Pair<Float,Float>(
+                    Pair(
                         cx+sin(theta)*l,h*i/8f+cy/3f
                     )
                 )
