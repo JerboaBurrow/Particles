@@ -535,7 +535,7 @@ class SPPRenderer(
     }
 
     // propagate a tap event
-    fun tap(x: Float,y: Float, type: TOY = TOY.ATTRACTOR){
+    private fun tap(x: Float,y: Float, type: TOY = TOY.ATTRACTOR){
         if (DEMO_REAL){return}
         runBlocking {
             withContext(Dispatchers.Default) {

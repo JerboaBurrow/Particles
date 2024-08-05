@@ -85,7 +85,6 @@ class SPPView (
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
-        Log.d("event", "${event.action}")
         when (event.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
                 event.actionIndex.also { pointer ->
@@ -106,23 +105,30 @@ class SPPView (
                         event.getY(pointer),
                         DRAG.START,
                         placingToy,
-                        event.actionIndex.toUInt()
+                        event.getPointerId(event.actionIndex).toUInt()
                     )
                 }
             }
             MotionEvent.ACTION_MOVE -> {
-                val pointer = event.findPointerIndex(event.actionIndex)
-                renderer.handleTouchEvent(event.getX(pointer), event.getY(pointer), DRAG.CONTINUE, placingToy, event.actionIndex.toUInt())
+                for (i in 0 until event.pointerCount) {
+                    renderer.handleTouchEvent(
+                        event.getX(i),
+                        event.getY(i),
+                        DRAG.CONTINUE,
+                        placingToy,
+                        event.getPointerId(i).toUInt()
+                    )
+                }
             }
             MotionEvent.ACTION_UP -> {
-                renderer.handleTouchEvent(event.getX(0),event.getY(0),DRAG.STOP, placingToy, event.actionIndex.toUInt())
+                renderer.handleTouchEvent(event.getX(0),event.getY(0),DRAG.STOP, placingToy, event.getPointerId(event.actionIndex).toUInt())
             }
             MotionEvent.ACTION_POINTER_UP -> {
                 event.actionIndex.also { pointer ->
                     event.getPointerId(pointer)
-                        .run {
-                            renderer.handleTouchEvent(event.getX(pointer),event.getY(pointer),DRAG.STOP, placingToy, event.actionIndex.toUInt())
-                        }
+                    .run {
+                        renderer.handleTouchEvent(event.getX(pointer),event.getY(pointer),DRAG.STOP, placingToy, event.getPointerId(event.actionIndex).toUInt())
+                    }
                 }
             }
         }
