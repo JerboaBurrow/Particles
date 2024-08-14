@@ -34,11 +34,8 @@ enum class DRAG {START, STOP, CONTINUE}
 
 class SPPRenderer(
     private val resolution: Pair<Int,Int>,
-    private val onAchievementStateChanged: (Pair<String,Int>) -> Unit,
-    private val onToyChanged: (TOY) -> Unit,
-    private val onRequestReview: () -> Unit,
-    private val onAdapt: (Float) -> Unit,
-    private val onUpdateClock: () -> Unit,
+    private val sppViewModel: SPPViewModel,
+    private val mainMenuViewModel: MainMenuViewModel,
     private var particleNumber: Float = PARTICLES_SLIDER_DEFAULT,
     private var allowAdapt: Boolean = true,
     private var colourMap: COLOUR_MAP = COLOUR_MAP.R1
@@ -401,7 +398,7 @@ class SPPRenderer(
                 val toy = toySelected(wx, wy)
                 if (toy != null) {
                     touchEvent.draggedToy = toy
-                    onToyChanged(toy.first)
+                    mainMenuViewModel.onToyChanged(toy.first)
                     touchEvent.dragPlacedToy = false
                 } else {
                     when (toyType) {
@@ -410,7 +407,7 @@ class SPPRenderer(
                                 attractors.add(Pair(wx, wy))
                             }
                             touchEvent.draggedToy = Pair(TOY.ATTRACTOR, attractors.sizeBack - 1)
-                            onToyChanged(TOY.ATTRACTOR)
+                            mainMenuViewModel.onToyChanged(TOY.ATTRACTOR)
                             touchEvent.dragPlacedToy = true
                         }
 
@@ -419,7 +416,7 @@ class SPPRenderer(
                                 repellors.add(Pair(wx, wy))
                             }
                             touchEvent.draggedToy = Pair(TOY.REPELLOR, repellors.sizeBack - 1)
-                            onToyChanged(TOY.REPELLOR)
+                            mainMenuViewModel.onToyChanged(TOY.REPELLOR)
                             touchEvent.dragPlacedToy = true
                         }
 
@@ -428,7 +425,7 @@ class SPPRenderer(
                                 spinners.add(Pair(wx, wy))
                             }
                             touchEvent.draggedToy = Pair(TOY.SPINNER, spinners.sizeBack - 1)
-                            onToyChanged(TOY.SPINNER)
+                            mainMenuViewModel.onToyChanged(TOY.SPINNER)
                             touchEvent.dragPlacedToy = true
                         }
 
@@ -437,7 +434,7 @@ class SPPRenderer(
                                 freezers.add(Pair(wx, wy))
                             }
                             touchEvent.draggedToy = Pair(TOY.FREEZER, freezers.sizeBack - 1)
-                            onToyChanged(TOY.FREEZER)
+                            mainMenuViewModel.onToyChanged(TOY.FREEZER)
                             touchEvent.dragPlacedToy = true
                         }
 
@@ -446,7 +443,7 @@ class SPPRenderer(
                                 orbiters.add(Pair(wx, wy))
                             }
                             touchEvent.draggedToy = Pair(TOY.ORBITER, orbiters.sizeBack - 1)
-                            onToyChanged(TOY.ORBITER)
+                            mainMenuViewModel.onToyChanged(TOY.ORBITER)
                             touchEvent.dragPlacedToy = true
                         }
 
@@ -637,7 +634,7 @@ class SPPRenderer(
 
         newP = p
         reset = true
-        onAdapt(particleNumber)
+        mainMenuViewModel.onAdapt(particleNumber)
     }
 
     private fun compileDrawShader(){
@@ -1057,7 +1054,7 @@ class SPPRenderer(
         freezers.commit()
         orbiters.commit()
 
-        if (System.currentTimeMillis() - lastReviewRequest > REVIEW_RATE_LIMIT_MILLIS){onRequestReview(); lastReviewRequest = System.currentTimeMillis()}
+        if (System.currentTimeMillis() - lastReviewRequest > REVIEW_RATE_LIMIT_MILLIS){sppViewModel.onRequestingInAppReview(); lastReviewRequest = System.currentTimeMillis()}
         debugString = ""
         if (reset){
             initGPUData()
@@ -1146,7 +1143,7 @@ class SPPRenderer(
         deltas[frameNumber] = 1.0f / (delta.toFloat()*1e-9f)
         frameNumber += 1
         if (frameNumber >= 60){
-            onUpdateClock()
+            sppViewModel.onUpdateClock()
             frameNumber = 0
             val mu = deltas.sum()/deltas.size
             if (PERFORMANCE){
@@ -1558,21 +1555,21 @@ class SPPRenderer(
         timeSinceLastTap += dt
 
         if (clock > 30f){
-            onAchievementStateChanged(
+            sppViewModel.onAchievementStateChanged(
                 Pair(
                     "AverageFan",
                     clock.toInt()
                 )
             )
 
-            onAchievementStateChanged(
+            sppViewModel.onAchievementStateChanged(
                 Pair(
                     "AverageEnjoyer",
                     clock.toInt()
                 )
             )
 
-            onAchievementStateChanged(
+            sppViewModel.onAchievementStateChanged(
                 Pair(
                     "SuperFan",
                     clock.toInt()
@@ -1587,7 +1584,7 @@ class SPPRenderer(
             spinners.sizeFront == maxOfOneToy &&
             freezers.sizeFront == maxOfOneToy &&
             orbiters.sizeFront == maxOfOneToy){
-            onAchievementStateChanged(
+            sppViewModel.onAchievementStateChanged(
                 Pair(
                     "ShowMeWhatYouGot",
                     1
@@ -1595,7 +1592,7 @@ class SPPRenderer(
             )
         }
         if (!stillThereAchieved && timeSinceLastTap >= 60*10){
-            onAchievementStateChanged(
+            sppViewModel.onAchievementStateChanged(
                 Pair(
                     "StillThere",
                     1
@@ -1605,7 +1602,7 @@ class SPPRenderer(
         }
 
         if (!allParticlesOfScreenAchieved && allParticlesOfScreen){
-            onAchievementStateChanged(
+            sppViewModel.onAchievementStateChanged(
                 Pair(
                     "GetLost",
                     1
@@ -1615,7 +1612,7 @@ class SPPRenderer(
         }
 
         if (!insideAchieved && toyInsideAnother){
-            onAchievementStateChanged(
+            sppViewModel.onAchievementStateChanged(
                 Pair(
                     "DoubleTrouble",
                     1
@@ -1625,7 +1622,7 @@ class SPPRenderer(
         }
 
         if (!squareAchieved && toysInSquareFormation){
-            onAchievementStateChanged(
+            sppViewModel.onAchievementStateChanged(
                 Pair(
                     "HipToBeSquare",
                     1
@@ -1635,7 +1632,7 @@ class SPPRenderer(
         }
 
         if (!circleAchieved && toysInCircleFormation){
-            onAchievementStateChanged(
+            sppViewModel.onAchievementStateChanged(
                 Pair(
                     "CirclesTheWay",
                     1

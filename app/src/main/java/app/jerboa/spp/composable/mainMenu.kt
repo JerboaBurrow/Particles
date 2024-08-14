@@ -15,6 +15,7 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Slider
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -22,8 +23,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import app.jerboa.spp.AppInfo
-import app.jerboa.spp.viewmodel.COLOUR_MAP
+import app.jerboa.spp.viewmodel.AboutViewModel
 import app.jerboa.spp.viewmodel.MAX_LOG_AR
 import app.jerboa.spp.viewmodel.MAX_LOG_FADE
 import app.jerboa.spp.viewmodel.MAX_LOG_MASS
@@ -36,7 +36,10 @@ import app.jerboa.spp.viewmodel.MIN_LOG_FADE
 import app.jerboa.spp.viewmodel.MIN_LOG_MASS
 import app.jerboa.spp.viewmodel.MIN_LOG_ORBIT
 import app.jerboa.spp.viewmodel.MIN_LOG_SPIN
+import app.jerboa.spp.viewmodel.MainMenuViewModel
 import app.jerboa.spp.viewmodel.PARAM
+import app.jerboa.spp.viewmodel.PARTICLES_SLIDER_DEFAULT
+import app.jerboa.spp.viewmodel.SPPViewModel
 import app.jerboa.spp.viewmodel.TOY
 import kotlin.math.ceil
 import kotlin.math.log10
@@ -99,30 +102,28 @@ fun logSlider(
 }
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun menu(
+fun mainMenu(
+    mainMenuViewModel: MainMenuViewModel,
+    sppViewModel: SPPViewModel,
+    aboutViewModel: AboutViewModel,
     displayingMenu: Boolean,
-    playSuccess: Boolean,
-    particleNumber: Float,
-    speed: Float,
-    attraction: Float,
-    repulsion: Float,
-    orbit: Float,
-    spin: Float,
-    mass: Float,
-    fade: Float,
-    showToys: Boolean,
     width75Percent: Double,
     height10Percent: Double,
     menuItemHeight: Double,
-    images: Map<String,Int>,
-    info: AppInfo,
-    onDisplayingAboutChanged: (Boolean) -> Unit,
-    onAttractorChanged: (TOY) -> Unit,
-    onRequestPlayServices: () -> Unit,
-    onParameterChanged: (Pair<Float, PARAM>) -> Unit,
-    onSelectColourMap: (COLOUR_MAP) -> Unit,
-    onShowToysChanged: (Boolean) -> Unit
+    images: Map<String,Int>
 ) {
+
+    val playSuccess: Boolean by sppViewModel.playSuccess.observeAsState(initial = false)
+    val particleNumber: Float by mainMenuViewModel.particleNumber.observeAsState(initial = PARTICLES_SLIDER_DEFAULT)
+    val speed: Float by mainMenuViewModel.speed.observeAsState(initial = 1.0f)
+    val attraction: Float by mainMenuViewModel.attractorStrength.observeAsState(50000f)
+    val repulsion: Float by mainMenuViewModel.repellorStrength.observeAsState(50000f)
+    val orbit: Float by mainMenuViewModel.orbitStrength.observeAsState(0.5f)
+    val spin: Float by mainMenuViewModel.spinStrength.observeAsState(1500f)
+    val mass: Float by mainMenuViewModel.mass.observeAsState(0.1f)
+    val fade: Float by mainMenuViewModel.fade.observeAsState(initial = 1.0f)
+    val showToys: Boolean by mainMenuViewModel.showToys.observeAsState(initial = false)
+
     var particleSliderValue by remember {
         mutableFloatStateOf(log10(particleNumber))
     }
@@ -154,7 +155,7 @@ fun menu(
             verticalArrangement = Arrangement.Center,
             modifier = Modifier.fillMaxWidth(),
         ) {
-            colourMapMenu(images,menuItemHeight,onSelectColourMap)
+            colourMapMenu(images, menuItemHeight) { mainMenuViewModel.onSelectColourMap(it) }
 
             Box(
                 modifier = Modifier
@@ -168,7 +169,7 @@ fun menu(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center
                 ) {
-                    IconButton(onClick = { onRequestPlayServices() }) {
+                    IconButton(onClick = { sppViewModel.onRequestPlayServices() }) {
                         Image(
                             modifier = Modifier
                                 .fillMaxHeight()
@@ -184,7 +185,7 @@ fun menu(
                             contentDescription = "play"
                         )
                     }
-                    IconButton(onClick = { onDisplayingAboutChanged(true) }) {
+                    IconButton(onClick = { aboutViewModel.onDisplayingAboutChanged(true) }) {
                         Image(
                             modifier = Modifier
                                 .fillMaxHeight()
@@ -217,7 +218,7 @@ fun menu(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        IconButton(onClick = { onAttractorChanged(TOY.ATTRACTOR) }) {
+                        IconButton(onClick = { mainMenuViewModel.onToyChanged(TOY.ATTRACTOR) }) {
                             Image(
                                 modifier = Modifier
                                     .fillMaxHeight()
@@ -227,7 +228,7 @@ fun menu(
                                 contentDescription = "Image"
                             )
                         }
-                        IconButton(onClick = { onAttractorChanged(TOY.REPELLOR) }) {
+                        IconButton(onClick = { mainMenuViewModel.onToyChanged(TOY.REPELLOR) }) {
                             Image(
                                 modifier = Modifier
                                     .fillMaxHeight()
@@ -237,7 +238,7 @@ fun menu(
                                 contentDescription = "Image"
                             )
                         }
-                        IconButton(onClick = { onAttractorChanged(TOY.SPINNER) }) {
+                        IconButton(onClick = { mainMenuViewModel.onToyChanged(TOY.SPINNER) }) {
                             Image(
                                 modifier = Modifier
                                     .fillMaxHeight()
@@ -247,7 +248,7 @@ fun menu(
                                 contentDescription = "Image"
                             )
                         }
-                        IconButton(onClick = { onAttractorChanged(TOY.FREEZER) }) {
+                        IconButton(onClick = { mainMenuViewModel.onToyChanged(TOY.FREEZER) }) {
                             Image(
                                 modifier = Modifier
                                     .fillMaxHeight()
@@ -257,7 +258,7 @@ fun menu(
                                 contentDescription = "Image"
                             )
                         }
-                        IconButton(onClick = { onAttractorChanged(TOY.ORBITER) }) {
+                        IconButton(onClick = { mainMenuViewModel.onToyChanged(TOY.ORBITER) }) {
                             Image(
                                 modifier = Modifier
                                     .fillMaxHeight()
@@ -284,7 +285,7 @@ fun menu(
                     value = particleSliderValue,
                     onValueChange = { particleSliderValue = it },
                     onValueChangeFinished = {
-                        onParameterChanged(
+                        mainMenuViewModel.onParameterChanged(
                             Pair(
                                 10.0f.pow(
                                     particleSliderValue
@@ -300,14 +301,14 @@ fun menu(
                         .background(color = Color(1, 1, 1, 1))
                 )
                 Spacer(modifier = Modifier.size(8.dp))
-                logSlider(speed, -3.0f, MAX_LOG_SPEED, "Speed", {onParameterChanged(Pair(it, PARAM.SPEED))}, width75Percent)
+                logSlider(speed, -3.0f, MAX_LOG_SPEED, "Speed", {mainMenuViewModel.onParameterChanged(Pair(it, PARAM.SPEED))}, width75Percent)
                 Spacer(modifier = Modifier.size(8.dp))
                 logSlider(
                     attraction,
                     MIN_LOG_AR,
                     MAX_LOG_AR,
                     "Attraction",
-                    {onParameterChanged(Pair(it, PARAM.ATTRACTION))},
+                    {mainMenuViewModel.onParameterChanged(Pair(it, PARAM.ATTRACTION))},
                     width75Percent
                 )
                 Spacer(modifier = Modifier.size(8.dp))
@@ -316,22 +317,22 @@ fun menu(
                     MIN_LOG_AR,
                     MAX_LOG_AR,
                     "Repulsion",
-                    {onParameterChanged(Pair(it, PARAM.REPULSION))},
+                    {mainMenuViewModel.onParameterChanged(Pair(it, PARAM.REPULSION))},
                     width75Percent
                 )
                 Spacer(modifier = Modifier.size(8.dp))
-                logSlider(orbit, MIN_LOG_ORBIT, MAX_LOG_ORBIT, "Orbit", {onParameterChanged(Pair(it, PARAM.ORBIT))}, width75Percent)
+                logSlider(orbit, MIN_LOG_ORBIT, MAX_LOG_ORBIT, "Orbit", {mainMenuViewModel.onParameterChanged(Pair(it, PARAM.ORBIT))}, width75Percent)
                 Spacer(modifier = Modifier.size(8.dp))
-                logSlider(spin, MIN_LOG_SPIN, MAX_LOG_SPIN, "Spin", {onParameterChanged(Pair(it, PARAM.SPIN))}, width75Percent)
+                logSlider(spin, MIN_LOG_SPIN, MAX_LOG_SPIN, "Spin", {mainMenuViewModel.onParameterChanged(Pair(it, PARAM.SPIN))}, width75Percent)
                 Spacer(modifier = Modifier.size(8.dp))
-                logSlider(mass, MIN_LOG_MASS, MAX_LOG_MASS, "Mass", {onParameterChanged(Pair(it, PARAM.MASS))}, width75Percent)
+                logSlider(mass, MIN_LOG_MASS, MAX_LOG_MASS, "Mass", {mainMenuViewModel.onParameterChanged(Pair(it, PARAM.MASS))}, width75Percent)
                 Spacer(modifier = Modifier.size(8.dp))
                 label(text = "Tracing " + "${round(fadeSliderValue * 100.0f) / 100.0f}")
                 Slider(
                     value = fadeSliderValue,
                     onValueChange = { fadeSliderValue = it },
                     onValueChangeFinished = {
-                        onParameterChanged(
+                        mainMenuViewModel.onParameterChanged(
                             Pair(
                                 10.0f.pow((1.0f - fadeSliderValue) * (MAX_LOG_FADE - MIN_LOG_FADE) + MIN_LOG_FADE),
                                 PARAM.FADE
@@ -348,7 +349,7 @@ fun menu(
                 label(text = "Show Toys")
                 Checkbox(
                     checked = showToysValue,
-                    onCheckedChange = { showToysValue = it; onShowToysChanged(it) },
+                    onCheckedChange = { showToysValue = it; mainMenuViewModel.onShowToysChanged(it) },
                     colors = checkBoxColors()
                 )
             }

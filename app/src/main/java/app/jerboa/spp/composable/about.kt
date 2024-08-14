@@ -12,6 +12,8 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -21,19 +23,19 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.jerboa.spp.AppInfo
 import app.jerboa.spp.R
+import app.jerboa.spp.viewmodel.AboutViewModel
 import app.jerboa.spp.viewmodel.SOCIAL
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun about(
-    displayingAbout: Boolean,
+    aboutViewModel: AboutViewModel,
     width75Percent: Double,
     images: Map<String,Int>,
     info: AppInfo,
-    onRequestingLicenses: () -> Unit,
-    onRequestingSocial: (SOCIAL) -> Unit,
-    onResetTutorial: () -> Unit,
 ){
+    val displayingAbout: Boolean by aboutViewModel.displayingAbout.observeAsState(initial = false)
+
     AnimatedVisibility(
         visible = displayingAbout,
         enter = fadeIn(),
@@ -74,7 +76,7 @@ fun about(
                         fontSize = MaterialTheme.typography.body1.fontSize * info.density,
                         colour = Color.Black
                     )
-                    TextButton(onClick = { onRequestingLicenses() }) {
+                    TextButton(onClick = { aboutViewModel.onRequestingLicenses() }) {
                         Text(
                             stringResource(id = R.string.OSSprompt),
                             textAlign = TextAlign.Center,
@@ -96,7 +98,7 @@ fun about(
                         textAlign = TextAlign.Center,
                         color = Color.Black
                     )
-                    TextButton(onClick = { onResetTutorial() }) {
+                    TextButton(onClick = { aboutViewModel.onResetTutorial() }) {
                         Text(
                             stringResource(id = R.string.resetTutorial),
                             textAlign = TextAlign.Center,
@@ -108,7 +110,7 @@ fun about(
                 }
             }
             Spacer(modifier = Modifier.size(8.dp))
-            socials(images, info, onRequestingSocial)
+            socials(images, info) { aboutViewModel.onRequestingSocial(it) }
         }
     }
 

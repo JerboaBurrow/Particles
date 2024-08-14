@@ -13,26 +13,28 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import app.jerboa.spp.viewmodel.AboutViewModel
 import app.jerboa.spp.viewmodel.MUSIC
+import app.jerboa.spp.viewmodel.MenuPromptViewModel
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun menuPrompt(
+    menuPromptViewModel: MenuPromptViewModel,
+    aboutViewModel: AboutViewModel,
     images: Map<String,Int>,
-    displayingMenu: Boolean,
-    displayingSound: Boolean,
-    menuItemHeight: Double,
-    pasued: Boolean,
-    onDisplayingMenuChanged: (Boolean) -> Unit,
-    onDisplayingMusicChanged: () -> Unit,
-    onMusicSelected: (MUSIC) -> Unit,
-    onPause: () -> Unit
+    menuItemHeight: Double
 ){
+
+    val displayingMenu: Boolean by menuPromptViewModel.displayingMenu.observeAsState(initial = false)
+    val displayingSound: Boolean by menuPromptViewModel.displayingSound.observeAsState(initial = false)
+    val paused: Boolean by menuPromptViewModel.paused.observeAsState(initial = false)
 
     val fadeAlpha = 0.33f
 
@@ -41,7 +43,7 @@ fun menuPrompt(
         animationSpec = tween(
             durationMillis = 500,
             easing = LinearEasing,
-        )
+        ), label = "m1"
     )
 
     val alphaM2: Float by animateFloatAsState(
@@ -49,7 +51,7 @@ fun menuPrompt(
         animationSpec = tween(
             durationMillis = 500,
             easing = LinearEasing,
-        )
+        ), label = "m2"
     )
 
     val alphaS1: Float by animateFloatAsState(
@@ -57,7 +59,7 @@ fun menuPrompt(
         animationSpec = tween(
             durationMillis = 500,
             easing = LinearEasing,
-        )
+        ), label = "s1"
     )
 
     val alphaS2: Float by animateFloatAsState(
@@ -65,7 +67,7 @@ fun menuPrompt(
         animationSpec = tween(
             durationMillis = 500,
             easing = LinearEasing,
-        )
+        ), label = "s2"
     )
 
 
@@ -92,7 +94,7 @@ fun menuPrompt(
                         .clickable(
                             interactionSource = MutableInteractionSource(),
                             indication = null,
-                            onClick = { onDisplayingMenuChanged(true); }
+                            onClick = { menuPromptViewModel.onDisplayingMenuChanged(true); }
                         )
                         .alpha(alphaM1)
                 )
@@ -110,7 +112,10 @@ fun menuPrompt(
                         .clickable(
                             interactionSource = MutableInteractionSource(),
                             indication = null,
-                            onClick = { onDisplayingMenuChanged(true); }
+                            onClick = {
+                                menuPromptViewModel.onDisplayingMenuChanged(false)
+                                aboutViewModel.onDisplayingAboutChanged(false)
+                            }
                         )
                         .alpha(alphaM2)
                 )
@@ -143,7 +148,11 @@ fun menuPrompt(
                             .clickable(
                                 interactionSource = MutableInteractionSource(),
                                 indication = null,
-                                onClick = { onDisplayingMusicChanged(); onMusicSelected(MUSIC.RAIN) }
+                                onClick = {
+                                    menuPromptViewModel.onDisplayingMusicChanged(false)
+                                    aboutViewModel.onDisplayingAboutChanged(false)
+                                    menuPromptViewModel.onMusicSelected(MUSIC.RAIN)
+                                }
                             )
                             .alpha(alphaS2)
                     )
@@ -155,7 +164,11 @@ fun menuPrompt(
                             .clickable(
                                 interactionSource = MutableInteractionSource(),
                                 indication = null,
-                                onClick = { onDisplayingMusicChanged(); onMusicSelected(MUSIC.FORREST) }
+                                onClick = {
+                                    menuPromptViewModel.onDisplayingMusicChanged(false)
+                                    aboutViewModel.onDisplayingAboutChanged(false)
+                                    menuPromptViewModel.onMusicSelected(MUSIC.FORREST)
+                                }
                             )
                             .alpha(alphaS2)
                     )
@@ -167,7 +180,11 @@ fun menuPrompt(
                             .clickable(
                                 interactionSource = MutableInteractionSource(),
                                 indication = null,
-                                onClick = { onDisplayingMusicChanged(); onMusicSelected(MUSIC.NOTHING) }
+                                onClick = {
+                                    menuPromptViewModel.onDisplayingMusicChanged(false)
+                                    aboutViewModel.onDisplayingAboutChanged(false)
+                                    menuPromptViewModel.onMusicSelected(MUSIC.NOTHING)
+                                }
                             )
                             .alpha(alphaS2)
                     )
@@ -179,7 +196,10 @@ fun menuPrompt(
                             .clickable(
                                 interactionSource = MutableInteractionSource(),
                                 indication = null,
-                                onClick = { onDisplayingMusicChanged();}
+                                onClick = {
+                                    menuPromptViewModel.onDisplayingMusicChanged(false)
+                                    aboutViewModel.onDisplayingAboutChanged(false)
+                                }
                             )
                             .alpha(alphaS2)
                     )
@@ -194,7 +214,7 @@ fun menuPrompt(
                 .align(alignment = Alignment.BottomCenter)
         ) {
             AnimatedVisibility(
-                visible = !pasued && !displayingMenu,
+                visible = !paused && !displayingMenu,
                 enter = fadeIn(),
                 exit = fadeOut()
             ) {
@@ -206,13 +226,13 @@ fun menuPrompt(
                         .clickable(
                             interactionSource = MutableInteractionSource(),
                             indication = null,
-                            onClick = { onPause(); }
+                            onClick = { menuPromptViewModel.onPause(); }
                         )
                         .alpha(0.66f)
                 )
             }
             AnimatedVisibility(
-                visible = pasued && !displayingMenu,
+                visible = paused && !displayingMenu,
                 enter = fadeIn(),
                 exit = fadeOut()
             ) {
@@ -224,7 +244,7 @@ fun menuPrompt(
                         .clickable(
                             interactionSource = MutableInteractionSource(),
                             indication = null,
-                            onClick = { onPause(); }
+                            onClick = { menuPromptViewModel.onPause(); }
                         )
                         .alpha(0.66f)
                 )
@@ -250,7 +270,10 @@ fun menuPrompt(
                         .clickable(
                             interactionSource = MutableInteractionSource(),
                             indication = null,
-                            onClick = { onDisplayingMusicChanged(); }
+                            onClick =
+                            {
+                                menuPromptViewModel.onDisplayingMusicChanged(true)
+                            }
                         )
                         .alpha(alphaS1)
                 )

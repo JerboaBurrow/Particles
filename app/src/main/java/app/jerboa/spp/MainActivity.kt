@@ -18,10 +18,13 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import app.jerboa.spp.viewmodel.MUSIC
 import app.jerboa.spp.viewmodel.REVIEW_RATE_LIMIT_MILLIS
-import app.jerboa.spp.viewmodel.RenderViewModel
+import app.jerboa.spp.viewmodel.SPPViewModel
 import app.jerboa.spp.viewmodel.SOCIAL
-import app.jerboa.spp.composable.renderScreen
+import app.jerboa.spp.composable.screen
 import app.jerboa.spp.ui.theme.SPPTheme
+import app.jerboa.spp.viewmodel.AboutViewModel
+import app.jerboa.spp.viewmodel.MainMenuViewModel
+import app.jerboa.spp.viewmodel.MenuPromptViewModel
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.gms.games.AuthenticationResult
@@ -84,7 +87,10 @@ val achievementStates = mutableMapOf(
 
 class MainActivity : AppCompatActivity() {
 
-    private val renderViewModel by viewModels<RenderViewModel>()
+    private val sppViewModel by viewModels<SPPViewModel>()
+    private val aboutViewModel by viewModels<AboutViewModel>()
+    private val menuPromptViewModel by viewModels<MenuPromptViewModel>()
+    private val mainMenuViewModel by viewModels<MainMenuViewModel>()
 
     private var mediaPlayer = MediaPlayer()
 
@@ -141,7 +147,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun showAchievements() {
         if (!isGooglePlayGamesServicesInstalled(this)) {
-            renderViewModel.onRequestPGSAndNotInstalled()
+            sppViewModel.onRequestPGSAndNotInstalled()
             return
         }
         PlayGames.getAchievementsClient(this)
@@ -173,7 +179,7 @@ class MainActivity : AppCompatActivity() {
                 isAuthenticatedTask.isSuccessful && isAuthenticatedTask.result.isAuthenticated
             if (isAuthenticated) {
                 // Continue with Play Games Services
-                renderViewModel.onPlaySuccess(true)
+                sppViewModel.onPlaySuccess(true)
                 if (DEBUG) {
                     Log.d("playGames", "success")
                 }
@@ -185,7 +191,7 @@ class MainActivity : AppCompatActivity() {
                 if (DEBUG) {
                     Log.d("playGames", "failure ${isAuthenticatedTask.result.toString()}")
                 }
-                renderViewModel.onPlaySuccess(false)
+                sppViewModel.onPlaySuccess(false)
             }
         }
     }
@@ -323,7 +329,7 @@ class MainActivity : AppCompatActivity() {
                     val flow = reviewManager.launchReviewFlow(this, reviewInfo)
                     //Log.d("reviewManager", "flow")
                     flow.addOnCompleteListener {
-                        renderViewModel.onInAppReviewShown()
+                        sppViewModel.onInAppReviewShown()
                         //Log.d("reviewManager", "complete: $reviewInfo")
                     }
                 } else {
@@ -335,7 +341,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        renderViewModel.onInAppReviewShown()
+        sppViewModel.onInAppReviewShown()
         seenReview = true
 
         if (lastReviewTries < 5) {
@@ -368,7 +374,7 @@ class MainActivity : AppCompatActivity() {
 
         reviewManager = ReviewManagerFactory.create(this)
 
-        renderViewModel.requestingInAppReview.observe(
+        sppViewModel.requestingInAppReview.observe(
             this, androidx.lifecycle.Observer {
                 if (it) {
                     requestUserReviewPrompt()
@@ -381,13 +387,13 @@ class MainActivity : AppCompatActivity() {
             Log.d("playServices", "$status ${status == ConnectionResult.SUCCESS}")
         }
 
-        renderViewModel.requestingPlayServices.observe(
+        sppViewModel.requestingPlayServices.observe(
             this, androidx.lifecycle.Observer { request ->
                 if (request) {
                     if (DEBUG) {
-                        Log.d("playGames", "${renderViewModel.playSuccess.value!!}")
+                        Log.d("playGames", "${sppViewModel.playSuccess.value!!}")
                     }
-                    if (!renderViewModel.playSuccess.value!! && isGooglePlayGamesServicesInstalled(this)) {
+                    if (!sppViewModel.playSuccess.value!! && isGooglePlayGamesServicesInstalled(this)) {
                         if (DEBUG) {
                             Log.d("playGames", "login")
                         }
@@ -409,16 +415,16 @@ class MainActivity : AppCompatActivity() {
             }
         )
 
-        renderViewModel.requestingInstallPGS.observe(
+        sppViewModel.requestingInstallPGS.observe(
             this, androidx.lifecycle.Observer { request ->
                 if (request) {
                     installPGS()
-                    renderViewModel.onInstallPGSInitiated()
+                    sppViewModel.onInstallPGSInitiated()
                 }
             }
         )
 
-        renderViewModel.requestingLicenses.observe(
+        aboutViewModel.requestingLicenses.observe(
             this, androidx.lifecycle.Observer { request ->
                 if (request) {
                     showLicenses()
@@ -426,7 +432,7 @@ class MainActivity : AppCompatActivity() {
             }
         )
 
-        renderViewModel.requestingSocial.observe(
+        aboutViewModel.requestingSocial.observe(
             this, androidx.lifecycle.Observer { request ->
                 when (request) {
                     SOCIAL.WEB -> web()
@@ -438,7 +444,7 @@ class MainActivity : AppCompatActivity() {
             }
         )
 
-        renderViewModel.showToys.observe(
+        mainMenuViewModel.showToys.observe(
             this, androidx.lifecycle.Observer { show ->
                 val prefs = getSharedPreferences("jerboa.app.spp.prefs", MODE_PRIVATE)
                 val prefsEdit = prefs.edit()
@@ -447,7 +453,7 @@ class MainActivity : AppCompatActivity() {
             }
         )
 
-        renderViewModel.playingMusic.observe(
+        menuPromptViewModel.playingMusic.observe(
             this, androidx.lifecycle.Observer { playingMusic ->
                 when (playingMusic) {
                     MUSIC.FORREST -> {
@@ -469,7 +475,7 @@ class MainActivity : AppCompatActivity() {
             }
         )
 
-        renderViewModel.playTime.observe(
+        sppViewModel.playTime.observe(
             this, androidx.lifecycle.Observer { time ->
                 run {
                     totalTime = if (seenReview) {
@@ -536,7 +542,7 @@ class MainActivity : AppCompatActivity() {
             prefsEdit.apply()
         }
 
-        renderViewModel.onShowToysChanged(prefs.getBoolean("showToys", false))
+        mainMenuViewModel.onShowToysChanged(prefs.getBoolean("showToys", false))
 
 //        if (BuildConfig.DEBUG){
 //            prefs.edit().clear().apply()
@@ -552,11 +558,11 @@ class MainActivity : AppCompatActivity() {
 
             syncAchievementsState()
 
-            renderViewModel.setAchievementState(achievementStates)
+            sppViewModel.setAchievementState(achievementStates)
 
         }
 
-        renderViewModel.achievementStates.observe(
+        sppViewModel.achievementStates.observe(
             this, androidx.lifecycle.Observer { states ->
                 updatePlayGamesAchievements(states)
             }
@@ -590,9 +596,11 @@ class MainActivity : AppCompatActivity() {
         val width = displayMetrics.widthPixels
         setContent {
             SPPTheme {
-                // A surface container using the 'background' color from the theme
-                renderScreen(
-                    renderViewModel,
+                screen(
+                    sppViewModel,
+                    aboutViewModel,
+                    menuPromptViewModel,
+                    mainMenuViewModel,
                     Pair(width, height),
                     imageResources,
                     appInfo,
@@ -604,7 +612,7 @@ class MainActivity : AppCompatActivity() {
 
     public override fun onStart() {
         super.onStart()
-        renderViewModel.startClock()
+        sppViewModel.startClock()
     }
 
     public override fun onStop()
@@ -614,6 +622,6 @@ class MainActivity : AppCompatActivity() {
         prefsEdit.putLong("playTime", totalTime)
         prefsEdit.apply()
         super.onStop()
-        renderViewModel.stopClock()
+        sppViewModel.stopClock()
     }
 }
