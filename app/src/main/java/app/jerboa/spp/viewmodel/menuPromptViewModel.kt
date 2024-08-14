@@ -34,16 +34,22 @@ class MenuPromptViewModel : ViewModel() {
     private val _playingMusic = MutableLiveData(MUSIC.NOTHING)
     val playingMusic: MutableLiveData<MUSIC> = _playingMusic
 
-    fun onMusicSelected(v: MUSIC){
+    fun onMusicSelected(v: MUSIC) {
         _playingMusic.value = v
     }
 
     private val _paused = MutableLiveData(false)
     val paused: MutableLiveData<Boolean> = _paused
 
-    fun onPause()
-    {
+    fun onPause() {
         _paused.postValue(!_paused.value!!)
+    }
+
+    private val _clear = MutableLiveData(false)
+    val clear: MutableLiveData<Boolean> = _clear
+
+    fun onClear(v: Boolean) {
+        _clear.postValue(v)
     }
 
 }

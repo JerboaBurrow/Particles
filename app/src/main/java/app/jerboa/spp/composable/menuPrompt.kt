@@ -220,7 +220,7 @@ fun menuPrompt(
             ) {
                 Image(
                     painter = painterResource(id = images["pause"]!!),
-                    contentDescription = "menu",
+                    contentDescription = "pause",
                     modifier = Modifier
                         .fillMaxSize()
                         .clickable(
@@ -238,7 +238,7 @@ fun menuPrompt(
             ) {
                 Image(
                     painter = painterResource(id = images["play"]!!),
-                    contentDescription = "menu",
+                    contentDescription = "unpause",
                     modifier = Modifier
                         .fillMaxSize()
                         .clickable(

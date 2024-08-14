@@ -66,6 +66,7 @@ class SPPView (
     fun setSpin(v: Float) { renderer.setSpin(v) }
     fun setOrbit(v: Float) { renderer.setOrbit(v) }
     fun showToys(v: Boolean){ renderer.setShowToys(v) }
+    fun clearToys() { renderer.clearToys() }
 
     override fun onResume() {
         super.onResume()

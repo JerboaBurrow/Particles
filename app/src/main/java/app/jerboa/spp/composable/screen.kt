@@ -46,6 +46,7 @@ fun screen(
     val displayingAbout: Boolean by aboutViewModel.displayingAbout.observeAsState(initial = false)
     val displayingMenu: Boolean by menuPromptViewModel.displayingMenu.observeAsState(initial = false)
     val paused: Boolean by menuPromptViewModel.paused.observeAsState(initial = false)
+    val clear: Boolean by menuPromptViewModel.clear.observeAsState(initial = false)
 
     val toy: TOY by mainMenuViewModel.toy.observeAsState(initial = TOY.ATTRACTOR)
     val particleNumber: Float by mainMenuViewModel.particleNumber.observeAsState(initial = PARTICLES_SLIDER_DEFAULT)
@@ -153,6 +154,7 @@ fun screen(
                     view.setSpin(spin)
                     view.setFade(fade)
                     view.showToys(showToys)
+                    if (clear) { view.clearToys(); menuPromptViewModel.onClear(false); }
                 }
             )
         }

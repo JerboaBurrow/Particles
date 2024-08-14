@@ -302,6 +302,14 @@ class SPPRenderer(
     fun setOrbit(v: Float) { orbitStrength = v }
     fun setShowToys(v: Boolean){ showToys = v }
 
+    fun clearToys() {
+        attractors.clear()
+        repellors.clear()
+        spinners.clear()
+        orbiters.clear()
+        freezers.clear()
+    }
+
     fun setParticleNumber(v: Float){
         if (particleNumber == v){return}
         particleNumber = v

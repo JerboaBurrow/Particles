@@ -131,7 +131,8 @@ class MainActivity : AppCompatActivity() {
         "news" to R.drawable.news,
         "pause" to R.drawable.pause,
         "play" to R.drawable.play_button,
-        "freezer" to R.drawable.freezer
+        "freezer" to R.drawable.freezer,
+        "clear" to R.drawable.clear
     )
 
     private val rcAchievementUI = 9003
