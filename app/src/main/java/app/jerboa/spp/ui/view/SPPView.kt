@@ -8,32 +8,27 @@ import android.view.GestureDetector
 import android.view.MotionEvent
 import androidx.core.view.GestureDetectorCompat
 import app.jerboa.spp.viewmodel.COLOUR_MAP
+import app.jerboa.spp.viewmodel.MainMenuViewModel
 import app.jerboa.spp.viewmodel.PARTICLES_SLIDER_DEFAULT
+import app.jerboa.spp.viewmodel.SPPViewModel
 import app.jerboa.spp.viewmodel.TOY
 
 class SPPView (
     context: Context,
     attr: AttributeSet? = null,
     private val resolution: Pair<Int,Int>,
-    private val onDisplayingMenuChanged: (Boolean) -> Unit,
-    private val onAchievementStateChanged: (Pair<String,Int>) -> Unit,
-    private val onToyChanged: (TOY) -> Unit,
-    private val onRequestReview: () -> Unit,
-    private val onAdapt: (Float) -> Unit,
-    private val onUpdateClock: () -> Unit,
+    private val sppViewModel: SPPViewModel,
+    private val mainMenuViewModel: MainMenuViewModel,
     var placingToy: TOY = TOY.ATTRACTOR,
     var particleNumber: Float = PARTICLES_SLIDER_DEFAULT,
-    var allowAdapt: Boolean = true,
-    var colourMap: COLOUR_MAP = COLOUR_MAP.R1
+    private var allowAdapt: Boolean = true,
+    private var colourMap: COLOUR_MAP = COLOUR_MAP.R1
     ) : GLSurfaceView(context,attr), GestureDetector.OnGestureListener {
 
     private val renderer = SPPRenderer(
         resolution,
-        onAchievementStateChanged,
-        onToyChanged,
-        onRequestReview,
-        onAdapt,
-        onUpdateClock,
+        sppViewModel,
+        mainMenuViewModel,
         particleNumber,
         allowAdapt,
         colourMap

@@ -1,84 +1,73 @@
 package app.jerboa.spp.composable
 
 import android.annotation.SuppressLint
-import androidx.compose.animation.*
-import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material.Scaffold
+import androidx.compose.material.SnackbarDuration
+import androidx.compose.material.SnackbarResult
+import androidx.compose.material.rememberScaffoldState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.viewinterop.AndroidView
 import app.jerboa.spp.AppInfo
-import app.jerboa.spp.viewmodel.COLOUR_MAP
-import app.jerboa.spp.viewmodel.MUSIC
-import app.jerboa.spp.viewmodel.PARAM
-import app.jerboa.spp.viewmodel.SOCIAL
-import app.jerboa.spp.viewmodel.TOY
 import app.jerboa.spp.ui.view.SPPView
+import app.jerboa.spp.viewmodel.*
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalAnimationApi::class)
-// see scaffold below
 @SuppressLint("CoroutineCreationDuringComposition", "UnusedMaterialScaffoldPaddingParameter")
 @Composable
 fun screen(
-    displayingMenu: Boolean,
-    displayingSound: Boolean,
-    displayingAbout: Boolean,
-    playSuccess: Boolean,
-    toy: TOY,
-    particleNumber: Float,
-    allowAdapt: Boolean,
-    colourMap: COLOUR_MAP,
-    showToys: Boolean,
-    playingMusic: MUSIC,
-    paused: Boolean,
-    speed: Float,
-    attraction: Float,
-    repulsion: Float,
-    orbit: Float,
-    spin: Float,
-    mass: Float,
-    fade: Float,
-    adaptMsg: Boolean,
-    promptPGS: Boolean,
+    sppViewModel: SPPViewModel,
+    aboutViewModel: AboutViewModel,
+    menuPromptViewModel: MenuPromptViewModel,
+    mainMenuViewModel: MainMenuViewModel,
     resolution: Pair<Int,Int>,
     images: Map<String,Int>,
     info: AppInfo,
-    onDisplayingMenuChanged: (Boolean) -> Unit,
-    onDisplayingMusicChanged: () -> Unit,
-    onDisplayingAboutChanged: (Boolean) -> Unit,
-    onAttractorChanged: (TOY) -> Unit,
-    onRequestPlayServices: () -> Unit,
-    onAchievementStateChanged: (Pair<String,Int>) -> Unit,
-    onAdapt: (Float) -> Unit,
-    onAllowAdaptChanged: () -> Unit,
-    onAdaptMessageShown: () -> Unit,
-    onRequestingLicenses: () -> Unit,
-    onParameterChanged: (Pair<Float, PARAM>) -> Unit,
-    onSelectColourMap: (COLOUR_MAP) -> Unit,
-    selectDefaultColourMap: () -> Unit,
-    onMusicSelected: (MUSIC) -> Unit,
-    onRequestingSocial: (SOCIAL) -> Unit,
-    onResetTutorial: () -> Unit,
-    onPromptPGS: (Boolean) -> Unit,
-    onToyChanged: (TOY) -> Unit,
-    onRequestReview: () -> Unit,
-    onUpdateClock: () -> Unit,
-    onPause: () -> Unit,
-    onShowToysChanged: (Boolean) -> Unit
-) {
+    showNews: Boolean = false
+){
+
+    val resetTutorial: Boolean by aboutViewModel.resetTutorial.observeAsState(initial = false)
+    val dismissedTutorial: Boolean by aboutViewModel.dismissedTutorial.observeAsState(initial = false)
+    val dismissedNews: Boolean by sppViewModel.dismissedNews.observeAsState(initial = false)
+
+    val width75Percent = info.widthDp * 0.75
+    val height10Percent = info.heightDp * 0.1
+    val menuItemHeight = height10Percent * 0.66
+
+    val displayingAbout: Boolean by aboutViewModel.displayingAbout.observeAsState(initial = false)
+    val displayingMenu: Boolean by menuPromptViewModel.displayingMenu.observeAsState(initial = false)
+    val paused: Boolean by menuPromptViewModel.paused.observeAsState(initial = false)
+
+    val toy: TOY by mainMenuViewModel.toy.observeAsState(initial = TOY.ATTRACTOR)
+    val particleNumber: Float by mainMenuViewModel.particleNumber.observeAsState(initial = PARTICLES_SLIDER_DEFAULT)
+    val allowAdapt: Boolean by mainMenuViewModel.allowAdapt.observeAsState(initial = true)
+    val adaptMsg: Boolean by mainMenuViewModel.autoAdaptMessage.observeAsState(initial = false)
+    val colourMap: COLOUR_MAP by mainMenuViewModel.colourMap.observeAsState(COLOUR_MAP.R1)
+    val speed: Float by mainMenuViewModel.speed.observeAsState(initial = 1.0f)
+    val attraction: Float by mainMenuViewModel.attractorStrength.observeAsState(50000f)
+    val repulsion: Float by mainMenuViewModel.repellorStrength.observeAsState(50000f)
+    val orbit: Float by mainMenuViewModel.orbitStrength.observeAsState(0.5f)
+    val spin: Float by mainMenuViewModel.spinStrength.observeAsState(1500f)
+    val mass: Float by mainMenuViewModel.mass.observeAsState(0.1f)
+    val fade: Float by mainMenuViewModel.fade.observeAsState(initial = 1.0f)
+    val showToys: Boolean by mainMenuViewModel.showToys.observeAsState(initial = false)
+
+    val promptPGS: Boolean by sppViewModel.promptInstallPGS.observeAsState(initial = false)
+
 
     val scaffoldState = rememberScaffoldState()
     val coroutineScope = rememberCoroutineScope()
 
-    val seenHelp = remember { mutableStateOf(!info.firstLaunch) }
-
-    val width75Percent = info.widthDp * 0.75
-    val height25Percent = info.heightDp * 0.25
-    val height10Percent = info.heightDp * 0.1
-    val menuItemHeight = height10Percent * 0.66
-
-    selectDefaultColourMap()
+    mainMenuViewModel.selectDefaultColourMap()
 
     Column(
         modifier = Modifier.fillMaxWidth()
@@ -90,34 +79,20 @@ fun screen(
             topBar = {
             },
             bottomBar = {
-                menu(
+                mainMenu(
+                    mainMenuViewModel,
+                    sppViewModel,
+                    aboutViewModel,
                     displayingMenu && !displayingAbout,
-                    playSuccess,
-                    particleNumber,
-                    speed,
-                    attraction,
-                    repulsion,
-                    orbit,
-                    spin,
-                    mass,
-                    fade,
-                    showToys,
                     width75Percent,
                     height10Percent,
                     menuItemHeight,
-                    images,
-                    info,
-                    onDisplayingAboutChanged,
-                    onAttractorChanged,
-                    onRequestPlayServices,
-                    onParameterChanged,
-                    onSelectColourMap,
-                    onShowToysChanged
+                    images
                 )
             }
         ) {
             if (adaptMsg) {
-                onAdaptMessageShown()
+                mainMenuViewModel.onAdaptMessageShown()
                 coroutineScope.launch {
                     val snackbarResult = scaffoldState.snackbarHostState.showSnackbar(
                         message = "FPS lower than 30 adapting...",
@@ -127,7 +102,7 @@ fun screen(
                     when (snackbarResult) {
                         //SnackbarResult.Dismissed -> Log.d("screen", "Dismissed")
                         SnackbarResult.ActionPerformed -> {
-                            onAllowAdaptChanged()
+                            mainMenuViewModel.onAllowAdaptChanged()
                         }
                         else -> {}
                     }
@@ -143,24 +118,20 @@ fun screen(
                     when (snackbarResult) {
                         //SnackbarResult.Dismissed -> Log.d("screen", "Dismissed")
                         SnackbarResult.ActionPerformed -> {
-                            onPromptPGS(true)
+                            sppViewModel.onPromptInstallPGS(true)
                         }
                         else -> {}
                     }
                 }
-                onPromptPGS(false)
+                sppViewModel.onPromptInstallPGS(false)
             }
             AndroidView(
                 factory = {
                     SPPView(
                         it, null,
                         resolution,
-                        onDisplayingMenuChanged,
-                        onAchievementStateChanged,
-                        onToyChanged,
-                        onRequestReview,
-                        onAdapt,
-                        onUpdateClock,
+                        sppViewModel,
+                        mainMenuViewModel,
                         toy,
                         particleNumber,
                         allowAdapt,
@@ -184,16 +155,44 @@ fun screen(
                     view.showToys(showToys)
                 }
             )
-            about(
-                displayingAbout,
-                width75Percent,
-                images,
-                info,
-                onRequestingLicenses,
-                onRequestingSocial,
-                onResetTutorial
-            )
-            menuPrompt(images,displayingMenu,displayingSound,menuItemHeight,paused,onDisplayingMenuChanged,onDisplayingMusicChanged,onMusicSelected, onPause)
         }
+    }
+
+    about(
+        aboutViewModel,
+        width75Percent,
+        images,
+        info
+    )
+
+    menuPrompt(
+        menuPromptViewModel,
+        aboutViewModel,
+        images,
+        menuItemHeight
+    )
+
+    if (!dismissedTutorial && (info.firstLaunch || resetTutorial) ){
+        Image(
+            painter = painterResource(id = images["tutorial"]!!),
+            contentDescription = "",
+            contentScale = ContentScale.Fit,
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable {
+                    aboutViewModel.onDismissTutorial()
+                }
+        )
+    }else if (showNews && !dismissedNews){
+        Image(
+            painter = painterResource(id = images["news"]!!),
+            contentDescription = "",
+            contentScale = ContentScale.Fit,
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable {
+                    sppViewModel.onDismissNews()
+                }
+        )
     }
 }
