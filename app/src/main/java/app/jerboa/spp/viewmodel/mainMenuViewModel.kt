@@ -34,7 +34,7 @@ enum class TOY {ATTRACTOR,REPELLOR,SPINNER,FREEZER,ORBITER, NOTHING}
 enum class PARAM {MASS, SPEED, ATTRACTION, REPULSION, ORBIT, SPIN, PARTICLES, FADE}
 
 
-class MainMenuViewModel: ViewModel() {
+class ToyMenuViewModel: ViewModel() {
     private val _colourMap = MutableLiveData(COLOUR_MAP.R1)
     val colourMap: MutableLiveData<COLOUR_MAP> = _colourMap
 

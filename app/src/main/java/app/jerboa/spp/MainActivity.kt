@@ -23,7 +23,7 @@ import app.jerboa.spp.viewmodel.SOCIAL
 import app.jerboa.spp.composable.screen
 import app.jerboa.spp.ui.theme.SPPTheme
 import app.jerboa.spp.viewmodel.AboutViewModel
-import app.jerboa.spp.viewmodel.MainMenuViewModel
+import app.jerboa.spp.viewmodel.ToyMenuViewModel
 import app.jerboa.spp.viewmodel.MenuPromptViewModel
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
@@ -90,7 +90,7 @@ class MainActivity : AppCompatActivity() {
     private val sppViewModel by viewModels<SPPViewModel>()
     private val aboutViewModel by viewModels<AboutViewModel>()
     private val menuPromptViewModel by viewModels<MenuPromptViewModel>()
-    private val mainMenuViewModel by viewModels<MainMenuViewModel>()
+    private val toyMenuViewModel by viewModels<ToyMenuViewModel>()
 
     private var mediaPlayer = MediaPlayer()
 
@@ -132,7 +132,8 @@ class MainActivity : AppCompatActivity() {
         "pause" to R.drawable.pause,
         "play" to R.drawable.play_button,
         "freezer" to R.drawable.freezer,
-        "clear" to R.drawable.clear
+        "clear" to R.drawable.clear,
+        "toyMenu" to R.drawable.toymenu
     )
 
     private val rcAchievementUI = 9003
@@ -445,7 +446,7 @@ class MainActivity : AppCompatActivity() {
             }
         )
 
-        mainMenuViewModel.showToys.observe(
+        toyMenuViewModel.showToys.observe(
             this, androidx.lifecycle.Observer { show ->
                 val prefs = getSharedPreferences("jerboa.app.spp.prefs", MODE_PRIVATE)
                 val prefsEdit = prefs.edit()
@@ -543,7 +544,7 @@ class MainActivity : AppCompatActivity() {
             prefsEdit.apply()
         }
 
-        mainMenuViewModel.onShowToysChanged(prefs.getBoolean("showToys", false))
+        toyMenuViewModel.onShowToysChanged(prefs.getBoolean("showToys", false))
 
 //        if (BuildConfig.DEBUG){
 //            prefs.edit().clear().apply()
@@ -601,7 +602,7 @@ class MainActivity : AppCompatActivity() {
                     sppViewModel,
                     aboutViewModel,
                     menuPromptViewModel,
-                    mainMenuViewModel,
+                    toyMenuViewModel,
                     Pair(width, height),
                     imageResources,
                     appInfo,

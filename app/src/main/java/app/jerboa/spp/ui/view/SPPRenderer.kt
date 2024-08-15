@@ -35,7 +35,7 @@ enum class DRAG {START, STOP, CONTINUE}
 class SPPRenderer(
     private val resolution: Pair<Int,Int>,
     private val sppViewModel: SPPViewModel,
-    private val mainMenuViewModel: MainMenuViewModel,
+    private val toyMenuViewModel: ToyMenuViewModel,
     private var particleNumber: Float = PARTICLES_SLIDER_DEFAULT,
     private var allowAdapt: Boolean = true,
     private var colourMap: COLOUR_MAP = COLOUR_MAP.R1
@@ -406,7 +406,7 @@ class SPPRenderer(
                 val toy = toySelected(wx, wy)
                 if (toy != null) {
                     touchEvent.draggedToy = toy
-                    mainMenuViewModel.onToyChanged(toy.first)
+                    toyMenuViewModel.onToyChanged(toy.first)
                     touchEvent.dragPlacedToy = false
                 } else {
                     when (toyType) {
@@ -415,7 +415,7 @@ class SPPRenderer(
                                 attractors.add(Pair(wx, wy))
                             }
                             touchEvent.draggedToy = Pair(TOY.ATTRACTOR, attractors.sizeBack - 1)
-                            mainMenuViewModel.onToyChanged(TOY.ATTRACTOR)
+                            toyMenuViewModel.onToyChanged(TOY.ATTRACTOR)
                             touchEvent.dragPlacedToy = true
                         }
 
@@ -424,7 +424,7 @@ class SPPRenderer(
                                 repellors.add(Pair(wx, wy))
                             }
                             touchEvent.draggedToy = Pair(TOY.REPELLOR, repellors.sizeBack - 1)
-                            mainMenuViewModel.onToyChanged(TOY.REPELLOR)
+                            toyMenuViewModel.onToyChanged(TOY.REPELLOR)
                             touchEvent.dragPlacedToy = true
                         }
 
@@ -433,7 +433,7 @@ class SPPRenderer(
                                 spinners.add(Pair(wx, wy))
                             }
                             touchEvent.draggedToy = Pair(TOY.SPINNER, spinners.sizeBack - 1)
-                            mainMenuViewModel.onToyChanged(TOY.SPINNER)
+                            toyMenuViewModel.onToyChanged(TOY.SPINNER)
                             touchEvent.dragPlacedToy = true
                         }
 
@@ -442,7 +442,7 @@ class SPPRenderer(
                                 freezers.add(Pair(wx, wy))
                             }
                             touchEvent.draggedToy = Pair(TOY.FREEZER, freezers.sizeBack - 1)
-                            mainMenuViewModel.onToyChanged(TOY.FREEZER)
+                            toyMenuViewModel.onToyChanged(TOY.FREEZER)
                             touchEvent.dragPlacedToy = true
                         }
 
@@ -451,7 +451,7 @@ class SPPRenderer(
                                 orbiters.add(Pair(wx, wy))
                             }
                             touchEvent.draggedToy = Pair(TOY.ORBITER, orbiters.sizeBack - 1)
-                            mainMenuViewModel.onToyChanged(TOY.ORBITER)
+                            toyMenuViewModel.onToyChanged(TOY.ORBITER)
                             touchEvent.dragPlacedToy = true
                         }
 
@@ -642,7 +642,7 @@ class SPPRenderer(
 
         newP = p
         reset = true
-        mainMenuViewModel.onAdapt(particleNumber)
+        toyMenuViewModel.onAdapt(particleNumber)
     }
 
     private fun compileDrawShader(){

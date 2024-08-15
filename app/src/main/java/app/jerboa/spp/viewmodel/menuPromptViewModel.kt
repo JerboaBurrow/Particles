@@ -10,25 +10,21 @@ class MenuPromptViewModel : ViewModel() {
     private val _displayingMenu = MutableLiveData(false)
     val displayingMenu : MutableLiveData<Boolean> = _displayingMenu
 
-    //private val _lastClick = MutableLiveData(0L)
-    fun onDisplayingMenuChanged(newVal: Boolean){
+    fun onDisplayingMenuChanged(newVal: Boolean) {
         _displayingMenu.value = newVal
+    }
 
-        if (_displayingMenu.value == true){
-            _displayingSound.value = false
-        }
+    private val _displayingToyMenu = MutableLiveData(false)
+    val displayingToyMenu: MutableLiveData<Boolean> = _displayingToyMenu
 
-        //_lastClick.value = System.currentTimeMillis()
-
+    fun onDisplayingToyMenuChanged(newVal: Boolean) {
+        _displayingToyMenu.value = newVal
     }
 
     private val _displayingSound = MutableLiveData(false)
     val displayingSound: MutableLiveData<Boolean> = _displayingSound
-    fun onDisplayingMusicChanged(newVal: Boolean){
+    fun onDisplayingMusicChanged(newVal: Boolean) {
         _displayingSound.value = newVal
-        if (_displayingSound.value == true){
-            _displayingMenu.value = false
-        }
     }
 
     private val _playingMusic = MutableLiveData(MUSIC.NOTHING)

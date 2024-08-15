@@ -28,7 +28,7 @@ fun screen(
     sppViewModel: SPPViewModel,
     aboutViewModel: AboutViewModel,
     menuPromptViewModel: MenuPromptViewModel,
-    mainMenuViewModel: MainMenuViewModel,
+    toyMenuViewModel: ToyMenuViewModel,
     resolution: Pair<Int,Int>,
     images: Map<String,Int>,
     info: AppInfo,
@@ -43,24 +43,23 @@ fun screen(
     val height10Percent = info.heightDp * 0.1
     val menuItemHeight = height10Percent * 0.66
 
-    val displayingAbout: Boolean by aboutViewModel.displayingAbout.observeAsState(initial = false)
-    val displayingMenu: Boolean by menuPromptViewModel.displayingMenu.observeAsState(initial = false)
+    val displayingToyMenu: Boolean by menuPromptViewModel.displayingToyMenu.observeAsState(initial = false)
     val paused: Boolean by menuPromptViewModel.paused.observeAsState(initial = false)
     val clear: Boolean by menuPromptViewModel.clear.observeAsState(initial = false)
 
-    val toy: TOY by mainMenuViewModel.toy.observeAsState(initial = TOY.ATTRACTOR)
-    val particleNumber: Float by mainMenuViewModel.particleNumber.observeAsState(initial = PARTICLES_SLIDER_DEFAULT)
-    val allowAdapt: Boolean by mainMenuViewModel.allowAdapt.observeAsState(initial = true)
-    val adaptMsg: Boolean by mainMenuViewModel.autoAdaptMessage.observeAsState(initial = false)
-    val colourMap: COLOUR_MAP by mainMenuViewModel.colourMap.observeAsState(COLOUR_MAP.R1)
-    val speed: Float by mainMenuViewModel.speed.observeAsState(initial = 1.0f)
-    val attraction: Float by mainMenuViewModel.attractorStrength.observeAsState(50000f)
-    val repulsion: Float by mainMenuViewModel.repellorStrength.observeAsState(50000f)
-    val orbit: Float by mainMenuViewModel.orbitStrength.observeAsState(0.5f)
-    val spin: Float by mainMenuViewModel.spinStrength.observeAsState(1500f)
-    val mass: Float by mainMenuViewModel.mass.observeAsState(0.1f)
-    val fade: Float by mainMenuViewModel.fade.observeAsState(initial = 1.0f)
-    val showToys: Boolean by mainMenuViewModel.showToys.observeAsState(initial = false)
+    val toy: TOY by toyMenuViewModel.toy.observeAsState(initial = TOY.ATTRACTOR)
+    val particleNumber: Float by toyMenuViewModel.particleNumber.observeAsState(initial = PARTICLES_SLIDER_DEFAULT)
+    val allowAdapt: Boolean by toyMenuViewModel.allowAdapt.observeAsState(initial = true)
+    val adaptMsg: Boolean by toyMenuViewModel.autoAdaptMessage.observeAsState(initial = false)
+    val colourMap: COLOUR_MAP by toyMenuViewModel.colourMap.observeAsState(COLOUR_MAP.R1)
+    val speed: Float by toyMenuViewModel.speed.observeAsState(initial = 1.0f)
+    val attraction: Float by toyMenuViewModel.attractorStrength.observeAsState(50000f)
+    val repulsion: Float by toyMenuViewModel.repellorStrength.observeAsState(50000f)
+    val orbit: Float by toyMenuViewModel.orbitStrength.observeAsState(0.5f)
+    val spin: Float by toyMenuViewModel.spinStrength.observeAsState(1500f)
+    val mass: Float by toyMenuViewModel.mass.observeAsState(0.1f)
+    val fade: Float by toyMenuViewModel.fade.observeAsState(initial = 1.0f)
+    val showToys: Boolean by toyMenuViewModel.showToys.observeAsState(initial = false)
 
     val promptPGS: Boolean by sppViewModel.promptInstallPGS.observeAsState(initial = false)
 
@@ -68,7 +67,7 @@ fun screen(
     val scaffoldState = rememberScaffoldState()
     val coroutineScope = rememberCoroutineScope()
 
-    mainMenuViewModel.selectDefaultColourMap()
+    toyMenuViewModel.selectDefaultColourMap()
 
     Column(
         modifier = Modifier.fillMaxWidth()
@@ -80,11 +79,11 @@ fun screen(
             topBar = {
             },
             bottomBar = {
-                mainMenu(
-                    mainMenuViewModel,
+                toyMenu(
+                    toyMenuViewModel,
                     sppViewModel,
                     aboutViewModel,
-                    displayingMenu && !displayingAbout,
+                    displayingToyMenu,
                     width75Percent,
                     height10Percent,
                     menuItemHeight,
@@ -93,7 +92,7 @@ fun screen(
             }
         ) {
             if (adaptMsg) {
-                mainMenuViewModel.onAdaptMessageShown()
+                toyMenuViewModel.onAdaptMessageShown()
                 coroutineScope.launch {
                     val snackbarResult = scaffoldState.snackbarHostState.showSnackbar(
                         message = "FPS lower than 30 adapting...",
@@ -103,7 +102,7 @@ fun screen(
                     when (snackbarResult) {
                         //SnackbarResult.Dismissed -> Log.d("screen", "Dismissed")
                         SnackbarResult.ActionPerformed -> {
-                            mainMenuViewModel.onAllowAdaptChanged()
+                            toyMenuViewModel.onAllowAdaptChanged()
                         }
                         else -> {}
                     }
@@ -132,7 +131,7 @@ fun screen(
                         it, null,
                         resolution,
                         sppViewModel,
-                        mainMenuViewModel,
+                        toyMenuViewModel,
                         toy,
                         particleNumber,
                         allowAdapt,
