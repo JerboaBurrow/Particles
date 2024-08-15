@@ -3,12 +3,10 @@ package app.jerboa.spp.ui.view
 import android.content.Context
 import android.opengl.GLSurfaceView
 import android.util.AttributeSet
-import android.util.Log
 import android.view.GestureDetector
 import android.view.MotionEvent
-import androidx.core.view.GestureDetectorCompat
 import app.jerboa.spp.viewmodel.COLOUR_MAP
-import app.jerboa.spp.viewmodel.MainMenuViewModel
+import app.jerboa.spp.viewmodel.ToyMenuViewModel
 import app.jerboa.spp.viewmodel.PARTICLES_SLIDER_DEFAULT
 import app.jerboa.spp.viewmodel.SPPViewModel
 import app.jerboa.spp.viewmodel.TOY
@@ -18,7 +16,7 @@ class SPPView (
     attr: AttributeSet? = null,
     private val resolution: Pair<Int,Int>,
     private val sppViewModel: SPPViewModel,
-    private val mainMenuViewModel: MainMenuViewModel,
+    private val toyMenuViewModel: ToyMenuViewModel,
     var placingToy: TOY = TOY.ATTRACTOR,
     var particleNumber: Float = PARTICLES_SLIDER_DEFAULT,
     private var allowAdapt: Boolean = true,
@@ -28,7 +26,7 @@ class SPPView (
     private val renderer = SPPRenderer(
         resolution,
         sppViewModel,
-        mainMenuViewModel,
+        toyMenuViewModel,
         particleNumber,
         allowAdapt,
         colourMap
@@ -66,6 +64,7 @@ class SPPView (
     fun setSpin(v: Float) { renderer.setSpin(v) }
     fun setOrbit(v: Float) { renderer.setOrbit(v) }
     fun showToys(v: Boolean){ renderer.setShowToys(v) }
+    fun clearToys() { renderer.clearToys() }
 
     override fun onResume() {
         super.onResume()

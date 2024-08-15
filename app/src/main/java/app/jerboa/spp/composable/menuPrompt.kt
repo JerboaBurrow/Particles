@@ -1,5 +1,6 @@
 package app.jerboa.spp.composable
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.LinearEasing
@@ -9,7 +10,6 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -20,7 +20,6 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import app.jerboa.spp.viewmodel.AboutViewModel
-import app.jerboa.spp.viewmodel.MUSIC
 import app.jerboa.spp.viewmodel.MenuPromptViewModel
 
 @OptIn(ExperimentalAnimationApi::class)
@@ -36,49 +35,116 @@ fun menuPrompt(
     val displayingSound: Boolean by menuPromptViewModel.displayingSound.observeAsState(initial = false)
     val paused: Boolean by menuPromptViewModel.paused.observeAsState(initial = false)
 
-    val fadeAlpha = 0.33f
-
-    val alphaM1: Float by animateFloatAsState(
-        targetValue = if (!displayingMenu) fadeAlpha else 1.0f,
+    val fadePromptAlpha: Float by animateFloatAsState(
+        targetValue = if (!displayingMenu) 0.33f else 1.0f,
         animationSpec = tween(
             durationMillis = 500,
             easing = LinearEasing,
-        ), label = "m1"
+        ), label = "alpha for fading the prompt"
     )
-
-    val alphaM2: Float by animateFloatAsState(
-        targetValue = if (displayingMenu) fadeAlpha else 1.0f,
-        animationSpec = tween(
-            durationMillis = 500,
-            easing = LinearEasing,
-        ), label = "m2"
-    )
-
-    val alphaS1: Float by animateFloatAsState(
-        targetValue = if (!displayingSound) fadeAlpha else 1.0f,
-        animationSpec = tween(
-            durationMillis = 500,
-            easing = LinearEasing,
-        ), label = "s1"
-    )
-
-    val alphaS2: Float by animateFloatAsState(
-        targetValue = if (displayingSound) fadeAlpha else 1.0f,
-        animationSpec = tween(
-            durationMillis = 500,
-            easing = LinearEasing,
-        ), label = "s2"
-    )
-
 
     Box(modifier = Modifier
         .fillMaxHeight()
-        .fillMaxWidth()) {
+        .fillMaxWidth()
+        .padding(16.dp)) {
         Box(
             modifier = Modifier
-                .width(menuItemHeight.dp)
-                .height((menuItemHeight * 2.0).dp)
-                .padding((menuItemHeight * 0.1).dp)
+                .fillMaxHeight()
+                .fillMaxWidth()
+                .align(alignment = Alignment.BottomStart)
+        ) {
+            AnimatedVisibility(
+                visible = displayingMenu,
+                enter = fadeIn(tween(0)),
+                exit = fadeOut(tween(0))
+            ) {
+                verticalMenu(modifier = Modifier, offset = Pair(0.dp, menuItemHeight.dp), contentPadding = 16.dp) {
+                    Image(
+                        painter = painterResource(id = images["toyMenu"]!!),
+                        contentDescription = "Toy menu and sliders",
+                        modifier = Modifier
+                            .size(menuItemHeight.dp)
+                            .clickable(
+                                onClick = {
+                                    menuPromptViewModel.onDisplayingToyMenuChanged(true)
+                                    menuPromptViewModel.onDisplayingMusicChanged(false)
+                                    aboutViewModel.onDisplayingAboutChanged(false)
+                                }
+                            )
+                    )
+                    if (displayingSound) {
+                        musicMenu(
+                            menuPromptViewModel,
+                            menuItemHeight,
+                            images
+                        )
+                    }
+                    else {
+                        Image(
+                            painter = painterResource(id = images["music"]!!),
+                            contentDescription = "Music menu",
+                            modifier = Modifier
+                                .size(menuItemHeight.dp)
+                                .clickable(
+                                    onClick = {
+                                        menuPromptViewModel.onDisplayingToyMenuChanged(false)
+                                        menuPromptViewModel.onDisplayingMusicChanged(true)
+                                        aboutViewModel.onDisplayingAboutChanged(false)
+                                    }
+                                )
+                        )
+                    }
+                    Image(
+                        painter = painterResource(id = images["clear"]!!),
+                        contentDescription = "clear all the toys",
+                        modifier = Modifier
+                            .size(menuItemHeight.dp)
+                            .clickable(
+                                onClick = {
+                                    menuPromptViewModel.onClear(true)
+                                }
+                            )
+                    )
+                    if (!paused) {
+                        Image(
+                            painter = painterResource(id = images["pause"]!!),
+                            contentDescription = "pause the particles",
+                            modifier = Modifier
+                                .size(menuItemHeight.dp)
+                                .clickable(
+                                    onClick = { menuPromptViewModel.onPause(); }
+                                )
+                        )
+                    } else {
+                        Image(
+                            painter = painterResource(id = images["play"]!!),
+                            contentDescription = "unpause the particles",
+                            modifier = Modifier
+                                .size(menuItemHeight.dp)
+                                .clickable(
+                                    onClick = { menuPromptViewModel.onPause(); }
+                                )
+                        )
+                    }
+                    Image(
+                        painter = painterResource(id = images["about"]!!),
+                        contentDescription = "About and news",
+                        modifier = Modifier
+                            .size(menuItemHeight.dp)
+                            .clickable(
+                                onClick = {
+                                    menuPromptViewModel.onDisplayingToyMenuChanged(false)
+                                    menuPromptViewModel.onDisplayingMusicChanged(false)
+                                    aboutViewModel.onDisplayingAboutChanged(true)
+                                }
+                            )
+                    )
+                }
+            }
+        }
+        Box(
+            modifier = Modifier
+                .size(menuItemHeight.dp)
                 .align(alignment = Alignment.BottomStart)
         ) {
             AnimatedVisibility(
@@ -88,15 +154,13 @@ fun menuPrompt(
             ) {
                 Image(
                     painter = painterResource(id = images["burger"]!!),
-                    contentDescription = "menu",
+                    contentDescription = "Open the menu",
                     modifier = Modifier
-                        .fillMaxSize()
+                        .size(menuItemHeight.dp)
                         .clickable(
-                            interactionSource = MutableInteractionSource(),
-                            indication = null,
                             onClick = { menuPromptViewModel.onDisplayingMenuChanged(true); }
                         )
-                        .alpha(alphaM1)
+                        .alpha(fadePromptAlpha)
                 )
             }
             AnimatedVisibility(
@@ -106,176 +170,17 @@ fun menuPrompt(
             ) {
                 Image(
                     painter = painterResource(id = images["dismiss"]!!),
-                    contentDescription = "menu",
+                    contentDescription = "Close the menu",
                     modifier = Modifier
-                        .fillMaxSize()
+                        .size(menuItemHeight.dp)
                         .clickable(
-                            interactionSource = MutableInteractionSource(),
-                            indication = null,
                             onClick = {
                                 menuPromptViewModel.onDisplayingMenuChanged(false)
                                 aboutViewModel.onDisplayingAboutChanged(false)
+                                menuPromptViewModel.onDisplayingToyMenuChanged(false)
+                                menuPromptViewModel.onDisplayingMusicChanged(false)
                             }
                         )
-                        .alpha(alphaM2)
-                )
-            }
-        }
-        Box(
-            modifier = Modifier
-                .width(menuItemHeight.dp)
-                .height((menuItemHeight * 8.0).dp)
-                .padding((menuItemHeight * 0.1).dp)
-                .align(alignment = Alignment.BottomEnd)
-        ) {
-            AnimatedVisibility(
-                visible = displayingSound,
-                enter = fadeIn(),
-                exit = fadeOut()
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .fillMaxHeight(),
-                    verticalArrangement = Arrangement.spacedBy((0.01*menuItemHeight).dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Image(
-                        painter = painterResource(id = images["music-rain"]!!),
-                        contentDescription = "rain",
-                        modifier = Modifier
-                            .fillMaxWidth().height((menuItemHeight*2.0).dp)
-                            .clickable(
-                                interactionSource = MutableInteractionSource(),
-                                indication = null,
-                                onClick = {
-                                    menuPromptViewModel.onDisplayingMusicChanged(false)
-                                    aboutViewModel.onDisplayingAboutChanged(false)
-                                    menuPromptViewModel.onMusicSelected(MUSIC.RAIN)
-                                }
-                            )
-                            .alpha(alphaS2)
-                    )
-                    Image(
-                        painter = painterResource(id = images["music-forrest"]!!),
-                        contentDescription = "forrest",
-                        modifier = Modifier
-                            .fillMaxWidth().height((menuItemHeight*2.0).dp)
-                            .clickable(
-                                interactionSource = MutableInteractionSource(),
-                                indication = null,
-                                onClick = {
-                                    menuPromptViewModel.onDisplayingMusicChanged(false)
-                                    aboutViewModel.onDisplayingAboutChanged(false)
-                                    menuPromptViewModel.onMusicSelected(MUSIC.FORREST)
-                                }
-                            )
-                            .alpha(alphaS2)
-                    )
-                    Image(
-                        painter = painterResource(id = images["music-none"]!!),
-                        contentDescription = "no sound",
-                        modifier = Modifier
-                            .fillMaxWidth().height((menuItemHeight*2.0).dp)
-                            .clickable(
-                                interactionSource = MutableInteractionSource(),
-                                indication = null,
-                                onClick = {
-                                    menuPromptViewModel.onDisplayingMusicChanged(false)
-                                    aboutViewModel.onDisplayingAboutChanged(false)
-                                    menuPromptViewModel.onMusicSelected(MUSIC.NOTHING)
-                                }
-                            )
-                            .alpha(alphaS2)
-                    )
-                    Image(
-                        painter = painterResource(id = images["dismiss"]!!),
-                        contentDescription = "menu",
-                        modifier = Modifier
-                            .fillMaxWidth().height((menuItemHeight*2.0).dp)
-                            .clickable(
-                                interactionSource = MutableInteractionSource(),
-                                indication = null,
-                                onClick = {
-                                    menuPromptViewModel.onDisplayingMusicChanged(false)
-                                    aboutViewModel.onDisplayingAboutChanged(false)
-                                }
-                            )
-                            .alpha(alphaS2)
-                    )
-                }
-            }
-        }
-        Box(
-            modifier = Modifier
-                .width(menuItemHeight.dp)
-                .height((menuItemHeight * 2.0).dp)
-                .padding((menuItemHeight * 0.1).dp)
-                .align(alignment = Alignment.BottomCenter)
-        ) {
-            AnimatedVisibility(
-                visible = !paused && !displayingMenu,
-                enter = fadeIn(),
-                exit = fadeOut()
-            ) {
-                Image(
-                    painter = painterResource(id = images["pause"]!!),
-                    contentDescription = "menu",
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .clickable(
-                            interactionSource = MutableInteractionSource(),
-                            indication = null,
-                            onClick = { menuPromptViewModel.onPause(); }
-                        )
-                        .alpha(0.66f)
-                )
-            }
-            AnimatedVisibility(
-                visible = paused && !displayingMenu,
-                enter = fadeIn(),
-                exit = fadeOut()
-            ) {
-                Image(
-                    painter = painterResource(id = images["play"]!!),
-                    contentDescription = "menu",
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .clickable(
-                            interactionSource = MutableInteractionSource(),
-                            indication = null,
-                            onClick = { menuPromptViewModel.onPause(); }
-                        )
-                        .alpha(0.66f)
-                )
-            }
-        }
-        Box(
-            modifier = Modifier
-                .width(menuItemHeight.dp)
-                .height((menuItemHeight * 2.0).dp)
-                .padding((menuItemHeight * 0.1).dp)
-                .align(alignment = Alignment.BottomEnd)
-        ) {
-            AnimatedVisibility(
-                visible = !displayingSound,
-                enter = fadeIn(),
-                exit = fadeOut()
-            ) {
-                Image(
-                    painter = painterResource(id = images["music"]!!),
-                    contentDescription = "menu",
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .clickable(
-                            interactionSource = MutableInteractionSource(),
-                            indication = null,
-                            onClick =
-                            {
-                                menuPromptViewModel.onDisplayingMusicChanged(true)
-                            }
-                        )
-                        .alpha(alphaS1)
                 )
             }
         }

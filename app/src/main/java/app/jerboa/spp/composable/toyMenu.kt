@@ -36,7 +36,7 @@ import app.jerboa.spp.viewmodel.MIN_LOG_FADE
 import app.jerboa.spp.viewmodel.MIN_LOG_MASS
 import app.jerboa.spp.viewmodel.MIN_LOG_ORBIT
 import app.jerboa.spp.viewmodel.MIN_LOG_SPIN
-import app.jerboa.spp.viewmodel.MainMenuViewModel
+import app.jerboa.spp.viewmodel.ToyMenuViewModel
 import app.jerboa.spp.viewmodel.PARAM
 import app.jerboa.spp.viewmodel.PARTICLES_SLIDER_DEFAULT
 import app.jerboa.spp.viewmodel.SPPViewModel
@@ -102,8 +102,8 @@ fun logSlider(
 }
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun mainMenu(
-    mainMenuViewModel: MainMenuViewModel,
+fun toyMenu(
+    toyMenuViewModel: ToyMenuViewModel,
     sppViewModel: SPPViewModel,
     aboutViewModel: AboutViewModel,
     displayingMenu: Boolean,
@@ -114,15 +114,15 @@ fun mainMenu(
 ) {
 
     val playSuccess: Boolean by sppViewModel.playSuccess.observeAsState(initial = false)
-    val particleNumber: Float by mainMenuViewModel.particleNumber.observeAsState(initial = PARTICLES_SLIDER_DEFAULT)
-    val speed: Float by mainMenuViewModel.speed.observeAsState(initial = 1.0f)
-    val attraction: Float by mainMenuViewModel.attractorStrength.observeAsState(50000f)
-    val repulsion: Float by mainMenuViewModel.repellorStrength.observeAsState(50000f)
-    val orbit: Float by mainMenuViewModel.orbitStrength.observeAsState(0.5f)
-    val spin: Float by mainMenuViewModel.spinStrength.observeAsState(1500f)
-    val mass: Float by mainMenuViewModel.mass.observeAsState(0.1f)
-    val fade: Float by mainMenuViewModel.fade.observeAsState(initial = 1.0f)
-    val showToys: Boolean by mainMenuViewModel.showToys.observeAsState(initial = false)
+    val particleNumber: Float by toyMenuViewModel.particleNumber.observeAsState(initial = PARTICLES_SLIDER_DEFAULT)
+    val speed: Float by toyMenuViewModel.speed.observeAsState(initial = 1.0f)
+    val attraction: Float by toyMenuViewModel.attractorStrength.observeAsState(50000f)
+    val repulsion: Float by toyMenuViewModel.repellorStrength.observeAsState(50000f)
+    val orbit: Float by toyMenuViewModel.orbitStrength.observeAsState(0.5f)
+    val spin: Float by toyMenuViewModel.spinStrength.observeAsState(1500f)
+    val mass: Float by toyMenuViewModel.mass.observeAsState(0.1f)
+    val fade: Float by toyMenuViewModel.fade.observeAsState(initial = 1.0f)
+    val showToys: Boolean by toyMenuViewModel.showToys.observeAsState(initial = false)
 
     var particleSliderValue by remember {
         mutableFloatStateOf(log10(particleNumber))
@@ -155,7 +155,7 @@ fun mainMenu(
             verticalArrangement = Arrangement.Center,
             modifier = Modifier.fillMaxWidth(),
         ) {
-            colourMapMenu(images, menuItemHeight) { mainMenuViewModel.onSelectColourMap(it) }
+            colourMapMenu(images, menuItemHeight) { toyMenuViewModel.onSelectColourMap(it) }
 
             Box(
                 modifier = Modifier
@@ -218,7 +218,7 @@ fun mainMenu(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        IconButton(onClick = { mainMenuViewModel.onToyChanged(TOY.ATTRACTOR) }) {
+                        IconButton(onClick = { toyMenuViewModel.onToyChanged(TOY.ATTRACTOR) }) {
                             Image(
                                 modifier = Modifier
                                     .fillMaxHeight()
@@ -228,7 +228,7 @@ fun mainMenu(
                                 contentDescription = "Image"
                             )
                         }
-                        IconButton(onClick = { mainMenuViewModel.onToyChanged(TOY.REPELLOR) }) {
+                        IconButton(onClick = { toyMenuViewModel.onToyChanged(TOY.REPELLOR) }) {
                             Image(
                                 modifier = Modifier
                                     .fillMaxHeight()
@@ -238,7 +238,7 @@ fun mainMenu(
                                 contentDescription = "Image"
                             )
                         }
-                        IconButton(onClick = { mainMenuViewModel.onToyChanged(TOY.SPINNER) }) {
+                        IconButton(onClick = { toyMenuViewModel.onToyChanged(TOY.SPINNER) }) {
                             Image(
                                 modifier = Modifier
                                     .fillMaxHeight()
@@ -248,7 +248,7 @@ fun mainMenu(
                                 contentDescription = "Image"
                             )
                         }
-                        IconButton(onClick = { mainMenuViewModel.onToyChanged(TOY.FREEZER) }) {
+                        IconButton(onClick = { toyMenuViewModel.onToyChanged(TOY.FREEZER) }) {
                             Image(
                                 modifier = Modifier
                                     .fillMaxHeight()
@@ -258,7 +258,7 @@ fun mainMenu(
                                 contentDescription = "Image"
                             )
                         }
-                        IconButton(onClick = { mainMenuViewModel.onToyChanged(TOY.ORBITER) }) {
+                        IconButton(onClick = { toyMenuViewModel.onToyChanged(TOY.ORBITER) }) {
                             Image(
                                 modifier = Modifier
                                     .fillMaxHeight()
@@ -285,7 +285,7 @@ fun mainMenu(
                     value = particleSliderValue,
                     onValueChange = { particleSliderValue = it },
                     onValueChangeFinished = {
-                        mainMenuViewModel.onParameterChanged(
+                        toyMenuViewModel.onParameterChanged(
                             Pair(
                                 10.0f.pow(
                                     particleSliderValue
@@ -301,14 +301,14 @@ fun mainMenu(
                         .background(color = Color(1, 1, 1, 1))
                 )
                 Spacer(modifier = Modifier.size(8.dp))
-                logSlider(speed, -3.0f, MAX_LOG_SPEED, "Speed", {mainMenuViewModel.onParameterChanged(Pair(it, PARAM.SPEED))}, width75Percent)
+                logSlider(speed, -3.0f, MAX_LOG_SPEED, "Speed", {toyMenuViewModel.onParameterChanged(Pair(it, PARAM.SPEED))}, width75Percent)
                 Spacer(modifier = Modifier.size(8.dp))
                 logSlider(
                     attraction,
                     MIN_LOG_AR,
                     MAX_LOG_AR,
                     "Attraction",
-                    {mainMenuViewModel.onParameterChanged(Pair(it, PARAM.ATTRACTION))},
+                    {toyMenuViewModel.onParameterChanged(Pair(it, PARAM.ATTRACTION))},
                     width75Percent
                 )
                 Spacer(modifier = Modifier.size(8.dp))
@@ -317,22 +317,22 @@ fun mainMenu(
                     MIN_LOG_AR,
                     MAX_LOG_AR,
                     "Repulsion",
-                    {mainMenuViewModel.onParameterChanged(Pair(it, PARAM.REPULSION))},
+                    {toyMenuViewModel.onParameterChanged(Pair(it, PARAM.REPULSION))},
                     width75Percent
                 )
                 Spacer(modifier = Modifier.size(8.dp))
-                logSlider(orbit, MIN_LOG_ORBIT, MAX_LOG_ORBIT, "Orbit", {mainMenuViewModel.onParameterChanged(Pair(it, PARAM.ORBIT))}, width75Percent)
+                logSlider(orbit, MIN_LOG_ORBIT, MAX_LOG_ORBIT, "Orbit", {toyMenuViewModel.onParameterChanged(Pair(it, PARAM.ORBIT))}, width75Percent)
                 Spacer(modifier = Modifier.size(8.dp))
-                logSlider(spin, MIN_LOG_SPIN, MAX_LOG_SPIN, "Spin", {mainMenuViewModel.onParameterChanged(Pair(it, PARAM.SPIN))}, width75Percent)
+                logSlider(spin, MIN_LOG_SPIN, MAX_LOG_SPIN, "Spin", {toyMenuViewModel.onParameterChanged(Pair(it, PARAM.SPIN))}, width75Percent)
                 Spacer(modifier = Modifier.size(8.dp))
-                logSlider(mass, MIN_LOG_MASS, MAX_LOG_MASS, "Mass", {mainMenuViewModel.onParameterChanged(Pair(it, PARAM.MASS))}, width75Percent)
+                logSlider(mass, MIN_LOG_MASS, MAX_LOG_MASS, "Mass", {toyMenuViewModel.onParameterChanged(Pair(it, PARAM.MASS))}, width75Percent)
                 Spacer(modifier = Modifier.size(8.dp))
                 label(text = "Tracing " + "${round(fadeSliderValue * 100.0f) / 100.0f}")
                 Slider(
                     value = fadeSliderValue,
                     onValueChange = { fadeSliderValue = it },
                     onValueChangeFinished = {
-                        mainMenuViewModel.onParameterChanged(
+                        toyMenuViewModel.onParameterChanged(
                             Pair(
                                 10.0f.pow((1.0f - fadeSliderValue) * (MAX_LOG_FADE - MIN_LOG_FADE) + MIN_LOG_FADE),
                                 PARAM.FADE
@@ -349,7 +349,7 @@ fun mainMenu(
                 label(text = "Show Toys")
                 Checkbox(
                     checked = showToysValue,
-                    onCheckedChange = { showToysValue = it; mainMenuViewModel.onShowToysChanged(it) },
+                    onCheckedChange = { showToysValue = it; toyMenuViewModel.onShowToysChanged(it) },
                     colors = checkBoxColors()
                 )
             }
