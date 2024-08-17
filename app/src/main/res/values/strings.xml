@@ -8,4 +8,16 @@
     <string name="attrib">Some colour maps from/modified from ColorCET, CC-BY. Some Sounds mixed from freesound.org inc. CC-BY: "Rain on Windows, Interior, B.wav" by InspectorJ (www.jshaw.co.uk) and CC0: FlatHill, bsyapril88, suoguolh, deleted_user_229898, jackthemurray, Lydmakeren, and Sandermotions.</string>
     <string name="rate">"If you had fun, why not rate us on the Play Store? Thanks!"</string>
     <string name="resetTutorial">Click to show the tutorial</string>
+    <!-- News items -->
+    <string name="newsIntro">Scroll to checkout the old news.\nMy thanks especially to all reviewers, who suggested many of these changes!</string>
+    <string name="news1">0.5.0 29th July 2023\nAdds toy dragging, fades in on changing particle number, basic tutorial card, and the code is now open source on Github.</string>
+    <string name="news2">0.5.1 1st November 2023\nDragging empty space now places toys, plus some performance improvements.</string>
+    <string name="news3">0.5.2 21st December 2023\nAndroid SDK upgrade to 34.</string>
+    <string name="news4">0.5.3 21st December 2023\nAdds a pause button, and freezer toys, plus stability improvements.</string>
+    <string name="news5">0.5.4 22nd December 2023\nAdds particle speed slider.</string>
+    <string name="news6">0.5.5 1st January 2024\nAdds tracer effect, checkbox to show/hide toys, fixes crashes on pausing.</string>
+    <string name="news7">0.5.6 20th July 2024\nFixes crashes on app links and concurrent writing, upgrades kotlin/compose.</string>
+    <string name="news8">0.6.0 24th July 2024\nAdds various new sliders and orbiter toy.</string>
+    <string name="news9">0.6.1 31st July 2024\nFixes shader and concurrent write crashes.</string>
+
 </resources>
