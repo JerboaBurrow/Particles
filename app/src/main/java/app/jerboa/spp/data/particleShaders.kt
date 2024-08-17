@@ -91,9 +91,9 @@ data class ParticleDrawShaderData(
         "out vec4 colour;\n"+
         "void main(void){\n"+
         "vec2 circCoord = 2.0 * gl_PointCoord - 1.0;"+
-        //"float dd = length(circCoord);\n"+
-        //"float alpha = 1.0-smoothstep(0.9,1.1,dd);\n"+
-        "colour = vec4(o_colour.rgb,transitionAlpha);\n"+
+        "float dd = length(circCoord);\n"+
+        "float alpha = 1.0-smoothstep(0.9,1.1,dd);\n"+
+        "colour = vec4(o_colour.rgb,alpha*transitionAlpha);\n"+
         "if (colour.a == 0.0){discard;}}")
         : ShaderData(vertexShader,fragmentShader)
 

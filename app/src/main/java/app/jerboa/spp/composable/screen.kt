@@ -59,6 +59,7 @@ fun screen(
     val spin: Float by toyMenuViewModel.spinStrength.observeAsState(1500f)
     val mass: Float by toyMenuViewModel.mass.observeAsState(0.1f)
     val fade: Float by toyMenuViewModel.fade.observeAsState(initial = 1.0f)
+    val scale: Float by toyMenuViewModel.scale.observeAsState(initial = 3f)
     val showToys: Boolean by toyMenuViewModel.showToys.observeAsState(initial = false)
 
     val promptPGS: Boolean by sppViewModel.promptInstallPGS.observeAsState(initial = false)
@@ -81,8 +82,6 @@ fun screen(
             bottomBar = {
                 toyMenu(
                     toyMenuViewModel,
-                    sppViewModel,
-                    aboutViewModel,
                     displayingToyMenu,
                     width75Percent,
                     height10Percent,
@@ -152,6 +151,7 @@ fun screen(
                     view.setOrbit(orbit)
                     view.setSpin(spin)
                     view.setFade(fade)
+                    view.setScale(scale)
                     view.showToys(showToys)
                     if (clear) { view.clearToys(); menuPromptViewModel.onClear(false); }
                 }
@@ -169,6 +169,7 @@ fun screen(
     menuPrompt(
         menuPromptViewModel,
         aboutViewModel,
+        sppViewModel,
         images,
         menuItemHeight
     )
