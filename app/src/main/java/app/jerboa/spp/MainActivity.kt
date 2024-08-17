@@ -601,7 +601,8 @@ class MainActivity : AppCompatActivity() {
             NewsItem(R.string.news6, R.drawable.__5_5),
             NewsItem(R.string.news7, null),
             NewsItem(R.string.news8, R.drawable.__6_0),
-            NewsItem(R.string.news9, null)
+            NewsItem(R.string.news9, null),
+            NewsItem(R.string.news10, R.drawable.news)
         ).reversed()
 
         window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_FULLSCREEN
