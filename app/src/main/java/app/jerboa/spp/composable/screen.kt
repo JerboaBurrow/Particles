@@ -29,6 +29,7 @@ fun screen(
     aboutViewModel: AboutViewModel,
     menuPromptViewModel: MenuPromptViewModel,
     toyMenuViewModel: ToyMenuViewModel,
+    newsItems: List<NewsItem>,
     resolution: Pair<Int,Int>,
     images: Map<String,Int>,
     info: AppInfo,
@@ -163,7 +164,8 @@ fun screen(
         aboutViewModel,
         width75Percent,
         images,
-        info
+        info,
+        newsItems
     )
 
     menuPrompt(

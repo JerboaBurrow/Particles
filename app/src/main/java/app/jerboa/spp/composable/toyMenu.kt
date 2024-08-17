@@ -278,7 +278,6 @@ fun toyMenu(
                 Spacer(modifier = Modifier.size(8.dp))
                 slider(log10(mass), MIN_LOG_MASS, MAX_LOG_MASS, "Mass", {toyMenuViewModel.onParameterChanged(Pair(it, PARAM.MASS))}, width75Percent)
                 Spacer(modifier = Modifier.size(8.dp))
-                Log.d("fade", "$fade")
                 slider(
                     fade,
                     10.0f.pow(MIN_LOG_FADE),

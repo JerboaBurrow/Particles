@@ -38,7 +38,7 @@ fun socials(
         Box(
             Modifier
                 .width(width75Percent.dp)
-                .height(height25Percent.dp)
+                .height(menuItemHeight.dp)
                 .background(
                     color = Color(255, 255, 255, 0),
                     shape = RoundedCornerShape(5)

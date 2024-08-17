@@ -54,7 +54,13 @@ fun Modifier.simpleVerticalScrollbar(
 }
 
 @Composable
-fun adaptiveTextBox(text: String, fontSize: TextUnit, maxLines: Int, textAlign: TextAlign = TextAlign.Center, colour: Color = Color.Black){
+fun adaptiveTextBox(
+    text: String,
+    fontSize: TextUnit,
+    maxLines: Int,
+    modifier: Modifier = Modifier,
+    textAlign: TextAlign = TextAlign.Center,
+    colour: Color = Color.Black){
     val scroll = rememberScrollState(0)
     var isOverflowing by remember { mutableStateOf<Boolean?>(null) }
     val maybeScrollText = @Composable {
@@ -63,7 +69,7 @@ fun adaptiveTextBox(text: String, fontSize: TextUnit, maxLines: Int, textAlign: 
             onTextLayout = { textLayoutResult: TextLayoutResult ->
                 isOverflowing = textLayoutResult.lineCount > maxLines
             },
-            modifier = Modifier
+            modifier = modifier
                 .drawWithContent {
                     if (isOverflowing != null) {
                         drawContent()
