@@ -33,6 +33,7 @@ fun about(
     width75Percent: Double,
     images: Map<String,Int>,
     info: AppInfo,
+    newsItems: List<NewsItem>
 ){
     val displayingAbout: Boolean by aboutViewModel.displayingAbout.observeAsState(initial = false)
 
@@ -111,7 +112,8 @@ fun about(
             }
             Spacer(modifier = Modifier.size(8.dp))
             socials(images, info) { aboutViewModel.onRequestingSocial(it) }
+            Spacer(modifier = Modifier.size(2.dp))
+            newsLog(newsItems = newsItems, width = width75Percent*0.75, density = info.density)
         }
     }
-
 }

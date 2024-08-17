@@ -16,6 +16,7 @@ import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import app.jerboa.spp.composable.NewsItem
 import app.jerboa.spp.viewmodel.MUSIC
 import app.jerboa.spp.viewmodel.REVIEW_RATE_LIMIT_MILLIS
 import app.jerboa.spp.viewmodel.SPPViewModel
@@ -511,6 +512,8 @@ class MainActivity : AppCompatActivity() {
             prefs.getLong("reviewTries", 0L)
         }
 
+        Log.d("review", "$lastReviewTries")
+
         if (!prefs.contains("playTime")) {
             prefsEdit.putLong("playTime", 0L)
             prefsEdit.apply()
@@ -589,6 +592,18 @@ class MainActivity : AppCompatActivity() {
             Log.d("density", appInfo.density.toString())
         }
 
+        val news: List<NewsItem> = listOf(
+            NewsItem(R.string.news1, R.drawable.__5_0),
+            NewsItem(R.string.news2, null),
+            NewsItem(R.string.news3, null),
+            NewsItem(R.string.news4, R.drawable.__5_3),
+            NewsItem(R.string.news5, null),
+            NewsItem(R.string.news6, R.drawable.__5_5),
+            NewsItem(R.string.news7, null),
+            NewsItem(R.string.news8, R.drawable.__6_0),
+            NewsItem(R.string.news9, null)
+        ).reversed()
+
         window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_FULLSCREEN
         actionBar?.hide()
 
@@ -603,6 +618,7 @@ class MainActivity : AppCompatActivity() {
                     aboutViewModel,
                     menuPromptViewModel,
                     toyMenuViewModel,
+                    news,
                     Pair(width, height),
                     imageResources,
                     appInfo,
