@@ -19,5 +19,6 @@
     <string name="news7">0.5.6 20th July 2024\nFixes crashes on app links and concurrent writing, upgrades kotlin/compose.</string>
     <string name="news8">0.6.0 24th July 2024\nAdds various new sliders and orbiter toy.</string>
     <string name="news9">0.6.1 31st July 2024\nFixes shader and concurrent write crashes.</string>
+    <string name="news10">0.7.0 17th August 2024\nAdds multi-touch drag/placing, particle size slider, condensed menu, old news section.</string>
 
 </resources>
