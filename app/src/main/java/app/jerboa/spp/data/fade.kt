@@ -11,6 +11,6 @@ data class FadeShaderData(
             "uniform float fadeRate;\n"+
             "out vec4 colour;\n"+
             "void main(void){\n"+
-            "    colour = vec4(0.0,0.0,0.0,fadeRate);\n"+
+            "    colour = vec4(0.0,0.0,0.0,1.0-fadeRate);\n"+
             "}")
     : ShaderData(vertexShader,fragmentShader)

@@ -81,7 +81,7 @@ class SPPRenderer(
     private var generatedParticles = 0
     private var generating: Boolean = false
     // particle scale, gl_PointSize
-    private val scale = 3f
+    private var scale = 3f
     private val projection: FloatArray = FloatArray(16){0f}
     private val invProjection: FloatArray = FloatArray(16){0f}
 
@@ -301,6 +301,8 @@ class SPPRenderer(
     fun setSpin(v: Float) { spinStrength = v }
     fun setOrbit(v: Float) { orbitStrength = v }
     fun setShowToys(v: Boolean){ showToys = v }
+
+    fun setScale(s: Float) { scale = s; recompileDrawShader = true }
 
     fun clearToys() {
         attractors.clear()

@@ -1,5 +1,6 @@
 package app.jerboa.spp.composable
 
+import android.util.Log
 import androidx.compose.animation.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -31,11 +32,13 @@ import app.jerboa.spp.viewmodel.MAX_LOG_ORBIT
 import app.jerboa.spp.viewmodel.MAX_LOG_SPEED
 import app.jerboa.spp.viewmodel.MAX_LOG_SPIN
 import app.jerboa.spp.viewmodel.MAX_PARTICLES
+import app.jerboa.spp.viewmodel.MAX_SCALE
 import app.jerboa.spp.viewmodel.MIN_LOG_AR
 import app.jerboa.spp.viewmodel.MIN_LOG_FADE
 import app.jerboa.spp.viewmodel.MIN_LOG_MASS
 import app.jerboa.spp.viewmodel.MIN_LOG_ORBIT
 import app.jerboa.spp.viewmodel.MIN_LOG_SPIN
+import app.jerboa.spp.viewmodel.MIN_SCALE
 import app.jerboa.spp.viewmodel.ToyMenuViewModel
 import app.jerboa.spp.viewmodel.PARAM
 import app.jerboa.spp.viewmodel.PARTICLES_SLIDER_DEFAULT
@@ -69,32 +72,31 @@ fun label(
 }
 
 @Composable
-fun logSlider(
+fun slider(
     v: Float,
     min: Float,
     max: Float,
     name: String,
     onChange: (Float) -> Unit,
-    width75Percent: Double
+    width75Percent: Double,
+    label: (Float) -> String = {v: Float -> "${round(10.0f.pow(v) * 100.0f) / 100.0f}"},
+    postValue: (Float) -> Float = {v: Float -> 10.0f.pow(v)},
+    steps: Int = 100
 ) {
 
     var sliderValue by remember {
-        mutableFloatStateOf(log10(v))
+        mutableFloatStateOf(v)
     }
 
-    label(text = "$name " + "${round(10.0f.pow(sliderValue) * 100.0f) / 100.0f}")
+    label(text = "$name " + label(sliderValue))
     Slider(
         value = sliderValue,
         onValueChange = { sliderValue = it },
         onValueChangeFinished = {
-            onChange(
-                10.0f.pow(
-                    sliderValue
-                )
-            )
+            onChange(postValue(sliderValue))
         },
         valueRange = min..max,
-        steps = 100,
+        steps = steps,
         modifier = Modifier
             .width(width75Percent.dp * 0.75f)
             .background(color = Color(1, 1, 1, 1))
@@ -104,8 +106,6 @@ fun logSlider(
 @Composable
 fun toyMenu(
     toyMenuViewModel: ToyMenuViewModel,
-    sppViewModel: SPPViewModel,
-    aboutViewModel: AboutViewModel,
     displayingMenu: Boolean,
     width75Percent: Double,
     height10Percent: Double,
@@ -113,7 +113,6 @@ fun toyMenu(
     images: Map<String,Int>
 ) {
 
-    val playSuccess: Boolean by sppViewModel.playSuccess.observeAsState(initial = false)
     val particleNumber: Float by toyMenuViewModel.particleNumber.observeAsState(initial = PARTICLES_SLIDER_DEFAULT)
     val speed: Float by toyMenuViewModel.speed.observeAsState(initial = 1.0f)
     val attraction: Float by toyMenuViewModel.attractorStrength.observeAsState(50000f)
@@ -122,15 +121,8 @@ fun toyMenu(
     val spin: Float by toyMenuViewModel.spinStrength.observeAsState(1500f)
     val mass: Float by toyMenuViewModel.mass.observeAsState(0.1f)
     val fade: Float by toyMenuViewModel.fade.observeAsState(initial = 1.0f)
+    val scale: Float by toyMenuViewModel.scale.observeAsState(initial = 3.0f)
     val showToys: Boolean by toyMenuViewModel.showToys.observeAsState(initial = false)
-
-    var particleSliderValue by remember {
-        mutableFloatStateOf(log10(particleNumber))
-    }
-
-    var fadeSliderValue by remember {
-        mutableFloatStateOf(log10(fade))
-    }
 
     var showToysValue by remember {
         mutableStateOf(showToys)
@@ -156,47 +148,6 @@ fun toyMenu(
             modifier = Modifier.fillMaxWidth(),
         ) {
             colourMapMenu(images, menuItemHeight) { toyMenuViewModel.onSelectColourMap(it) }
-
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height((menuItemHeight).dp)
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .fillMaxHeight(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    IconButton(onClick = { sppViewModel.onRequestPlayServices() }) {
-                        Image(
-                            modifier = Modifier
-                                .fillMaxHeight()
-                                .size(menuItemHeight.dp)
-                                .alpha(
-                                    if (playSuccess) {
-                                        0.66f
-                                    } else {
-                                        1f
-                                    }
-                                ),
-                            painter = painterResource(id = images["play-controller"]!!),
-                            contentDescription = "play"
-                        )
-                    }
-                    IconButton(onClick = { aboutViewModel.onDisplayingAboutChanged(true) }) {
-                        Image(
-                            modifier = Modifier
-                                .fillMaxHeight()
-                                .size(menuItemHeight.dp)
-                                .padding(2.dp),
-                            painter = painterResource(id = images["about"]!!),
-                            contentDescription = "Image"
-                        )
-                    }
-                }
-            }
             Box(
                 Modifier
                     .width(width75Percent.dp)
@@ -280,31 +231,31 @@ fun toyMenu(
                     .verticalScroll(scroll)
                     .verticalScrollBar(scroll, false)
             ) {
-                label(text = "Particles " + ceil(particleNumber * MAX_PARTICLES).toInt())
-                Slider(
-                    value = particleSliderValue,
-                    onValueChange = { particleSliderValue = it },
-                    onValueChangeFinished = {
-                        toyMenuViewModel.onParameterChanged(
-                            Pair(
-                                10.0f.pow(
-                                    particleSliderValue
-                                ),
-                                PARAM.PARTICLES
-                            )
-                        )
-                    },
-                    valueRange = -3.0f..0.0f,
-                    steps = 100,
-                    modifier = Modifier
-                        .width(width75Percent.dp * 0.75f)
-                        .background(color = Color(1, 1, 1, 1))
+                slider(
+                    log10(particleNumber),
+                    -6.0f,
+                    0.0f,
+                    "Particles",
+                    {toyMenuViewModel.onParameterChanged(Pair(it, PARAM.PARTICLES))},
+                    width75Percent,
+                    label = {v: Float -> "${ceil(10.0f.pow(v) * MAX_PARTICLES).toInt()}"}
                 )
                 Spacer(modifier = Modifier.size(8.dp))
-                logSlider(speed, -3.0f, MAX_LOG_SPEED, "Speed", {toyMenuViewModel.onParameterChanged(Pair(it, PARAM.SPEED))}, width75Percent)
+                slider(
+                    scale,
+                    MIN_SCALE,
+                    MAX_SCALE,
+                    "Size",
+                    {toyMenuViewModel.onParameterChanged(Pair(it, PARAM.SCALE))},
+                    width75Percent,
+                    label = {v: Float -> "$v"},
+                    postValue = {v: Float -> v}
+                )
                 Spacer(modifier = Modifier.size(8.dp))
-                logSlider(
-                    attraction,
+                slider(log10(speed), -3.0f, MAX_LOG_SPEED, "Speed", {toyMenuViewModel.onParameterChanged(Pair(it, PARAM.SPEED))}, width75Percent)
+                Spacer(modifier = Modifier.size(8.dp))
+                slider(
+                    log10(attraction),
                     MIN_LOG_AR,
                     MAX_LOG_AR,
                     "Attraction",
@@ -312,8 +263,8 @@ fun toyMenu(
                     width75Percent
                 )
                 Spacer(modifier = Modifier.size(8.dp))
-                logSlider(
-                    repulsion,
+                slider(
+                    log10(repulsion),
                     MIN_LOG_AR,
                     MAX_LOG_AR,
                     "Repulsion",
@@ -321,29 +272,22 @@ fun toyMenu(
                     width75Percent
                 )
                 Spacer(modifier = Modifier.size(8.dp))
-                logSlider(orbit, MIN_LOG_ORBIT, MAX_LOG_ORBIT, "Orbit", {toyMenuViewModel.onParameterChanged(Pair(it, PARAM.ORBIT))}, width75Percent)
+                slider(log10(orbit), MIN_LOG_ORBIT, MAX_LOG_ORBIT, "Orbit", {toyMenuViewModel.onParameterChanged(Pair(it, PARAM.ORBIT))}, width75Percent)
                 Spacer(modifier = Modifier.size(8.dp))
-                logSlider(spin, MIN_LOG_SPIN, MAX_LOG_SPIN, "Spin", {toyMenuViewModel.onParameterChanged(Pair(it, PARAM.SPIN))}, width75Percent)
+                slider(log10(spin), MIN_LOG_SPIN, MAX_LOG_SPIN, "Spin", {toyMenuViewModel.onParameterChanged(Pair(it, PARAM.SPIN))}, width75Percent)
                 Spacer(modifier = Modifier.size(8.dp))
-                logSlider(mass, MIN_LOG_MASS, MAX_LOG_MASS, "Mass", {toyMenuViewModel.onParameterChanged(Pair(it, PARAM.MASS))}, width75Percent)
+                slider(log10(mass), MIN_LOG_MASS, MAX_LOG_MASS, "Mass", {toyMenuViewModel.onParameterChanged(Pair(it, PARAM.MASS))}, width75Percent)
                 Spacer(modifier = Modifier.size(8.dp))
-                label(text = "Tracing " + "${round(fadeSliderValue * 100.0f) / 100.0f}")
-                Slider(
-                    value = fadeSliderValue,
-                    onValueChange = { fadeSliderValue = it },
-                    onValueChangeFinished = {
-                        toyMenuViewModel.onParameterChanged(
-                            Pair(
-                                10.0f.pow((1.0f - fadeSliderValue) * (MAX_LOG_FADE - MIN_LOG_FADE) + MIN_LOG_FADE),
-                                PARAM.FADE
-                            )
-                        )
-                    },
-                    valueRange = 0.0f..1.0f,
-                    steps = 100,
-                    modifier = Modifier
-                        .width(width75Percent.dp * 0.75f)
-                        .background(color = Color(1, 1, 1, 1))
+                Log.d("fade", "$fade")
+                slider(
+                    fade,
+                    10.0f.pow(MIN_LOG_FADE),
+                    10.0f.pow(MAX_LOG_FADE),
+                    "Tracing",
+                    {toyMenuViewModel.onParameterChanged(Pair(it, PARAM.FADE))},
+                    width75Percent,
+                    postValue = {v: Float -> v},
+                    label = {v: Float -> "${(v-10.0f.pow(MIN_LOG_FADE))/(10.0f.pow(MAX_LOG_FADE)-10.0f.pow(MIN_LOG_FADE))}"}
                 )
                 Spacer(modifier = Modifier.size(8.dp))
                 label(text = "Show Toys")

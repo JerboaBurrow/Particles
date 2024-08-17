@@ -11,6 +11,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -21,12 +22,14 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import app.jerboa.spp.viewmodel.AboutViewModel
 import app.jerboa.spp.viewmodel.MenuPromptViewModel
+import app.jerboa.spp.viewmodel.SPPViewModel
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun menuPrompt(
     menuPromptViewModel: MenuPromptViewModel,
     aboutViewModel: AboutViewModel,
+    sppViewModel: SPPViewModel,
     images: Map<String,Int>,
     menuItemHeight: Double
 ){
@@ -34,6 +37,7 @@ fun menuPrompt(
     val displayingMenu: Boolean by menuPromptViewModel.displayingMenu.observeAsState(initial = false)
     val displayingSound: Boolean by menuPromptViewModel.displayingSound.observeAsState(initial = false)
     val paused: Boolean by menuPromptViewModel.paused.observeAsState(initial = false)
+    val playSuccess: Boolean by sppViewModel.playSuccess.observeAsState(initial = false)
 
     val fadePromptAlpha: Float by animateFloatAsState(
         targetValue = if (!displayingMenu) 0.33f else 1.0f,
@@ -139,6 +143,21 @@ fun menuPrompt(
                                 }
                             )
                     )
+                    IconButton(onClick = { sppViewModel.onRequestPlayServices() }) {
+                        Image(
+                            modifier = Modifier
+                                .size(menuItemHeight.dp)
+                                .alpha(
+                                    if (playSuccess) {
+                                        0.66f
+                                    } else {
+                                        1f
+                                    }
+                                ),
+                            painter = painterResource(id = images["play-controller"]!!),
+                            contentDescription = "play"
+                        )
+                    }
                 }
             }
         }

@@ -3,12 +3,13 @@ package app.jerboa.spp.viewmodel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import java.util.Calendar
+import kotlin.math.pow
 
 const val MAX_PARTICLES = 500000f
 const val PARTICLES_SLIDER_DEFAULT = 100000f/ MAX_PARTICLES
 const val MAX_LOG_SPEED = 0.30103f
-const val MAX_LOG_FADE = 0.0f
-const val MIN_LOG_FADE = -2.0f
+const val MAX_LOG_FADE = -0.0013648f
+const val MIN_LOG_FADE = -0.30103f
 const val MIN_LOG_MASS = -3f
 const val MAX_LOG_MASS = 0.5f
 const val MIN_LOG_AR = 1f
@@ -17,6 +18,8 @@ const val MAX_LOG_ORBIT = 0.30103f
 const val MIN_LOG_ORBIT = -1f
 const val MAX_LOG_SPIN = 4.0f
 const val MIN_LOG_SPIN = 2f
+const val MIN_SCALE = 2f
+const val MAX_SCALE = 10f
 
 enum class COLOUR_MAP {
     R1,
@@ -31,7 +34,7 @@ enum class COLOUR_MAP {
 
 enum class TOY {ATTRACTOR,REPELLOR,SPINNER,FREEZER,ORBITER, NOTHING}
 
-enum class PARAM {MASS, SPEED, ATTRACTION, REPULSION, ORBIT, SPIN, PARTICLES, FADE}
+enum class PARAM {MASS, SPEED, ATTRACTION, REPULSION, ORBIT, SPIN, PARTICLES, FADE, SCALE}
 
 
 class ToyMenuViewModel: ViewModel() {
@@ -80,7 +83,7 @@ class ToyMenuViewModel: ViewModel() {
     private val _speed = MutableLiveData(1.0f)
     val speed: MutableLiveData<Float> = _speed
 
-    private val _fade = MutableLiveData(1.0f)
+    private val _fade = MutableLiveData(10.0f.pow(MIN_LOG_FADE))
     val fade: MutableLiveData<Float> = _fade
 
     private val _attractorStrength = MutableLiveData(50000.0f)
@@ -97,6 +100,9 @@ class ToyMenuViewModel: ViewModel() {
 
     private val _spin = MutableLiveData(1500f)
     val spinStrength: MutableLiveData<Float> = _spin
+
+    private val _scale = MutableLiveData(3f)
+    val scale: MutableLiveData<Float> = _scale
 
     fun onParameterChanged(v: Pair<Float, PARAM>){
         when (v.second) {
@@ -123,6 +129,9 @@ class ToyMenuViewModel: ViewModel() {
             }
             PARAM.SPIN -> {
                 _spin.value = v.first
+            }
+            PARAM.SCALE -> {
+                _scale.value = v.first
             }
         }
     }
