@@ -33,8 +33,7 @@ data class NewsItem (val textResourceId: Int, val imageResourceId: Int?)
 @Composable
 fun newsItem(
     item: NewsItem,
-    width: Double,
-    density: Float
+    width: Double
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -64,8 +63,7 @@ fun newsItem(
 fun newsLog(
     newsItems: List<NewsItem>,
     spacing: Dp = 2.dp,
-    width: Double,
-    density: Float
+    width: Double
 ) {
     val scrollState = rememberScrollState()
 
@@ -94,7 +92,7 @@ fun newsLog(
         ) {
 
             for (item in newsItems) {
-                newsItem(item, width*0.9, density)
+                newsItem(item, width*0.9)
                 Spacer(modifier = Modifier.size(spacing))
             }
         }
