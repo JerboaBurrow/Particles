@@ -582,22 +582,6 @@ class MainActivity : AppCompatActivity() {
             }
         )
 
-        val displayInfo = resources.displayMetrics
-        val dpHeight = displayInfo.heightPixels / displayInfo.density
-        val dpWidth = displayInfo.widthPixels / displayInfo.density
-        val appInfo = AppInfo(
-            versionString,
-            firstLaunch,
-            displayInfo.density,
-            if (resources.getBoolean(R.bool.isTablet)) {
-                displayInfo.density
-            } else {
-                1f
-            },
-            dpHeight,
-            dpWidth
-        )
-
         if (DEBUG) {
             Log.d("density", appInfo.density.toString())
         }
@@ -615,22 +599,24 @@ class MainActivity : AppCompatActivity() {
             NewsItem(R.string.news10, R.drawable.news)
         ).reversed()
 
-//        enableEdgeToEdge()
-//        WindowCompat.setDecorFitsSystemWindows(window, false)
-//        val insetsController = WindowCompat.getInsetsController(window, window.decorView)
-//        insetsController.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-//        insetsController.hide(WindowInsetsCompat.Type.statusBars())
-//        insetsController.hide(WindowInsetsCompat.Type.navigationBars())
-
         val height = resources.displayMetrics.heightPixels
         val width = resources.displayMetrics.widthPixels
 
-        val rectangle = Rect()
-        val window = window
-        val p = Point()
-        window.windowManager.defaultDisplay.getSize(p)
-        window.decorView.getWindowVisibleDisplayFrame(rectangle)
-        Log.d("frame", "$rectangle, $p")
+        val displayInfo = resources.displayMetrics
+        val dpHeight = displayInfo.heightPixels / displayInfo.density
+        val dpWidth = displayInfo.widthPixels / displayInfo.density
+        val appInfo = AppInfo(
+            versionString,
+            firstLaunch,
+            displayInfo.density,
+            if (resources.getBoolean(R.bool.isTablet)) {
+                displayInfo.density
+            } else {
+                1f
+            },
+            dpHeight,
+            dpWidth
+        )
 
         setContent {
             SPPTheme {
@@ -640,7 +626,7 @@ class MainActivity : AppCompatActivity() {
                     menuPromptViewModel,
                     toyMenuViewModel,
                     news,
-                    Pair(width, (height*1.0).toInt()),
+                    Pair(width, height),
                     imageResources,
                     appInfo,
                     showNews

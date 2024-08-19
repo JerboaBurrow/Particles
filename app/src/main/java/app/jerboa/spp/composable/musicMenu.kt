@@ -58,11 +58,7 @@ fun musicMenu(
                 .offset(offsetX, 0.dp),
             horizontalArrangement = Arrangement.spacedBy((0.01*menuItemHeight).dp),
             verticalAlignment = Alignment.CenterVertically
-        )
-//        horizontalMenu(
-//            modifier = Modifier.height(menuItemHeight.dp)
-//        )
-          {
+        ) {
             Image(
                 painter = painterResource(id = images["music-rain"]!!),
                 contentDescription = "rain",
