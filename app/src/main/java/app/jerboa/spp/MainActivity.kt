@@ -582,10 +582,6 @@ class MainActivity : AppCompatActivity() {
             }
         )
 
-        if (DEBUG) {
-            Log.d("density", appInfo.density.toString())
-        }
-
         val news: List<NewsItem> = listOf(
             NewsItem(R.string.news1, R.drawable.__5_0),
             NewsItem(R.string.news2, null),
