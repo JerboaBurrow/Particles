@@ -6,26 +6,33 @@ import android.app.ActivityManager.RunningAppProcessInfo
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
+import android.content.res.Resources
+import android.graphics.Point
+import android.graphics.Rect
 import android.media.MediaPlayer
 import android.net.Uri
 import android.os.Bundle
-import android.util.DisplayMetrics
 import android.util.Log
-import android.view.View
+import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.ui.graphics.Color
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import app.jerboa.spp.composable.NewsItem
-import app.jerboa.spp.viewmodel.MUSIC
-import app.jerboa.spp.viewmodel.REVIEW_RATE_LIMIT_MILLIS
-import app.jerboa.spp.viewmodel.SPPViewModel
-import app.jerboa.spp.viewmodel.SOCIAL
 import app.jerboa.spp.composable.screen
 import app.jerboa.spp.ui.theme.SPPTheme
 import app.jerboa.spp.viewmodel.AboutViewModel
-import app.jerboa.spp.viewmodel.ToyMenuViewModel
+import app.jerboa.spp.viewmodel.MUSIC
 import app.jerboa.spp.viewmodel.MenuPromptViewModel
+import app.jerboa.spp.viewmodel.REVIEW_RATE_LIMIT_MILLIS
+import app.jerboa.spp.viewmodel.SOCIAL
+import app.jerboa.spp.viewmodel.SPPViewModel
+import app.jerboa.spp.viewmodel.ToyMenuViewModel
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.gms.games.AuthenticationResult
@@ -40,7 +47,8 @@ import com.google.android.play.core.review.ReviewManager
 import com.google.android.play.core.review.ReviewManagerFactory
 import com.google.android.play.core.review.model.ReviewErrorCode
 import java.lang.Integer.min
-import java.util.*
+import java.util.Date
+
 
 val news = "news-21-07-24"
 
@@ -50,6 +58,7 @@ data class AppInfo(
     val versionString: String,
     val firstLaunch: Boolean,
     val density: Float,
+    val textScaling: Float,
     val heightDp: Float,
     val widthDp: Float
 )
@@ -573,25 +582,6 @@ class MainActivity : AppCompatActivity() {
             }
         )
 
-        val displayInfo = resources.displayMetrics
-        val dpHeight = displayInfo.heightPixels / displayInfo.density
-        val dpWidth = displayInfo.widthPixels / displayInfo.density
-        val appInfo = AppInfo(
-            versionString,
-            firstLaunch,
-            if (resources.getBoolean(R.bool.isTablet)) {
-                displayInfo.density
-            } else {
-                1f
-            },
-            dpHeight,
-            dpWidth
-        )
-
-        if (DEBUG) {
-            Log.d("density", appInfo.density.toString())
-        }
-
         val news: List<NewsItem> = listOf(
             NewsItem(R.string.news1, R.drawable.__5_0),
             NewsItem(R.string.news2, null),
@@ -605,13 +595,25 @@ class MainActivity : AppCompatActivity() {
             NewsItem(R.string.news10, R.drawable.news)
         ).reversed()
 
-        window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_FULLSCREEN
-        actionBar?.hide()
+        val height = resources.displayMetrics.heightPixels
+        val width = resources.displayMetrics.widthPixels
 
-        val displayMetrics = DisplayMetrics()
-        windowManager.defaultDisplay.getMetrics(displayMetrics)
-        val height = displayMetrics.heightPixels
-        val width = displayMetrics.widthPixels
+        val displayInfo = resources.displayMetrics
+        val dpHeight = displayInfo.heightPixels / displayInfo.density
+        val dpWidth = displayInfo.widthPixels / displayInfo.density
+        val appInfo = AppInfo(
+            versionString,
+            firstLaunch,
+            displayInfo.density,
+            if (resources.getBoolean(R.bool.isTablet)) {
+                displayInfo.density
+            } else {
+                1f
+            },
+            dpHeight,
+            dpWidth
+        )
+
         setContent {
             SPPTheme {
                 screen(

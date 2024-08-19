@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.Scaffold
 import androidx.compose.material.SnackbarDuration
@@ -72,7 +73,7 @@ fun screen(
     toyMenuViewModel.selectDefaultColourMap()
 
     Column(
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth().fillMaxHeight()
     ) {
         // padding is unused is we are using the scaffold as
         //  a hacky overlay on top of opengl
@@ -173,7 +174,8 @@ fun screen(
         aboutViewModel,
         sppViewModel,
         images,
-        menuItemHeight
+        menuItemHeight,
+        info
     )
 
     if (!dismissedTutorial && (info.firstLaunch || resetTutorial) ){

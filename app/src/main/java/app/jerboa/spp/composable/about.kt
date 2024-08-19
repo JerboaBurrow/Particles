@@ -74,7 +74,7 @@ fun about(
                         stringResource(id = R.string.tagline) + stringResource(id = R.string.description),
                         textAlign = TextAlign.Center,
                         maxLines = 4,
-                        fontSize = MaterialTheme.typography.body1.fontSize * info.density,
+                        fontSize = MaterialTheme.typography.body1.fontSize * info.textScaling,
                         colour = Color.Black
                     )
                     TextButton(onClick = { aboutViewModel.onRequestingLicenses() }) {
@@ -82,20 +82,20 @@ fun about(
                             stringResource(id = R.string.OSSprompt),
                             textAlign = TextAlign.Center,
                             modifier = Modifier.weight(1f),
-                            fontSize = MaterialTheme.typography.body1.fontSize * info.density,
+                            fontSize = MaterialTheme.typography.body1.fontSize * info.textScaling,
                             color = MaterialTheme.colors.primary
                         )
                     }
                     adaptiveTextBox(
                         stringResource(R.string.attrib),
                         maxLines = 3,
-                        fontSize = MaterialTheme.typography.overline.fontSize * info.density,
+                        fontSize = MaterialTheme.typography.overline.fontSize * info.textScaling,
                         textAlign = TextAlign.Center,
                         colour = Color.Black
                     )
                     Text(
                         "version: " + info.versionString, modifier = Modifier.weight(1f),
-                        fontSize = MaterialTheme.typography.overline.fontSize * info.density,
+                        fontSize = MaterialTheme.typography.overline.fontSize * info.textScaling,
                         textAlign = TextAlign.Center,
                         color = Color.Black
                     )
@@ -104,7 +104,7 @@ fun about(
                             stringResource(id = R.string.resetTutorial),
                             textAlign = TextAlign.Center,
                             modifier = Modifier.weight(1f),
-                            fontSize = MaterialTheme.typography.body1.fontSize * info.density,
+                            fontSize = MaterialTheme.typography.body1.fontSize * info.textScaling,
                             color = MaterialTheme.colors.primary
                         )
                     }
@@ -113,7 +113,7 @@ fun about(
             Spacer(modifier = Modifier.size(8.dp))
             socials(images, info) { aboutViewModel.onRequestingSocial(it) }
             Spacer(modifier = Modifier.size(2.dp))
-            newsLog(newsItems = newsItems, width = width75Percent*0.75, density = info.density)
+            newsLog(newsItems = newsItems, width = width75Percent*0.75)
         }
     }
 }

@@ -87,7 +87,7 @@ fun socials(
                 Text(
                     text = stringResource(id = R.string.rate),
                     color = Color(255,255,255,255),
-                    fontSize = MaterialTheme.typography.body1.fontSize*info.density,
+                    fontSize = MaterialTheme.typography.body1.fontSize*info.textScaling,
                     textAlign = TextAlign.Center
                 )
             }

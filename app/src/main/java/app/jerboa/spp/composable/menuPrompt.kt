@@ -10,31 +10,46 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import app.jerboa.spp.AppInfo
 import app.jerboa.spp.viewmodel.AboutViewModel
 import app.jerboa.spp.viewmodel.MenuPromptViewModel
 import app.jerboa.spp.viewmodel.SPPViewModel
+import kotlin.math.abs
+import kotlin.math.max
+import kotlin.math.min
 
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun menuPrompt(
     menuPromptViewModel: MenuPromptViewModel,
     aboutViewModel: AboutViewModel,
     sppViewModel: SPPViewModel,
     images: Map<String,Int>,
-    menuItemHeight: Double
+    menuItemHeight: Double,
+    info: AppInfo
 ){
 
     val displayingMenu: Boolean by menuPromptViewModel.displayingMenu.observeAsState(initial = false)
+    val displayingAbout: Boolean by aboutViewModel.displayingAbout.observeAsState(initial = false)
+    val displayingSliders: Boolean by menuPromptViewModel.displayingToyMenu.observeAsState(initial = false)
+
     val displayingSound: Boolean by menuPromptViewModel.displayingSound.observeAsState(initial = false)
     val paused: Boolean by menuPromptViewModel.paused.observeAsState(initial = false)
     val playSuccess: Boolean by sppViewModel.playSuccess.observeAsState(initial = false)
@@ -47,6 +62,10 @@ fun menuPrompt(
         ), label = "alpha for fading the prompt"
     )
 
+    val xmax = info.widthDp*info.density-1.7f*menuItemHeight.toFloat()*info.density
+    val ymax = info.heightDp*info.density-1.75f*menuItemHeight.toFloat()*info.density
+    var position by remember { mutableStateOf(Offset(0.0f,ymax)) }
+
     Box(modifier = Modifier
         .fillMaxHeight()
         .fillMaxWidth()
@@ -55,14 +74,32 @@ fun menuPrompt(
             modifier = Modifier
                 .fillMaxHeight()
                 .fillMaxWidth()
-                .align(alignment = Alignment.BottomStart)
+                .graphicsLayer {
+                    if (displayingAbout || displayingSliders) {
+                        if (abs(position.x-xmax) < abs(position.x)) {
+                            translationX = xmax
+                        }
+                        else {
+                            translationX = 0.0f
+                        }
+                        translationY = ymax
+                    } else {
+                        translationX = position.x
+                        translationY = position.y
+                    }
+                }
         ) {
             AnimatedVisibility(
                 visible = displayingMenu,
                 enter = fadeIn(tween(0)),
                 exit = fadeOut(tween(0))
             ) {
-                verticalMenu(modifier = Modifier, offset = Pair(0.dp, menuItemHeight.dp), contentPadding = 16.dp) {
+                verticalMenu(
+                    modifier = Modifier,
+                    offset = Pair(0.dp, 0.dp),
+                    contentPadding = 16.dp,
+                    headSpacePx = if (displayingAbout || displayingSliders) { ymax } else { position.y }
+                ) {
                     Image(
                         painter = painterResource(id = images["toyMenu"]!!),
                         contentDescription = "Toy menu and sliders",
@@ -80,7 +117,8 @@ fun menuPrompt(
                         musicMenu(
                             menuPromptViewModel,
                             menuItemHeight,
-                            images
+                            images,
+                            left = position.x > xmax/2.0f
                         )
                     }
                     else {
@@ -164,7 +202,30 @@ fun menuPrompt(
         Box(
             modifier = Modifier
                 .size(menuItemHeight.dp)
-                .align(alignment = Alignment.BottomStart)
+                .graphicsLayer {
+                    if (displayingAbout || displayingSliders) {
+                        if (abs(position.x-xmax) < abs(position.x)) {
+                            translationX = xmax
+                        }
+                        else {
+                            translationX = 0.0f
+                        }
+                        translationY = ymax
+                    } else {
+                        translationX = position.x
+                        translationY = position.y
+                    }
+                }
+                .conditional(!(displayingAbout || displayingSliders)){ Modifier.pointerInput(Unit) {
+                    detectDragGestures { change, dragAmount ->
+                            change.consume()
+                            var x = max(0.0f, position.x+dragAmount.x)
+                            x = min(x, xmax)
+                            var y = max(0.0f, position.y+dragAmount.y)
+                            y = min(y, ymax)
+                            position = Offset(x, y)
+                        }
+                }}
         ) {
             AnimatedVisibility(
                 visible = !displayingMenu,
@@ -194,7 +255,9 @@ fun menuPrompt(
                         .size(menuItemHeight.dp)
                         .clickable(
                             onClick = {
-                                menuPromptViewModel.onDisplayingMenuChanged(false)
+                                if (!(displayingAbout || displayingSliders)) {
+                                    menuPromptViewModel.onDisplayingMenuChanged(false)
+                                }
                                 aboutViewModel.onDisplayingAboutChanged(false)
                                 menuPromptViewModel.onDisplayingToyMenuChanged(false)
                                 menuPromptViewModel.onDisplayingMusicChanged(false)
