@@ -52,7 +52,7 @@ import java.lang.Integer.min
 import java.util.Date
 
 
-val news = "news-21-07-24"
+val news = "news-20-08-24"
 
 val DEBUG = false
 
