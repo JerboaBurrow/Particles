@@ -9,6 +9,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
@@ -23,6 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
@@ -31,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import app.jerboa.spp.AppInfo
 import app.jerboa.spp.viewmodel.AboutViewModel
 import app.jerboa.spp.viewmodel.MenuPromptViewModel
+import app.jerboa.spp.viewmodel.NULL_MENU_POSITION
 import app.jerboa.spp.viewmodel.SPPViewModel
 import kotlin.math.abs
 import kotlin.math.max
@@ -54,6 +57,8 @@ fun menuPrompt(
     val paused: Boolean by menuPromptViewModel.paused.observeAsState(initial = false)
     val playSuccess: Boolean by sppViewModel.playSuccess.observeAsState(initial = false)
 
+    val position: Offset by menuPromptViewModel.position.observeAsState(initial = Offset(0.0f, 0.0f))
+
     val fadePromptAlpha: Float by animateFloatAsState(
         targetValue = if (!displayingMenu) 0.33f else 1.0f,
         animationSpec = tween(
@@ -62,27 +67,43 @@ fun menuPrompt(
         ), label = "alpha for fading the prompt"
     )
 
-    val xmax = info.widthDp*info.density-1.7f*menuItemHeight.toFloat()*info.density
-    val ymax = info.heightDp*info.density-1.75f*menuItemHeight.toFloat()*info.density
-    var position by remember { mutableStateOf(Offset(0.0f,ymax)) }
+    val configuration = LocalConfiguration.current
+    val screenWidth = configuration.screenWidthDp.dp.value
+    val screenHeight = configuration.screenHeightDp.dp.value
+
+    val pad = 0.1f
+    val xBounds = Pair(
+        pad*menuItemHeight.toFloat()*info.density,
+        screenWidth*info.density-(1f+pad)*menuItemHeight.toFloat()*info.density
+    )
+    val yBounds = Pair(
+        pad*menuItemHeight.toFloat()*info.density,
+        screenHeight*info.density-(1f+pad)*menuItemHeight.toFloat()*info.density
+    )
+
+    fun applyBounds(p: Float, bounds: Pair<Float, Float>): Float {
+        return min(max(p, bounds.first), bounds.second)
+    }
+
+    if (position == NULL_MENU_POSITION) {
+        menuPromptViewModel.onPositionChanged(Offset(0.0f, yBounds.second))
+    }
 
     Box(modifier = Modifier
         .fillMaxHeight()
-        .fillMaxWidth()
-        .padding(16.dp)) {
+        .fillMaxWidth()) {
         Box(
             modifier = Modifier
                 .fillMaxHeight()
                 .fillMaxWidth()
                 .graphicsLayer {
                     if (displayingAbout || displayingSliders) {
-                        if (abs(position.x-xmax) < abs(position.x)) {
-                            translationX = xmax
-                        }
-                        else {
+                        if (abs(position.x - xBounds.second) < abs(position.x)) {
+                            translationX = xBounds.second
+                        } else {
                             translationX = 0.0f
                         }
-                        translationY = ymax
+                        translationY = yBounds.second
                     } else {
                         translationX = position.x
                         translationY = position.y
@@ -97,8 +118,7 @@ fun menuPrompt(
                 verticalMenu(
                     modifier = Modifier,
                     offset = Pair(0.dp, 0.dp),
-                    contentPadding = 16.dp,
-                    headSpacePx = if (displayingAbout || displayingSliders) { ymax } else { position.y }
+                    headSpacePx = if (displayingAbout || displayingSliders) { yBounds.second } else { position.y }
                 ) {
                     Image(
                         painter = painterResource(id = images["toyMenu"]!!),
@@ -118,7 +138,7 @@ fun menuPrompt(
                             menuPromptViewModel,
                             menuItemHeight,
                             images,
-                            left = position.x > xmax/2.0f
+                            left = position.x > xBounds.second/2.0f
                         )
                     }
                     else {
@@ -204,13 +224,13 @@ fun menuPrompt(
                 .size(menuItemHeight.dp)
                 .graphicsLayer {
                     if (displayingAbout || displayingSliders) {
-                        if (abs(position.x-xmax) < abs(position.x)) {
-                            translationX = xmax
+                        if (abs(position.x-xBounds.second) < abs(position.x)) {
+                            translationX = xBounds.second
                         }
                         else {
                             translationX = 0.0f
                         }
-                        translationY = ymax
+                        translationY = yBounds.second
                     } else {
                         translationX = position.x
                         translationY = position.y
@@ -219,11 +239,12 @@ fun menuPrompt(
                 .conditional(!(displayingAbout || displayingSliders)){ Modifier.pointerInput(Unit) {
                     detectDragGestures { change, dragAmount ->
                             change.consume()
-                            var x = max(0.0f, position.x+dragAmount.x)
-                            x = min(x, xmax)
-                            var y = max(0.0f, position.y+dragAmount.y)
-                            y = min(y, ymax)
-                            position = Offset(x, y)
+                            menuPromptViewModel.onPositionChanged(
+                                Offset(
+                                    applyBounds(position.x+dragAmount.x, xBounds),
+                                    applyBounds(position.y+dragAmount.y, yBounds)
+                                )
+                            )
                         }
                 }}
         ) {

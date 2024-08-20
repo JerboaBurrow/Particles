@@ -19,6 +19,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -29,6 +30,7 @@ import app.jerboa.spp.ui.theme.SPPTheme
 import app.jerboa.spp.viewmodel.AboutViewModel
 import app.jerboa.spp.viewmodel.MUSIC
 import app.jerboa.spp.viewmodel.MenuPromptViewModel
+import app.jerboa.spp.viewmodel.NULL_MENU_POSITION
 import app.jerboa.spp.viewmodel.REVIEW_RATE_LIMIT_MILLIS
 import app.jerboa.spp.viewmodel.SOCIAL
 import app.jerboa.spp.viewmodel.SPPViewModel
@@ -50,7 +52,7 @@ import java.lang.Integer.min
 import java.util.Date
 
 
-val news = "news-21-07-24"
+val news = "news-20-08-24"
 
 val DEBUG = false
 
@@ -556,12 +558,18 @@ class MainActivity : AppCompatActivity() {
             prefsEdit.apply()
         }
 
+        menuPromptViewModel.onPositionChanged(
+            Offset(
+                prefs.getFloat("menuX", NULL_MENU_POSITION.x),
+                prefs.getFloat("menuY", NULL_MENU_POSITION.y)
+            )
+        )
+
         toyMenuViewModel.onShowToysChanged(prefs.getBoolean("showToys", false))
 
 //        if (BuildConfig.DEBUG){
 //            prefs.edit().clear().apply()
 //        }
-
 
         // play game services
 
@@ -641,6 +649,8 @@ class MainActivity : AppCompatActivity() {
         val prefs = getSharedPreferences("jerboa.app.spp.prefs", MODE_PRIVATE)
         val prefsEdit = prefs.edit()
         prefsEdit.putLong("playTime", totalTime)
+        prefsEdit.putFloat("menuX", menuPromptViewModel.position.value!!.x)
+        prefsEdit.putFloat("menuY", menuPromptViewModel.position.value!!.y)
         prefsEdit.apply()
         super.onStop()
         sppViewModel.stopClock()

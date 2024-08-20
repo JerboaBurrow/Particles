@@ -1,9 +1,12 @@
 package app.jerboa.spp.viewmodel
 
+import androidx.compose.ui.geometry.Offset
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 
 enum class MUSIC {FORREST, RAIN, NOTHING}
+
+val NULL_MENU_POSITION = Offset(Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY)
 
 class MenuPromptViewModel : ViewModel() {
 
@@ -46,6 +49,13 @@ class MenuPromptViewModel : ViewModel() {
 
     fun onClear(v: Boolean) {
         _clear.postValue(v)
+    }
+
+    private val _position = MutableLiveData(Offset(0.0f, 0.0f))
+    val position: MutableLiveData<Offset> = _position
+
+    fun onPositionChanged(p: Offset) {
+        _position.value = p
     }
 
 }
