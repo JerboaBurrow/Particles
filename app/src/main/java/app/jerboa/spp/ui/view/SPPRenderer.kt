@@ -1705,27 +1705,42 @@ class SPPRenderer(
 
     }
 
-    private fun pointsRoughlySquare(points: List<Pair<Float,Float>>, tolerance: Float = 160f*160f): Boolean{
+    private fun pointsRoughlySquare(points: List<Pair<Float,Float>>, alignmentTolerance: Float = 50f, sideTolerance: Float = 160f*160f): Boolean{
         if (points.size != 4){ return false }
-        val dists = mutableListOf<Float>()
+        val smallestDists = mutableListOf<Float>()
         for (i in points.indices){
+            var k = 0
+            val dists = mutableListOf<Float>(0.0f,0.0f,0.0f)
+            var smallDistX = Float.POSITIVE_INFINITY
+            var smallDistY = Float.POSITIVE_INFINITY
             for (j in points.indices){
                 if (i != j){
                     val rx = points[i].first-points[j].first
                     val ry = points[i].second-points[j].second
-                    val d2 = rx*rx+ry*ry
+                    dists[k] = rx*rx+ry*ry
+                    k += 1
+                    if (abs(rx) < smallDistX) { smallDistX = abs(rx) }
+                    if (abs(ry) < smallDistY) { smallDistY = abs(ry) }
+                }
+            }
+            dists.sort()
+            if (abs(dists[0]-dists[1]) > sideTolerance) {
+                return false
+            }
+            if (smallDistX > alignmentTolerance || smallDistY > alignmentTolerance)
+            {
+                return false
+            }
+            smallestDists.add(dists[0])
+        }
 
-                    if (dists.size == 0) { dists.add(d2) }
-                    if (dists.size == 1){
-                        if (abs(dists[0] - d2 ) > tolerance){
-                            dists.add(d2)
-                        }
-                    }
-                    if (dists.size == 2){
-                        if (abs(dists[0] - d2 ) > tolerance && abs(dists[1] - d2 ) > tolerance){
-                            return false
-                        }
-                    }
+        for (i in smallestDists.indices)
+        {
+            for (j in smallestDists.indices)
+            {
+                if (abs(smallestDists[i]-smallestDists[j]) > sideTolerance)
+                {
+                    return false
                 }
             }
         }
