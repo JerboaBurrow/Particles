@@ -42,12 +42,12 @@ android {
         }
     }
 
-    compileSdk 34
+    compileSdk 35
 
     defaultConfig {
         applicationId "app.jerboa.spp"
         minSdk 23
-        targetSdk 34
+        targetSdk 35
         versionCode 48
         versionName "0.7.0"
 
@@ -112,14 +112,14 @@ dependencies {
         }
     }
 
-    implementation 'androidx.core:core-ktx:1.13.1'
+    implementation 'androidx.core:core-ktx:1.16.0'
     implementation "androidx.compose.ui:ui:$compose_version"
     implementation "androidx.compose.material:material:$compose_version"
     implementation "androidx.compose.ui:ui-tooling-preview:$compose_version"
-    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.8.3'
-    implementation 'androidx.activity:activity-compose:1.9.0'
-    implementation "com.google.android.gms:play-services-games-v2:20.1.2"
-    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.9.2'
+    implementation 'androidx.activity:activity-compose:1.10.1'
+    implementation "com.google.android.gms:play-services-games-v2:21.0.0"
+    implementation 'androidx.appcompat:appcompat:1.7.1'
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.2.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
@@ -127,6 +127,6 @@ dependencies {
     debugImplementation "androidx.compose.ui:ui-tooling:$compose_version"
     debugImplementation "androidx.compose.ui:ui-test-manifest:$compose_version"
     implementation "androidx.compose.runtime:runtime-livedata:$compose_version"
-    implementation 'com.google.android.gms:play-services-oss-licenses:17.1.0'
-    implementation("com.google.android.play:review:2.0.1")
+    implementation 'com.google.android.gms:play-services-oss-licenses:17.2.1'
+    implementation("com.google.android.play:review:2.0.2")
 }
