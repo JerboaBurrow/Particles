@@ -42,7 +42,7 @@ jobs:
           ./gradlew assembleDebugUnsigned
 
       - name: test
-        run: export JAVA_HOME="/usr/lib/jvm/temurin-17-jdk-amd64" && ./gradlew testDebugUnsignedUnitTest
+        run: export JAVA_HOME="/usr/lib/jvm/temurin-17-jdk-amd64" && ./gradlew testDebugUnsignedUnitTest -PtestBuildType="debugUnsigned"
 
   with-proguard:
       runs-on: ubuntu-latest
@@ -73,5 +73,5 @@ jobs:
           ./gradlew assembleUnsignedProguard
 
       - name: test
-        run: export JAVA_HOME="/usr/lib/jvm/temurin-17-jdk-amd64" && ./gradlew testUnsignedProguardUnitTest
+        run: export JAVA_HOME="/usr/lib/jvm/temurin-17-jdk-amd64" && ./gradlew testUnsignedProguardUnitTest -PtestBuildType="unsignedProguard"
 

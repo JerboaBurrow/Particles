@@ -39,7 +39,7 @@ jobs:
           ./gradlew assembleDebugUnsigned
 
       - name: test
-        run: export JAVA_HOME="/usr/lib/jvm/temurin-17-jdk-amd64" && ./gradlew testDebugUnsignedUnitTest
+        run: export JAVA_HOME="/usr/lib/jvm/temurin-17-jdk-amd64" && ./gradlew testDebugUnsignedUnitTest -PtestBuildType="debugUnsigned"
 
 #     https://github.com/softprops/action-gh-release
       - name: release
