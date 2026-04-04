@@ -1,29 +1,16 @@
 package app.jerboa.spp
 
 import android.app.Activity
-import android.app.ActivityManager
-import android.app.ActivityManager.RunningAppProcessInfo
 import android.content.ActivityNotFoundException
-import android.content.Context
 import android.content.Intent
-import android.content.res.Resources
-import android.graphics.Point
-import android.graphics.Rect
 import android.media.MediaPlayer
-import android.net.Uri
 import android.os.Bundle
 import android.util.Log
-import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
-import androidx.core.view.WindowCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.WindowInsetsControllerCompat
 import app.jerboa.spp.composable.NewsItem
 import app.jerboa.spp.composable.screen
 import app.jerboa.spp.ui.theme.SPPTheme
@@ -42,7 +29,7 @@ import com.google.android.gms.games.PlayGames
 import com.google.android.gms.games.PlayGamesSdk
 import com.google.android.gms.games.achievement.Achievement
 import com.google.android.gms.games.achievement.AchievementBuffer
-import com.google.android.gms.oss.licenses.OssLicensesMenuActivity
+import com.google.android.gms.oss.licenses.v2.OssLicensesMenuActivity
 import com.google.android.gms.tasks.Task
 import com.google.android.play.core.review.ReviewException
 import com.google.android.play.core.review.ReviewManager
@@ -50,6 +37,8 @@ import com.google.android.play.core.review.ReviewManagerFactory
 import com.google.android.play.core.review.model.ReviewErrorCode
 import java.lang.Integer.min
 import java.util.Date
+import androidx.core.net.toUri
+import androidx.core.content.edit
 
 
 val news = "news-20-08-24"
@@ -177,7 +166,7 @@ class MainActivity : AppCompatActivity() {
             }
             .addOnFailureListener {
                 if (DEBUG) {
-                    Log.d("showAchievements failure", "${it.toString()}")
+                    Log.d("showAchievements failure", it.toString())
                 }
             }
     }
@@ -286,28 +275,26 @@ class MainActivity : AppCompatActivity() {
     }
     private fun playRate() {
         val intent = Intent(Intent.ACTION_VIEW).apply {
-            data = Uri.parse(
-                "https://play.google.com/store/apps/details?id=app.jerboa.spp"
-            )
+            data = "https://play.google.com/store/apps/details?id=app.jerboa.spp".toUri()
             setPackage("com.android.vending")
         }
         tryStartActivity(intent, "Could not open Play Store")
     }
 
     private fun youtube() {
-        val uri = Uri.parse("https://www.youtube.com/channel/UCP3KhLhmG3Z1CMWyLkn7pbQ")
+        val uri = "https://www.youtube.com/channel/UCP3KhLhmG3Z1CMWyLkn7pbQ".toUri()
         val intent = Intent(Intent.ACTION_VIEW, uri)
         tryStartActivity(intent, "Could not open Youtube")
     }
 
     private fun web() {
-        val uri = Uri.parse("https://jerboa.app")
+        val uri = "https://jerboa.app".toUri()
         val intent = Intent(Intent.ACTION_VIEW, uri)
         tryStartActivity(intent, "Could not open https://jerboa.app")
     }
 
     private fun github() {
-        val uri = Uri.parse("https://github.com/JerboaBurrow/Particles")
+        val uri = "https://github.com/JerboaBurrow/Particles".toUri()
         val intent = Intent(Intent.ACTION_VIEW, uri)
         tryStartActivity(intent, "Could not open Github")
     }
@@ -315,7 +302,7 @@ class MainActivity : AppCompatActivity() {
     private fun showLicenses() {
         val intent = Intent(this.applicationContext, OssLicensesMenuActivity::class.java)
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        //on opening OSS sometimes there is a crash..
+        //on opening OSS sometimes there is a crash.
         //https://github.com/google/play-services-plugins/issues/100
         //com.google.android.gms.internal.oss_licenses.zzf.dummy_placeholder = getResources().getIdentifier("third_party_license_metadata", "raw", getPackageName());
         tryStartActivity(intent, "Could not show licenses")
@@ -323,9 +310,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun installPGS() {
         val intent = Intent(Intent.ACTION_VIEW).apply {
-            data = Uri.parse(
-                "https://play.google.com/store/apps/details?id=com.google.android.play.games"
-            )
+            data =
+                "https://play.google.com/store/apps/details?id=com.google.android.play.games".toUri()
             setPackage("com.android.vending")
         }
         tryStartActivity(intent, "Could not open Play Store")
@@ -360,27 +346,16 @@ class MainActivity : AppCompatActivity() {
 
         if (lastReviewTries < 5) {
             val prefs = getSharedPreferences("jerboa.app.spp.prefs", MODE_PRIVATE)
-            val prefsEdit = prefs.edit()
-            prefsEdit.putLong("reviewTries", lastReviewTries + 1L)
-            prefsEdit.apply()
+            prefs.edit {
+                putLong("reviewTries", lastReviewTries + 1L)
+            }
         } else {
             val prefs = getSharedPreferences("jerboa.app.spp.prefs", MODE_PRIVATE)
-            val prefsEdit = prefs.edit()
-            prefsEdit.putLong("reviewTries", 0L)
-            prefsEdit.apply()
-        }
-
-    }
-
-    private fun isAppForeground(): Boolean {
-        val activityManager = this.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-        val appProcesses = activityManager.runningAppProcesses ?: return false
-        for (appProcess in appProcesses) {
-            if (appProcess.importance == RunningAppProcessInfo.IMPORTANCE_FOREGROUND && appProcess.processName == "app.jerboa.spp") {
-                return true
+            prefs.edit {
+                putLong("reviewTries", 0L)
             }
         }
-        return false
+
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -461,9 +436,9 @@ class MainActivity : AppCompatActivity() {
         toyMenuViewModel.showToys.observe(
             this, androidx.lifecycle.Observer { show ->
                 val prefs = getSharedPreferences("jerboa.app.spp.prefs", MODE_PRIVATE)
-                val prefsEdit = prefs.edit()
-                prefsEdit.putBoolean("showToys", show)
-                prefsEdit.apply()
+                prefs.edit {
+                    putBoolean("showToys", show)
+                }
             }
         )
 
@@ -504,9 +479,9 @@ class MainActivity : AppCompatActivity() {
         val prefs = getSharedPreferences("jerboa.app.spp.prefs", MODE_PRIVATE)
 
         if (!prefs.contains("firstLaunch")) {
-            val prefsEdit = prefs.edit()
-            prefsEdit.putBoolean("firstLaunch", true)
-            prefsEdit.apply()
+            prefs.edit {
+                putBoolean("firstLaunch", true)
+            }
         }
 
         val firstLaunch: Boolean = prefs.getBoolean("firstLaunch", false)
@@ -545,17 +520,17 @@ class MainActivity : AppCompatActivity() {
             Log.d("launch", "not first")
             if (!prefs.contains(news)) {
                 Log.d("launch", "show news")
-                val prefsEdit = prefs.edit()
-                prefsEdit.putBoolean(news, true)
-                prefsEdit.apply()
+                prefs.edit {
+                    putBoolean(news, true)
+                }
                 showNews = true
             }
         }
 
         if (!prefs.contains("showToys")) {
-            val prefsEdit = prefs.edit()
-            prefsEdit.putBoolean("showToys", false)
-            prefsEdit.apply()
+            prefs.edit {
+                putBoolean("showToys", false)
+            }
         }
 
         menuPromptViewModel.onPositionChanged(
@@ -647,11 +622,11 @@ class MainActivity : AppCompatActivity() {
     public override fun onStop()
     {
         val prefs = getSharedPreferences("jerboa.app.spp.prefs", MODE_PRIVATE)
-        val prefsEdit = prefs.edit()
-        prefsEdit.putLong("playTime", totalTime)
-        prefsEdit.putFloat("menuX", menuPromptViewModel.position.value!!.x)
-        prefsEdit.putFloat("menuY", menuPromptViewModel.position.value!!.y)
-        prefsEdit.apply()
+        prefs.edit {
+            putLong("playTime", totalTime)
+            putFloat("menuX", menuPromptViewModel.position.value!!.x)
+            putFloat("menuY", menuPromptViewModel.position.value!!.y)
+        }
         super.onStop()
         sppViewModel.stopClock()
     }
