@@ -56,6 +56,12 @@ android {
         vectorDrawables {
             useSupportLibrary true
         }
+
+        // ./gradlew testDebugUnsignedUnitTest -PtestBuildType="debugUnsigned"
+        // https://stackoverflow.com/questions/59890698/how-to-set-testbuildtype-to-active-build-variant-automatically
+        if (project.hasProperty("testBuildType")) {
+            testBuildType project.property("testBuildType")
+        }
     }
 
     buildTypes {
