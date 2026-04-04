@@ -31,9 +31,9 @@ jobs:
           mv latest cmdline-tools
           yes | ./cmdline-tools/latest/bin/sdkmanager --licenses
           ./cmdline-tools/latest/bin/sdkmanager "emulator"
-          ./cmdline-tools/latest/bin/sdkmanager --install "system-images;android-34;google_apis;x86_64"
-          ./cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-34"
-          echo no | ./cmdline-tools/latest/bin/avdmanager create avd --name android34 --package "system-images;android-34;google_apis;x86_64"
+          ./cmdline-tools/latest/bin/sdkmanager --install "system-images;android-36;google_apis;x86_64"
+          ./cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-36"
+          echo no | ./cmdline-tools/latest/bin/avdmanager create avd --name android36 --package "system-images;android-36;google_apis;x86_64"
 
       - name: linux-build
         run: |
@@ -63,9 +63,9 @@ jobs:
           mv latest cmdline-tools
           yes | ./cmdline-tools/latest/bin/sdkmanager --licenses
           ./cmdline-tools/latest/bin/sdkmanager "emulator"
-          ./cmdline-tools/latest/bin/sdkmanager --install "system-images;android-34;google_apis;x86_64"
-          ./cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-34"
-          echo no | ./cmdline-tools/latest/bin/avdmanager create avd --name android34 --package "system-images;android-34;google_apis;x86_64"
+          ./cmdline-tools/latest/bin/sdkmanager --install "system-images;android-36;google_apis;x86_64"
+          ./cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-36"
+          echo no | ./cmdline-tools/latest/bin/avdmanager create avd --name android36 --package "system-images;android-36;google_apis;x86_64"
 
       - name: linux-build
         run: |
